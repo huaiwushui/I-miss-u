@@ -8,7 +8,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="I MISS U">
 <meta name="format-detection" content="telephone=no">
-<meta name="theme-color" content="#F5F3EE">
 <title>I MISS U</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
@@ -2699,50 +2698,62 @@ function vMore(){
   +'<div style="height:12px"></div></div></div>';}
 var _v3=view,_bgd=0;
 view=function(v){_v3(v);if(!_bgd){_bgd=1;bgApply();applyTheme();}};
-  /* ══════ 补丁 · 键盘预锁 / 留白 ══════ */
+/* ══════ 补丁 · 沉浸 / 键盘跟踪 / 留白 ══════ */
 (function(){
+  var mt=document.querySelector('meta[name=theme-color]');
+  if(mt)mt.remove();
   var s=document.createElement('style');
   s.textContent=':root{--pb:max(0px,calc(var(--sb) - 27px))}'
    +'#dw .bt{padding-bottom:max(6px,calc(var(--sb) - 26px))}'
-   +'html.kbon #dw .bt{padding-bottom:8px}';
+   +'html.kbon #dw .bt{padding-bottom:8px}'
+   +'#bgl,#bgv{top:0;left:0;right:0;bottom:0;height:100%}';
   document.head.appendChild(s);})();
 
-var kbH=parseInt(localStorage.getItem('us.kbH')||'0',10)||0;
-function fit3(){
+function applyTheme(){
+  var dk=isDark();_dk=dk;
+  de.classList.toggle('dark',!!dk);}
+
+var KT=0,KEND=0,KLAST=-1,KOT=-1;
+function kpaint(){
   if(!vv)return;
-  var gap=kbGap(),ot=Math.round(vv.offsetTop||0),open=gap>60;
+  var gap=kbGap(),ot=Math.round(vv.offsetTop||0),h=Math.round(vv.height);
+  var open=gap>60;
+  if(h===KLAST&&ot===KOT)return;
+  KLAST=h;KOT=ot;
   var sh=document.getElementById('sh'),dw=document.getElementById('dw');
-  if(open&&gap!==kbH){kbH=gap;
-    try{localStorage.setItem('us.kbH',gap);}catch(e){}}
   de.classList.toggle('kbon',open);
   [root,sh,dw].forEach(function(el){
     if(!el)return;
     if(open){
-      el.style.setProperty('height',Math.round(vv.height)+'px','important');
-      if(ot)el.style.setProperty('transform','translateY('+ot+'px)','important');
+      el.style.setProperty('height',h+'px','important');
+      if(ot)el.style.setProperty('transform','translate3d(0,'+ot+'px,0)','important');
       else el.style.removeProperty('transform');
     }else{
       el.style.removeProperty('height');
       el.style.removeProperty('transform');}});
-  if(window.scrollY)window.scrollTo(0,0);
-  if(open&&CV==='chat')stick();}
-if(vv){vv.addEventListener('resize',fit3);vv.addEventListener('scroll',fit3);}
-
+  var box=document.getElementById('ms');
+  if(box){
+    if(open)box.scrollTop=box.scrollHeight+500;
+    else{
+      var mx=box.scrollHeight-box.clientHeight;
+      if(box.scrollTop>mx)box.scrollTop=Math.max(0,mx);}}}
+function ktrack(ms2){
+  KEND=performance.now()+(ms2||620);
+  if(KT)return;
+  (function loop(){
+    kpaint();
+    if(performance.now()<KEND)KT=setTimeout(loop,16);
+    else{KT=0;kpaint();
+      if(window.scrollY)window.scrollTo(0,0);}})();}
+if(vv){
+  vv.addEventListener('resize',function(){ktrack();});
+  vv.addEventListener('scroll',function(){ktrack(320);});}
 document.addEventListener('focusin',function(e){
   if(!e.isTrusted)return;
   var t=e.target;
-  if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
-  if(kbH<=60||kbGap()>60)return;
-  var sh=document.getElementById('sh'),dw=document.getElementById('dw');
-  de.classList.add('kbon');
-  [root,sh,dw].forEach(function(el){
-    if(el)el.style.setProperty('height',(fullH-kbH)+'px','important');});
-  if(CV==='chat')stick();
-  setTimeout(function(){
-    if(kbGap()>60)return;
-    de.classList.remove('kbon');
-    [root,sh,dw].forEach(function(el){
-      if(el)el.style.removeProperty('height');});},700);},true);
+  if(t&&/^(INPUT|TEXTAREA)$/.test(t.tagName))ktrack(900);},true);
+document.addEventListener('focusout',function(e){
+  if(e.isTrusted)ktrack(700);},true);
 </script>
 </body>
 </html>
