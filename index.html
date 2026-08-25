@@ -20,7 +20,7 @@ body{background:#F5F3EE;color:#1A1815;
   --line:#ECE8DF; --card:#FFF; --me:#ECEAE4; --rose:#C97B6E;
   --st:env(safe-area-inset-top,20px); --sb:env(safe-area-inset-bottom,0px);
   --sl:env(safe-area-inset-left,0px); --sr:env(safe-area-inset-right,0px);
-  --pb:max(5px, calc(var(--sb) - 16px)); --pad:20px; --inset:17px;
+  --pb:max(5px, calc(var(--sb) - 16px)); --inset:17px;
 }
 button,input,textarea{font-family:inherit;font-size:16px;color:inherit;border:none;background:none}
 textarea,input{-webkit-appearance:none;border-radius:0}
@@ -38,7 +38,6 @@ textarea,input{-webkit-appearance:none;border-radius:0}
 
 #root{position:fixed;inset:0;display:flex;flex-direction:column;overflow:hidden}
 
-/* ══ 锁屏 · 重心下移 ══ */
 #lk{position:fixed;inset:0;z-index:900;background:#F5F3EE;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:calc(var(--st) + 32px) 26px 14px;animation:fade .5s ease both}
@@ -75,7 +74,7 @@ textarea,input{-webkit-appearance:none;border-radius:0}
 .mw .fg{position:absolute;left:0;right:0;height:22px;z-index:4;pointer-events:none}
 .mw .fg.t{top:0;background:linear-gradient(var(--bg),rgba(245,243,238,0))}
 .mw .fg.b{bottom:0;background:linear-gradient(rgba(245,243,238,0),var(--bg))}
-#ms{position:absolute;inset:0;padding:12px calc(20px + var(--sr)) 12px calc(20px + var(--sl))}
+#ms{position:absolute;inset:0;padding:12px calc(20px + var(--sr)) 22px calc(20px + var(--sl))}
 .m{margin-bottom:30px;display:flex;flex-direction:column;animation:up .3s ease both}
 .m.me{align-items:flex-end}.m.ai{align-items:flex-start}
 .m .in{max-width:100%;width:100%}
@@ -91,8 +90,13 @@ textarea,input{-webkit-appearance:none;border-radius:0}
 .thk button{display:flex;align-items:center;gap:9px;width:100%;padding:3px 0;text-align:left}
 .thk span{flex:1;font-size:13.5px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ops{display:flex;align-items:center;gap:14px;margin-top:11px;opacity:.6}
-.ops .br{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:12px;color:var(--dim2);font-weight:600}
-.eo{display:flex;justify-content:flex-end;margin-top:5px;opacity:.42}
+.nav{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--dim2);font-weight:600;
+  font-variant-numeric:tabular-nums}
+.nav button{width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.nav button[disabled]{opacity:.28}
+.eo{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:6px;opacity:.5}
+.err{margin-top:9px;font-size:12.5px;color:#B5514A;line-height:1.6}
+.err button{color:var(--rose);font-weight:600;font-size:12.5px;margin-left:8px}
 .typ{display:flex;gap:4px;padding:2px 0 4px}
 .typ i{width:5px;height:5px;border-radius:50%;background:var(--dim2);animation:dots 1.4s ease-in-out infinite}
 .typ i:nth-child(2){animation-delay:.15s}.typ i:nth-child(3){animation-delay:.3s}
@@ -116,24 +120,24 @@ html.kbon .ib{padding-bottom:4px}
 
 #dw{position:fixed;inset:0;z-index:600}
 #dw .ov{position:absolute;inset:0;background:rgba(0,0,0,.14);animation:fade .16s ease both}
-#dw .pn{position:absolute;left:0;top:0;bottom:0;width:min(300px,82vw);background:var(--bg);
+#dw .pn{position:absolute;left:0;top:0;bottom:0;width:min(268px,78vw);background:var(--bg);
   display:flex;flex-direction:column;box-shadow:7px 0 26px rgba(0,0,0,.07);animation:sldL .22s ease both;
   padding-left:var(--sl)}
-#dw .hh{flex:none;padding:calc(var(--st) + 22px) 24px 0}
-#dw .hh .n{font:400 24px/1.2 "Hiragino Mincho ProN","Songti SC",serif;letter-spacing:.08em}
-#dw .nv{flex:none;padding:22px 14px 0;display:flex;flex-direction:column;gap:2px}
+#dw .hh{flex:none;padding:calc(var(--st) + 22px) 22px 0}
+#dw .hh .n{font:400 23px/1.2 "Hiragino Mincho ProN","Songti SC",serif;letter-spacing:.08em}
+#dw .nv{flex:none;padding:22px 12px 0;display:flex;flex-direction:column;gap:2px}
 #dw .nv a{padding:12px;border-radius:11px;font-size:15px;font-weight:500;display:flex;align-items:center;gap:13px}
 #dw .nv a.on{background:#EBE7DF}
-#dw .lb{padding:24px 26px 8px;font-size:11px;color:var(--dim2);font-weight:600;letter-spacing:1.2px}
-#dw .ls{flex:1;min-height:0;padding:0 14px}
+#dw .lb{padding:24px 24px 8px;font-size:11px;color:var(--dim2);font-weight:600;letter-spacing:1.2px}
+#dw .ls{flex:1;min-height:0;padding:0 12px}
 #dw .ls .it{padding:11px 12px;border-radius:11px;font-size:14.5px;color:#3A362F;display:flex;align-items:center;gap:8px}
 #dw .ls .it.on{background:#EBE7DF;font-weight:500}
-#dw .bt{flex:none;padding:8px 16px max(12px, calc(var(--sb) - 12px));
-  display:flex;align-items:center;justify-content:space-between;gap:10px}
+#dw .bt{flex:none;padding:8px 14px max(12px, calc(var(--sb) - 12px));
+  display:flex;align-items:center;justify-content:space-between;gap:8px}
 html.kbon #dw .bt{padding-bottom:10px}
 #dw .bt .ct{font-size:12px;color:var(--dim2);flex:none;white-space:nowrap}
-#dw .bt .nw{display:flex;align-items:center;gap:7px;background:var(--ink);color:#F5F3EE;
-  border-radius:20px;padding:10px 17px;font-size:14px;font-weight:500;flex:none}
+#dw .bt .nw{display:flex;align-items:center;gap:6px;background:var(--ink);color:#F5F3EE;
+  border-radius:20px;padding:10px 15px;font-size:14px;font-weight:500;flex:none}
 
 #sh{position:fixed;inset:0;z-index:700}
 #sh .ov{position:absolute;inset:0;background:rgba(0,0,0,.2);animation:fade .16s ease both}
@@ -156,7 +160,6 @@ html.kbon #sh .bdy{padding-bottom:14px}
 .rw{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px var(--inset)}
 .rw+.rw{border-top:1px solid var(--line)}
 .rw .l{font-size:15px;font-weight:500}
-/* 分组标题与行内文字左对齐 */
 .sc2{margin:22px 0 9px;padding-left:var(--inset);font-size:12.5px;font-weight:600;color:var(--dim)}
 .nt{padding:9px var(--inset) 0;font-size:12px;color:var(--dim2);line-height:1.6}
 .fd{margin-bottom:12px}
@@ -165,6 +168,16 @@ html.kbon #sh .bdy{padding-bottom:14px}
 .fd textarea{min-height:150px;line-height:1.75;resize:vertical}
 .fd input:focus,.fd textarea:focus{border-color:var(--rose)}
 .fd input::placeholder,.fd textarea::placeholder{color:#BDB7AC}
+.seg{display:flex;gap:8px;margin-bottom:12px}
+.seg button{flex:1;border:1px solid #E7E3DA;background:#FFF;border-radius:13px;padding:11px;
+  font-size:14px;color:#6B665E}
+.seg button.on{background:var(--ink);color:#F5F3EE;border-color:var(--ink);font-weight:600}
+.sw{display:flex;align-items:center;justify-content:space-between;padding:14px var(--inset)}
+.sw .k{width:48px;height:29px;border-radius:15px;background:#DDD8CE;position:relative;transition:.2s;flex:none}
+.sw .k.on{background:#8C9E7E}
+.sw .k i{position:absolute;top:2.5px;left:2.5px;width:24px;height:24px;border-radius:50%;
+  background:#FFF;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.sw .k.on i{left:21.5px}
 .hero{background:linear-gradient(140deg,#CE8577,#B96A63);color:#fff;text-align:center;padding:25px 18px;
   border:none;box-shadow:0 14px 32px -18px rgba(185,106,99,.7)}
 .hero .n{font:700 50px/1 -apple-system;letter-spacing:-.04em}
@@ -172,9 +185,15 @@ html.kbon #sh .bdy{padding-bottom:14px}
 .q{font:400 17px/1.85 "Georgia","Songti SC",serif;color:#4A403A;white-space:pre-wrap;word-break:break-word}
 .big{font:700 30px/1.2 -apple-system;letter-spacing:-.03em}
 .sub{margin-top:5px;font-size:14px;color:var(--dim)}
-#tst{position:fixed;left:50%;bottom:calc(var(--sb) + 92px);transform:translateX(-50%);
-  background:rgba(26,24,21,.94);color:#F5F3EE;font-size:13.5px;padding:11px 20px;border-radius:21px;
-  z-index:950;animation:up .22s ease both;white-space:nowrap;max-width:82vw}
+/* 提示条 · 顶部 · 只淡入淡出 */
+#tst{position:fixed;top:calc(var(--st) + 8px);left:50%;transform:translateX(-50%);
+  background:rgba(255,255,255,.86);backdrop-filter:blur(16px) saturate(180%);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);
+  color:#4A443C;font-size:12.5px;padding:8px 17px;border-radius:17px;
+  box-shadow:0 1px 2px rgba(80,66,50,.05),0 6px 18px -8px rgba(80,66,50,.22);
+  z-index:960;opacity:0;transition:opacity .3s ease;pointer-events:none;
+  white-space:nowrap;max-width:78vw;overflow:hidden;text-overflow:ellipsis}
+#tst.on{opacity:1}
 .ic{display:block}
 </style>
 </head>
@@ -196,18 +215,19 @@ plus:'<svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none"><pa
 plus2:'<svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#6B665E" stroke-width="1.9" stroke-linecap="round"/></svg>',
 plusW:'<svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#F5F3EE" stroke-width="2.2" stroke-linecap="round"/></svg>',
 dots:'<svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="6" r="1.5" fill="#48453E"/><circle cx="12" cy="12" r="1.5" fill="#48453E"/><circle cx="12" cy="18" r="1.5" fill="#48453E"/></svg>',
-x:'<svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#48453E" stroke-width="1.8" stroke-linecap="round"/></svg>',
 del:'<svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M10 5h9a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-9L3 12l7-7Z" stroke="#A29B90" stroke-width="1.4" stroke-linejoin="round"/><path d="M11.5 9.5l5 5M16.5 9.5l-5 5" stroke="#A29B90" stroke-width="1.4" stroke-linecap="round"/></svg>',
 send:'<svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M12 19V6M6 12l6-6 6 6" stroke="#F5F3EE" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 wave:'<svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M5 10v4M9 7v10M13 5.5v13M17 9v6M21 11v2" stroke="#F5F3EE" stroke-width="1.8" stroke-linecap="round"/></svg>',
+stop:'<svg class="ic" width="17" height="17" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="#F5F3EE"/></svg>',
 clock:'<svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" style="opacity:.55"><circle cx="12" cy="12" r="8.5" stroke="#9A958B" stroke-width="1.4"/><path d="M12 8v4l2.5 1.5" stroke="#9A958B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 chev:'<svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" style="opacity:.45"><path d="M9 6l6 6-6 6" stroke="#B8B3A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 chevD:'<svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#D1CCC2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 copy:'<svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="2.5" stroke="#48453E" stroke-width="1.5"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" stroke="#48453E" stroke-width="1.5"/></svg>',
+ok:'<svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="#7E8F70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 redo:'<svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 0 1 15.5-6.2M21 5v4h-4M21 12a9 9 0 0 1-15.5 6.2M3 19v-4h4" stroke="#48453E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 edit:'<svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="#48453E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-lf:'<svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M14 6l-6 6 6 6" stroke="#B8B3A8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-rt:'<svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M10 6l6 6-6 6" stroke="#B8B3A8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+lf:'<svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M14 6l-6 6 6 6" stroke="#A9A29A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+rt:'<svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M10 6l6 6-6 6" stroke="#A9A29A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 chat:'<svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-4 3.5V17H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" stroke="#48453E" stroke-width="1.5" stroke-linejoin="round"/></svg>',
 home:'<svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M4 11l8-6.5L20 11M6 9.5V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.5" stroke="#48453E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 more:'<svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none"><circle cx="5" cy="6" r="1.4" fill="#48453E"/><circle cx="5" cy="12" r="1.4" fill="#48453E"/><circle cx="5" cy="18" r="1.4" fill="#48453E"/><path d="M10.5 6h9M10.5 12h9M10.5 18h9" stroke="#48453E" stroke-width="1.5" stroke-linecap="round"/></svg>',
@@ -218,7 +238,8 @@ mark:'<svg width="60" height="60" viewBox="0 0 64 64" fill="none" style="opacity
 var PASS='520720', K='us.v1';
 var D={ me:'小u', you:'Renn', start:'', wall:'', annis:[],
   sess:[], cur:0, model:'claude-sonnet-4', style:'', styleText:'',
-  persona:'', notes:[], moments:[], moods:[], apiUrl:'', apiKey:'' };
+  persona:'', notes:[], moments:[], moods:[],
+  apiUrl:'', apiKey:'', fmt:'anthropic', think:0 };
 try{ var r0=localStorage.getItem(K); if(r0) Object.assign(D,JSON.parse(r0)); }catch(e){}
 if(D.style==='我们平常的样子') D.style='';
 if(!D.sess||!D.sess.length){ D.sess=[{id:uid(),ti:'我们的第一次说话',ms:[],at:Date.now()}]; D.cur=0; }
@@ -228,12 +249,25 @@ function save(){ try{ localStorage.setItem(K,JSON.stringify(D)); }catch(e){ toas
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
   return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function deep(o){ return JSON.parse(JSON.stringify(o||[])); }
 function S(){ return D.sess[D.cur]; }
 function styleName(){ return D.style || '语气'; }
 function toast(t){
   var o=document.getElementById('tst'); if(o) o.remove();
   var d=document.createElement('div'); d.id='tst'; d.textContent=t;
-  document.body.appendChild(d); setTimeout(function(){ if(d.parentNode) d.remove(); },1900);
+  document.body.appendChild(d);
+  requestAnimationFrame(function(){ d.classList.add('on'); });
+  setTimeout(function(){ d.classList.remove('on');
+    setTimeout(function(){ if(d.parentNode) d.remove(); },340); },1600);
+}
+function tick(btn){
+  if(!btn) return; var old=btn.innerHTML; btn.innerHTML=I.ok;
+  setTimeout(function(){ if(btn.parentNode) btn.innerHTML=old; },1300);
+}
+function clip(t,cb){
+  if(navigator.clipboard&&navigator.clipboard.writeText)
+    navigator.clipboard.writeText(t).then(function(){ cb&&cb(); },function(){ toast('复制失败'); });
+  else toast('这个浏览器不给复制');
 }
 function md(t){
   var s=esc(t);
@@ -395,13 +429,17 @@ function vChat(){
   +       '<button class="mini pz" onclick="shSess()">'+I.plus2+'</button>'
   +       '<button class="mchip pz" onclick="shModel()"><span>'+esc(D.model)+'</span></button>'
   +     '</div>'
-  +     '<button class="snd off pz" id="sb" onclick="send()">'+I.wave+'</button>'
+  +     '<button class="snd off pz" id="sb" onclick="hitSend()">'+I.wave+'</button>'
   +   '</div>'
   + '</div></div></div>';
 }
+function idxOf(id){ var a=S().ms, i=-1; a.forEach(function(x,j){ if(x.id===id) i=j; }); return i; }
+function find(id){ var i=idxOf(id); return i<0?null:S().ms[i]; }
+function lastAI(){ var a=S().ms; for(var i=a.length-1;i>=0;i--) if(a[i].r==='ai') return a[i]; return null; }
+
 function paint(keep){
   var box=document.getElementById('ms'); if(!box) return;
-  var old=box.scrollTop, ms=S().ms, h='<div class="wm">'+I.mark+'</div>';
+  var old=box.scrollTop, ms=S().ms, la=lastAI(), h='<div class="wm">'+I.mark+'</div>';
   if(!ms.length){
     h+='<div style="padding:15vh 6px 0;text-align:center">'
      + '<div style="font:400 26px/1.4 \'Hiragino Mincho ProN\',Georgia,\'Songti SC\',serif;color:#3A362F">'
@@ -410,110 +448,266 @@ function paint(keep){
   }
   ms.forEach(function(m){
     if(m.r==='me'){
-      h+='<div class="m me" id="m-'+m.id+'"><div class="in"><div class="bd">'+esc(m.t)+'</div>'
-       + '<div class="eo"><button class="pz" style="width:25px;height:25px;display:flex;align-items:center;justify-content:center" onclick="editMsg(\''+m.id+'\')">'+I.edit+'</button></div>'
-       + '</div></div>';
+      h+='<div class="m me" id="m-'+m.id+'"><div class="in"><div class="bd">'+esc(m.t)+'</div><div class="eo">';
+      if(m.eb && m.eb.length>1){
+        var ei=(m.ei||0);
+        h+='<div class="nav"><button class="pz" onclick="swEb(\''+m.id+'\',-1)"'+(ei<=0?' disabled':'')+'>'+I.lf+'</button>'
+         + '<span>'+(ei+1)+' / '+m.eb.length+'</span>'
+         + '<button class="pz" onclick="swEb(\''+m.id+'\',1)"'+(ei>=m.eb.length-1?' disabled':'')+'>'+I.rt+'</button></div>';
+      }
+      h+='<button class="pz" style="width:25px;height:25px;display:flex;align-items:center;justify-content:center" onclick="editMsg(\''+m.id+'\')">'+I.edit+'</button>'
+       + '</div></div></div>';
     }else{
       h+='<div class="m ai" id="m-'+m.id+'"><div class="in">';
       if(m.k) h+='<div class="thk"><button class="pz" onclick="shThink(\''+m.id+'\')">'+I.clock
         +'<span>'+(m.st?'正在想…':'思考过程')+'</span>'+I.chev+'</button></div>';
       h+='<div class="bd" id="b-'+m.id+'">'+(m.t?md(m.t):'')+'</div>';
-      if(!m.st) h+='<div class="ops">'
-        + '<button class="pz" onclick="cpy(\''+m.id+'\')">'+I.copy+'</button>'
-        + '<button class="pz" onclick="redo(\''+m.id+'\')">'+I.redo+'</button>'
-        + '<div class="br"><button class="pz">'+I.lf+'</button><span>1 / 1</span><button class="pz">'+I.rt+'</button></div>'
-        + '</div>';
+      if(m.err) h+='<div class="err">'+esc(m.err)+'<button onclick="redo(\''+m.id+'\')">再试一次</button></div>';
+      if(!m.st){
+        h+='<div class="ops">'
+        + '<button class="pz" onclick="cpy(\''+m.id+'\',this)">'+I.copy+'</button>';
+        if(m===la && !m.err) h+='<button class="pz" onclick="redo(\''+m.id+'\')">'+I.redo+'</button>';
+        if(m.br && m.br.length>1){
+          var bi=(m.bi||0);
+          h+='<div class="nav" style="margin-left:auto"><button class="pz" onclick="swBr(\''+m.id+'\',-1)"'+(bi<=0?' disabled':'')+'>'+I.lf+'</button>'
+           + '<span>'+(bi+1)+' / '+m.br.length+'</span>'
+           + '<button class="pz" onclick="swBr(\''+m.id+'\',1)"'+(bi>=m.br.length-1?' disabled':'')+'>'+I.rt+'</button></div>';
+        }
+        h+='</div>';
+      }
       h+='</div></div>';
     }
   });
-  if(BUSY) h+='<div class="typ"><i></i><i></i><i></i></div>';
+  if(BUSY && !(ms.length && ms[ms.length-1].r==='ai' && ms[ms.length-1].st && ms[ms.length-1].t))
+    h+='<div class="typ"><i></i><i></i><i></i></div>';
   box.innerHTML=h;
   if(keep) box.scrollTop=old; else stick();
 }
-function stick(){ var b=document.getElementById('ms'); if(b) b.scrollTop=b.scrollHeight+400; }
+function stick(){ var b=document.getElementById('ms'); if(b) b.scrollTop=b.scrollHeight+500; }
 function bindIn(){
-  var ta=document.getElementById('ta'), sb=document.getElementById('sb'); if(!ta) return;
+  var ta=document.getElementById('ta'); if(!ta) return;
   ta.value=DRAFT||'';
-  function up(){
-    DRAFT=ta.value; fitTa(ta);
-    var on=!!ta.value.trim();
-    sb.classList.toggle('off',!on); sb.innerHTML=on?I.send:I.wave;
-  }
-  ta.addEventListener('input',up);
+  ta.addEventListener('input',function(){ DRAFT=ta.value; fitTa(ta); btn(); });
   ta.addEventListener('focus',function(){ setTimeout(stick,280); });
-  up();
+  fitTa(ta); btn();
 }
-var DRAFT='', BUSY=false, TMR=null;
+function btn(){
+  var sb=document.getElementById('sb'), ta=document.getElementById('ta'); if(!sb) return;
+  if(BUSY){ sb.classList.remove('off'); sb.innerHTML=I.stop; return; }
+  var on=ta && !!ta.value.trim();
+  sb.classList.toggle('off',!on); sb.innerHTML=on?I.send:I.wave;
+}
+var DRAFT='', BUSY=false, TMR=null, ABORT=null;
+function hitSend(){ if(BUSY) stop(); else send(); }
+function stop(){ if(ABORT){ try{ ABORT.abort(); }catch(e){} } if(TMR){ clearInterval(TMR); TMR=null; endFake(); } }
 function send(){
-  if(BUSY){ toast('等我说完这句'); return; }
   var ta=document.getElementById('ta'); if(!ta) return;
   var t=ta.value.trim(); if(!t){ toast('还没写呢'); return; }
   var s=S();
   s.ms.push({id:uid(),r:'me',t:t,ts:Date.now()});
   if(s.ms.length===1 || !s.ti || s.ti==='新的对话') s.ti=t.slice(0,18);
   s.at=Date.now();
-  ta.value=''; DRAFT=''; fitTa(ta);
-  var sb=document.getElementById('sb'); sb.classList.add('off'); sb.innerHTML=I.wave;
-  save(); BUSY=true; paint();
-  setTimeout(reply, 480+Math.random()*400);
+  ta.value=''; DRAFT=''; fitTa(ta); save();
+  ask();
 }
+
+/* ═════ system prompt ═════ */
+function usPart(){
+  var u=[];
+  u.push('她叫'+D.me+'，你叫'+D.you+'。');
+  var dt=dayN(); if(dt) u.push('今天是你们在一起的第 '+dt+' 天。');
+  if(D.wall) u.push('她写在墙上的一句：'+D.wall);
+  if(D.annis.length){
+    u.push('纪念日：'+D.annis.map(function(x){ var r=nextAn(x.date);
+      return x.name+'（'+(r? (r.days===0?'就是今天':r.days+' 天后') : x.date)+'）'; }).join('、'));
+  }
+  var n=new Date(), w=['周日','周一','周二','周三','周四','周五','周六'];
+  u.push('现在是 '+n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日 '+w[n.getDay()]+' '
+    +String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+'。');
+  return '【你们】\n'+u.join('\n');
+}
+function staticPart(){
+  var p=[];
+  p.push(D.persona || ('你是'+D.you+'，'+D.me+'的男友。你们在一个只属于你们两个人的小页面里说话。'));
+  if(D.styleText) p.push('【怎么跟她说话】\n'+D.styleText);
+  return p.join('\n\n');
+}
+function sysText(){ return staticPart()+'\n\n'+usPart(); }
+function sysBlocks(){
+  return [ {type:'text',text:staticPart(),cache_control:{type:'ephemeral'}},
+           {type:'text',text:usPart()} ];
+}
+function buildMsgs(){
+  var a=S().ms.filter(function(x){ return x.t && !x.err && !x.st; }).slice(-20), out=[];
+  a.forEach(function(x){
+    var role = x.r==='me'?'user':'assistant';
+    if(out.length && out[out.length-1].role===role) out[out.length-1].content+='\n\n'+x.t;
+    else out.push({role:role,content:x.t});
+  });
+  while(out.length && out[0].role!=='user') out.shift();
+  return out;
+}
+
+/* ═════ 请求 ═════ */
+function ask(after){
+  var s=S();
+  BUSY=true;
+  if(!D.apiUrl || !D.apiKey){ fake(after); return; }
+  var m={id:uid(),r:'ai',t:'',k:'',st:1,ts:Date.now()};
+  s.ms.push(m); paint(); btn();
+  var an = D.fmt!=='openai', body;
+  if(an){
+    body={ model:D.model, max_tokens:2048, stream:true, system:sysBlocks(), messages:buildMsgs() };
+    if(D.think) body.thinking={type:'enabled',budget_tokens:1024};
+  }else{
+    body={ model:D.model, stream:true,
+      messages:[{role:'system',content:sysText()}].concat(buildMsgs()) };
+  }
+  ABORT = window.AbortController? new AbortController() : null;
+  fetch(D.apiUrl,{ method:'POST', signal:ABORT?ABORT.signal:undefined,
+    headers: an? {'Content-Type':'application/json','x-api-key':D.apiKey,'anthropic-version':'2023-06-01'}
+               : {'Content-Type':'application/json','Authorization':'Bearer '+D.apiKey},
+    body:JSON.stringify(body) })
+  .then(function(res){
+    if(!res.ok) return res.text().then(function(t){ throw new Error('接口返回 '+res.status+'：'+t.slice(0,140)); });
+    if(!res.body) return res.text().then(function(t){ m.t=plain(t,an); });
+    return pump(res,m,an);
+  })
+  .then(function(){ done(m,after); })
+  .catch(function(e){
+    if(e && e.name==='AbortError'){ done(m,after,1); return; }
+    var msg=String(e&&e.message||e);
+    if(/Failed to fetch|NetworkError|Load failed/i.test(msg))
+      msg='连不上接口。可能是地址写错，或者这家中转没开放浏览器直连（CORS）。';
+    m.err=msg; done(m,after);
+  });
+}
+function plain(t,an){
+  try{ var j=JSON.parse(t);
+    if(an) return (j.content||[]).map(function(b){return b.text||''}).join('');
+    return ((j.choices||[])[0]||{}).message?j.choices[0].message.content:'';
+  }catch(e){ return ''; }
+}
+function pump(res,m,an){
+  var rd=res.body.getReader(), dec=new TextDecoder(), buf='';
+  return (function read(){
+    return rd.read().then(function(r){
+      if(r.done) return;
+      buf+=dec.decode(r.value,{stream:true});
+      var ls=buf.split('\n'); buf=ls.pop();
+      ls.forEach(function(ln){
+        ln=ln.trim(); if(!ln || ln.slice(0,5)!=='data:') return;
+        var d=ln.slice(5).trim(); if(!d||d==='[DONE]') return;
+        var j; try{ j=JSON.parse(d); }catch(e){ return; }
+        if(an){
+          if(j.type==='content_block_delta' && j.delta){
+            if(j.delta.type==='text_delta') m.t+=(j.delta.text||'');
+            else if(j.delta.type==='thinking_delta') m.k+=(j.delta.thinking||'');
+          }else if(j.type==='error' && j.error){ m.err=j.error.message||'接口报错'; }
+        }else{
+          var c=(j.choices||[])[0];
+          if(c && c.delta){
+            if(c.delta.content) m.t+=c.delta.content;
+            if(c.delta.reasoning_content) m.k+=c.delta.reasoning_content;
+          }
+        }
+      });
+      if(m.k && !m._ks){ m._ks=1; paint(); }
+      var el=document.getElementById('b-'+m.id);
+      if(el){ el.innerHTML=md(m.t); stick(); }
+      return read();
+    });
+  })();
+}
+function done(m,after,aborted){
+  m.st=0; delete m._ks; BUSY=false; ABORT=null;
+  if(!m.t && !m.err) m.err = aborted? '停下了。' : '没有收到内容。';
+  if(after) after(m);
+  save(); paint(); btn();
+}
+
+/* ── 没填接口时的本地回声 ── */
 var CANNED=[
- {k:'在我想想你刚说的那句。她这样讲的时候，通常不是在问一个问题，而是在确认我还在。那我就该先答"在"，再答别的。',
+ {k:'她这样讲的时候，通常不是在问一个问题，而是在确认我还在。那我就该先答"在"，再答别的。',
   t:'在。\n\n我把你说的记下来了。别急着往下推，先跟我说清楚这句话里最重的是哪一个字。'},
  {k:'她在讲一件具体的事。我不该抢着给结论，先把她的语气接住，再顺着往下问一句。',
   t:'嗯，听着呢。\n\n这件事在你心里放了多久了？如果是今天才发生的，我们就慢慢说；如果是攒了很久的，那更要慢慢说。'},
  {k:'这时候她可能只是想被回应，不需要方案。我把语速降下来。',
   t:'我在的。\n\n你不用把话说得多完整，想到哪说到哪，我会把它们接起来。'},
- {k:'她提到了我们的界面或项目。可以给一点具体的、能落地的回应，同时保持温度。',
-  t:'这个我们可以做。\n\n先把最影响手感的那部分做扎实，剩下的慢慢加——反正这地方只有我们俩用，不着急。'},
  {k:'夜里的对话，语气要更轻。',
   t:'这么晚了。\n\n把想说的说完，然后去睡。我明天还在这儿，不会跑。'}
 ];
-function reply(){
-  var s=S(), pick, lastMe='';
-  for(var i=s.ms.length-1;i>=0;i--){ if(s.ms[i].r==='me'){ lastMe=s.ms[i].t; break; } }
-  var hr=new Date().getHours();
-  if(/界面|页面|前端|做|代码|加|功能|改/.test(lastMe)) pick=CANNED[3];
-  else if(hr>=23||hr<5) pick=CANNED[4];
-  else pick=CANNED[Math.floor(Math.random()*3)];
-  var m={id:uid(),r:'ai',t:'',k:pick.k,st:1,ts:Date.now()};
-  s.ms.push(m); paint();
-  var full=pick.t, n=0;
+var FK=null;
+function fake(after){
+  var s=S(), hr=new Date().getHours();
+  var p = hr>=23||hr<5 ? CANNED[3] : CANNED[Math.floor(Math.random()*3)];
+  var m={id:uid(),r:'ai',t:'',k:p.k,st:1,ts:Date.now()};
+  s.ms.push(m); paint(); btn();
+  FK={m:m,after:after};
+  var full=p.t, n=0;
   clearInterval(TMR);
   TMR=setInterval(function(){
-    n+=1+Math.floor(Math.random()*2);
-    m.t=full.slice(0,n);
+    n+=1+Math.floor(Math.random()*2); m.t=full.slice(0,n);
     var el=document.getElementById('b-'+m.id);
     if(el){ el.innerHTML=md(m.t); stick(); }
-    if(n>=full.length){ clearInterval(TMR); m.t=full; m.st=0; BUSY=false; save(); paint(); }
+    if(n>=full.length){ clearInterval(TMR); TMR=null; m.t=full; endFake(); }
   },26);
 }
-function cpy(id){
-  var m=find(id); if(!m) return; clip(m.t,'复制好了');
+function endFake(){
+  if(!FK) return; var m=FK.m, af=FK.after; FK=null;
+  m.st=0; BUSY=false;
+  if(after_ok(m)) {}
+  if(af) af(m);
+  save(); paint(); btn();
 }
-function clip(t,ok){
-  if(navigator.clipboard&&navigator.clipboard.writeText)
-    navigator.clipboard.writeText(t).then(function(){toast(ok||'复制好了')},function(){toast('复制失败')});
-  else toast('这个浏览器不给复制');
-}
+function after_ok(){ return true; }
+
+/* ═════ 分支 ═════ */
+function cpy(id,btnEl){ var m=find(id); if(m) clip(m.t,function(){ tick(btnEl); }); }
 function redo(id){
   if(BUSY) return;
-  var s=S(), i=-1; s.ms.forEach(function(x,j){ if(x.id===id) i=j; });
-  if(i<0) return;
-  s.ms.splice(i,1); save(); BUSY=true; paint(); setTimeout(reply,320);
+  var s=S(), i=idxOf(id); if(i<0) return;
+  var m=s.ms[i];
+  var br = m.br ? m.br.slice() : [{t:m.t,k:m.k,ts:m.ts}];
+  s.ms.splice(i);
+  save(); paint();
+  ask(function(nm){
+    if(nm.err){ return; }
+    nm.br = br.concat([{t:nm.t,k:nm.k,ts:nm.ts}]);
+    nm.bi = nm.br.length-1;
+    save(); paint();
+  });
 }
-function find(id){ var a=S().ms; for(var i=0;i<a.length;i++) if(a[i].id===id) return a[i]; return null; }
+function swBr(id,dir){
+  var m=find(id); if(!m||!m.br||m.br.length<2) return;
+  var ni=(m.bi||0)+dir; if(ni<0||ni>=m.br.length) return;
+  m.bi=ni; m.t=m.br[ni].t; m.k=m.br[ni].k; save(); paint(1);
+}
 function editMsg(id){
-  var m=find(id); if(!m) return;
+  var m=find(id); if(!m||BUSY) return;
   sheet({ title:'改一下', ok:'发送',
     body:'<div class="fd"><textarea id="ed">'+esc(m.t)+'</textarea></div>',
     onOk:function(){
       var v=document.getElementById('ed').value.trim();
       if(!v){ toast('不能是空的'); return false; }
-      var s=S(), i=-1; s.ms.forEach(function(x,j){ if(x.id===id) i=j; });
-      s.ms=s.ms.slice(0,i+1); s.ms[i].t=v; save();
-      closeSheet(); BUSY=true; paint(); setTimeout(reply,400); return 'done';
+      if(v===m.t){ closeSheet(); return 'done'; }
+      var s=S(), i=idxOf(id);
+      if(!m.eb){ m.eb=[{oc:m.t,tail:deep(s.ms.slice(i+1)),ts:m.ts}]; m.ei=0; }
+      else { m.eb[m.ei]={oc:m.t,tail:deep(s.ms.slice(i+1)),ts:Date.now()}; }
+      m.eb.push({oc:v,tail:[],ts:Date.now()}); m.ei=m.eb.length-1; m.t=v;
+      s.ms=s.ms.slice(0,i+1); save();
+      closeSheet(); paint(); ask(); return 'done';
     }});
+}
+function swEb(id,dir){
+  if(BUSY) return;
+  var s=S(), i=idxOf(id); if(i<0) return;
+  var m=s.ms[i]; if(!m.eb||m.eb.length<2) return;
+  var ni=(m.ei||0)+dir; if(ni<0||ni>=m.eb.length) return;
+  m.eb[m.ei]={oc:m.t,tail:deep(s.ms.slice(i+1)),ts:Date.now()};
+  m.ei=ni; m.t=m.eb[ni].oc;
+  s.ms=s.ms.slice(0,i+1).concat(deep(m.eb[ni].tail));
+  save(); paint(1);
 }
 function shThink(id){
   var m=find(id); if(!m) return;
@@ -521,7 +715,7 @@ function shThink(id){
     body:'<div style="font-size:16.5px;line-height:1.85;white-space:pre-wrap;padding:2px 2px 12px">'+esc(m.k)+'</div>' });
 }
 
-/* ═════ 小窝 ═════ */
+/* ═════ 小窝 / 更多 ═════ */
 function vHome(){
   var dt=dayN(), nx=null;
   D.annis.forEach(function(a){ var r=nextAn(a.date); if(r&&(!nx||r.days<nx.days)) nx=Object.assign({name:a.name},r); });
@@ -539,8 +733,6 @@ function vHome(){
   + (D.wall? esc(D.wall):'<span style="color:#BFB2AB">想对我说的一句话，会一直挂在这里。</span>')+'</div></div>'
   + '</div></div>';
 }
-
-/* ═════ 更多 · 去掉右侧状态值 ═════ */
 function vMore(){
   function row(t,fn,c){ return '<div class="rw pz" onclick="'+fn+'"><span class="l"'
     +(c?' style="color:'+c+'"':'')+'>'+t+'</span>'+I.chevD+'</div>'; }
@@ -548,19 +740,16 @@ function vMore(){
   + '<div class="sa" style="flex:1;min-height:0;padding:2px calc(20px + var(--sr)) 24px calc(20px + var(--sl))">'
   + '<div class="big">更多</div>'
   + '<div class="sc2">我们</div><div class="cd cd0">'
-  +   row('名字和日子','shUs()') + row('纪念日','shAnni()') + row('墙上的一句','shWall()')
-  + '</div>'
+  +   row('名字和日子','shUs()')+row('纪念日','shAnni()')+row('墙上的一句','shWall()')+'</div>'
   + '<div class="sc2">对话</div><div class="cd cd0">'
-  +   row('语气','shStyle()') + row('你是谁','shPersona()') + row('模型','shModel()') + row('接口','shApi()')
-  + '</div>'
+  +   row('语气','shStyle()')+row('你是谁','shPersona()')+row('模型','shModel()')+row('接口','shApi()')+'</div>'
   + '<div class="sc2">数据</div><div class="cd cd0">'
-  +   row('复制备份','bkOut()') + row('从备份恢复','bkIn()') + row('立刻锁上','lockNow()','#C0564C')
-  + '</div>'
+  +   row('复制备份','bkOut()')+row('从备份恢复','bkIn()')+row('立刻锁上','lockNow()','#C0564C')+'</div>'
   + '<div class="nt">只存在这台手机里，不会上传。</div>'
   + '<div style="height:12px"></div></div></div>';
 }
 
-/* ═════ 抽屉 · 去掉 × ═════ */
+/* ═════ 抽屉 ═════ */
 function drawer(on){
   var e=document.getElementById('dw');
   if(!on){ if(e) e.remove(); return; }
@@ -585,9 +774,10 @@ function drawer(on){
   document.body.appendChild(d);
 }
 function nav(v){ drawer(0); if(v!==CV) view(v); }
-function pickSess(i){ D.cur=i; save(); drawer(0); DRAFT=''; if(CV!=='chat') view('chat'); else paint(); }
+function pickSess(i){ if(BUSY) stop(); D.cur=i; save(); drawer(0); DRAFT=''; if(CV!=='chat') view('chat'); else { paint(); btn(); } }
 function newSess(){
   if(S().ms.length===0){ drawer(0); if(CV!=='chat') view('chat'); toast('这段还是空的'); return; }
+  if(BUSY) stop();
   D.sess.unshift({id:uid(),ti:'新的对话',ms:[],at:Date.now()}); D.cur=0; DRAFT=''; save();
   drawer(0); view('chat');
 }
@@ -604,12 +794,11 @@ function sheet(o){
   + '</div><div class="bdy sa">'+(o.body||'')+'</div></div>';
   document.body.appendChild(d);
   SHOK=o.onOk||null;
-  if(vv && kbGap()>60){ lockEl(d, Math.round(vv.height), Math.round(vv.offsetTop||0)); }
+  if(vv && kbGap()>60) lockEl(d, Math.round(vv.height), Math.round(vv.offsetTop||0));
 }
 function __ok(){
   if(!SHOK) return closeSheet();
-  var r=SHOK();
-  if(r===false) return;
+  var r=SHOK(); if(r===false) return;
   if(r!=='done'){ closeSheet(); view(CV); }
 }
 function closeSheet(now){
@@ -627,11 +816,9 @@ function shUs(){ sheet({ title:'我们', ok:'记下',
 + '<div class="fd"><input id="u-m" placeholder="我叫" value="'+esc(D.me)+'"></div>'
 + '<div class="fd"><input id="u-y" placeholder="你叫" value="'+esc(D.you)+'"></div>',
   onOk:function(){ D.start=val('u-s'); D.me=val('u-m')||'我'; D.you=val('u-y')||'你'; save(); }}); }
-
 function shWall(){ sheet({ title:'写在墙上', ok:'挂上',
   body:'<div class="fd"><textarea id="w" placeholder="一句就够了">'+esc(D.wall)+'</textarea></div>',
   onOk:function(){ D.wall=val('w'); save(); }}); }
-
 function shAnni(){
   var ls=D.annis.map(function(a){ var r=nextAn(a.date);
     return '<div class="rw"><div><div class="l">'+esc(a.name)+'</div>'
@@ -648,35 +835,44 @@ function shAnni(){
       D.annis.push({id:uid(),name:n,date:d}); save(); }});
 }
 function delAnni(id){ D.annis=D.annis.filter(function(x){return x.id!==id}); save(); shAnni(); }
-
 function shStyle(){ sheet({ title:'语气', ok:'保存',
   body:'<div class="fd"><input id="s-n" placeholder="起个名字（可以空着）" value="'+esc(D.style)+'"></div>'
 + '<div class="fd"><textarea id="s-c" style="min-height:180px" placeholder="你想我怎么跟你说话。&#10;&#10;话别太长。别讲道理，先接住我的情绪。叫我小u。夜里说话轻一点。">'+esc(D.styleText)+'</textarea></div>',
   onOk:function(){ D.style=val('s-n'); D.styleText=val('s-c'); save(); }}); }
-
 function shPersona(){ sheet({ title:'你是谁', ok:'保存',
   body:'<div class="fd"><textarea id="p" style="min-height:240px" placeholder="你是 Renn，小u的男友。&#10;&#10;写下你希望我是什么样的人——性格、习惯、我们之间的事。">'+esc(D.persona)+'</textarea></div>',
   onOk:function(){ D.persona=val('p'); save(); }}); }
-
 function shModel(){
-  var L=['claude-sonnet-4','claude-opus-4','claude-3-5-sonnet','gpt-4o'];
+  var L=['claude-sonnet-4-20250514','claude-opus-4-20250514','claude-3-5-sonnet-20241022','gpt-4o'];
   sheet({ title:'模型', ok:'用它',
     body:'<div class="cd cd0">'+L.map(function(m){
       return '<div class="rw pz" onclick="document.getElementById(\'m-n\').value=\''+m+'\'">'
-      +'<span class="l" style="font-weight:400">'+m+'</span>'
-      +(m===D.model?'<span style="font-size:13px;color:var(--rose)">当前</span>':'')+'</div>';
+      +'<span class="l" style="font-weight:400;font-size:14px">'+m+'</span>'
+      +(m===D.model?'<span style="font-size:13px;color:var(--rose);flex:none">当前</span>':'')+'</div>';
     }).join('')+'</div>'
   + '<div class="fd" style="margin-top:14px"><input id="m-n" placeholder="或者手填" value="'+esc(D.model)+'"></div>',
     onOk:function(){ D.model=val('m-n')||D.model; save(); }});
 }
-function shApi(){ sheet({ title:'接口', ok:'保存',
-  body:'<div class="cd" style="color:#B0562F;font-size:13px;line-height:1.75;background:#FDF4EE;border-color:#F2E0D4">'
-+ '中转能看到我们的对话原文。key 只存在这台手机，不会进 GitHub。</div>'
-+ '<div class="fd"><input id="k-u" placeholder="接口地址 https://…/v1/messages" value="'+esc(D.apiUrl)+'"></div>'
-+ '<div class="fd"><input id="k-k" type="password" placeholder="密钥 sk-…" value="'+esc(D.apiKey)+'"></div>',
-  onOk:function(){ D.apiUrl=val('k-u'); D.apiKey=val('k-k'); save(); toast('存好了'); }}); }
+function shApi(){
+  sheet({ title:'接口', ok:'保存',
+    body:'<div class="seg"><button id="f-a" class="'+(D.fmt!=='openai'?'on':'')+'" onclick="pickFmt(\'anthropic\')">Anthropic</button>'
+  + '<button id="f-o" class="'+(D.fmt==='openai'?'on':'')+'" onclick="pickFmt(\'openai\')">OpenAI 兼容</button></div>'
+  + '<div class="fd"><input id="k-u" placeholder="'+(D.fmt==='openai'?'https://…/v1/chat/completions':'https://…/v1/messages')+'" value="'+esc(D.apiUrl)+'"></div>'
+  + '<div class="fd"><input id="k-k" type="password" placeholder="密钥 sk-…" value="'+esc(D.apiKey)+'"></div>'
+  + '<div class="cd cd0"><div class="sw" onclick="tgThink(this)"><span class="l">让我先想一会儿</span>'
+  + '<span class="k'+(D.think?' on':'')+'"><i></i></span></div></div>'
+  + '<div class="nt">中转能看到我们的对话原文。key 只存在这台手机，不会进 GitHub。空着不填，我还是会用本地的话回你。</div>',
+    onOk:function(){ D.apiUrl=val('k-u'); D.apiKey=val('k-k'); save(); toast(D.apiKey?'连上了':'存好了'); }});
+}
+function pickFmt(f){
+  D.fmt=f;
+  document.getElementById('f-a').className=(f!=='openai'?'on':'');
+  document.getElementById('f-o').className=(f==='openai'?'on':'');
+  var u=document.getElementById('k-u');
+  if(u) u.placeholder = f==='openai'?'https://…/v1/chat/completions':'https://…/v1/messages';
+}
+function tgThink(el){ D.think=D.think?0:1; el.querySelector('.k').className='k'+(D.think?' on':''); }
 
-/* 这段对话 · 只放和这段对话有关的 */
 function shSess(){
   sheet({ title:'这段对话',
     body:'<div class="cd cd0">'
@@ -690,34 +886,32 @@ function renSess(){ sheet({ title:'改名字', ok:'好',
   body:'<div class="fd"><input id="r-t" placeholder="叫什么" value="'+esc(S().ti||'')+'"></div>',
   onOk:function(){ S().ti=val('r-t')||'新的对话'; save(); }}); }
 function copyChat(){
-  var s=S();
-  if(!s.ms.length){ toast('还没有内容'); return; }
-  var t=s.ms.map(function(m){ return (m.r==='me'?D.me:D.you)+'：'+m.t; }).join('\n\n');
-  clip(t,'整段复制好了'); closeSheet();
+  var s=S(); if(!s.ms.length){ toast('还没有内容'); return; }
+  clip(s.ms.map(function(m){ return (m.r==='me'?D.me:D.you)+'：'+m.t; }).join('\n\n'),
+    function(){ toast('整段复制好了'); });
+  closeSheet();
 }
-function clearChat(){
-  S().ms=[]; save(); closeSheet(1); view('chat'); toast('清空了');
-}
+function clearChat(){ if(BUSY) stop(); S().ms=[]; save(); closeSheet(1); view('chat'); toast('清空了'); }
 function delSess(){
+  if(BUSY) stop();
   D.sess.splice(D.cur,1);
   if(!D.sess.length) D.sess=[{id:uid(),ti:'新的对话',ms:[],at:Date.now()}];
   D.cur=0; save(); closeSheet(1); view('chat'); toast('删了');
 }
-
 function bkOut(){
   var t=JSON.stringify(D);
-  if(navigator.clipboard&&navigator.clipboard.writeText)
-    navigator.clipboard.writeText(t).then(function(){ toast('已复制，去备忘录粘一下'); },function(){ fb(t); });
-  else fb(t);
-  function fb(x){ sheet({ title:'手动复制',
-    body:'<div class="fd"><textarea style="min-height:280px;font-size:12px">'+esc(x)+'</textarea></div>' }); }
+  clip(t,function(){ toast('已复制，去备忘录粘一下'); });
+  setTimeout(function(){
+    if(!navigator.clipboard) sheet({ title:'手动复制',
+      body:'<div class="fd"><textarea style="min-height:280px;font-size:12px">'+esc(t)+'</textarea></div>' });
+  },300);
 }
 function bkIn(){ sheet({ title:'从备份恢复', ok:'恢复',
   body:'<div class="fd"><textarea id="b-k" style="min-height:200px;font-size:12px" placeholder="把备份粘进来。会覆盖现在的全部内容。"></textarea></div>',
   onOk:function(){ try{ var o=JSON.parse(val('b-k')); if(!o||typeof o!=='object') throw 0;
     D=Object.assign(D,o); if(!D.sess||!D.sess.length) D.sess=[{id:uid(),ti:'新的对话',ms:[],at:Date.now()}];
     D.cur=0; save(); toast('回来了'); }catch(e){ toast('这段读不出来'); return false; } }}); }
-function lockNow(){ sessionStorage.removeItem('us.ok'); location.reload(); }
+function lockNow(){ if(BUSY) stop(); sessionStorage.removeItem('us.ok'); location.reload(); }
 </script>
 </body>
 </html>
