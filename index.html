@@ -1220,8 +1220,8 @@ function paint(keep){
         h+='</div></div>';}
       if(m.webNo)h+='<div class="wbx" style="border-color:var(--dl)"><div class="wh">'+I.globe2
         +'<span>网上没查到，下面是我自己知道的</span></div></div>';
-      if(m.look)h+='<div class="wbx lk"><div class="wh">'+I.look+'<span>翻了翻以前'
-        +（'') +'「'+esc(m.look.q)+'」·　'+(m.look.n?m.look.n+' 条':'没找到')+'</span></div></div>';
+          if(m.look)h+='<div class="wbx lk"><div class="wh">'+I.look+'<span>翻了翻以前 「'
+        +esc(m.look.q)+'」·　'+(m.look.n?m.look.n+' 条':'没找到')+'</span></div></div>';
       if(m.k)h+='<div class="thk"><button class="pz" onclick="shThink(\''+m.id+'\')">'+I.clock
         +'<span>'+(m.st?'正在想…':'思考过程')+'</span>'+I.chev+'</button></div>';
       h+='<div class="bd" id="b-'+m.id+'">'+(m.t?md(m.t):'')+'</div>';
