@@ -2540,6 +2540,165 @@ document.addEventListener('visibilitychange',function(){
 var _view=view;
 view=function(v){_view(v);if(v==='more')drawStc();};
 boot();
+  /* ══════ 补丁 · 键盘 / 时间戳 / 深浅 / 背景 ══════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent='.ops .tm{margin-left:0}'
+   +'#bgl{position:fixed;inset:0;z-index:-2;background-position:center;'
+   +'background-size:cover;background-repeat:no-repeat;pointer-events:none}'
+   +'#bgv{position:fixed;inset:0;z-index:-1;background:var(--bg);'
+   +'pointer-events:none;transition:opacity .25s ease}'
+   +'html.hasbg body{background:transparent}'
+   +'html.hasbg .mw .fg{display:none}';
+  document.head.appendChild(s);})();
+
+function fit2(){
+  if(!vv)return;
+  var gap=kbGap(),ot=Math.round(vv.offsetTop||0),open=gap>60;
+  var sh=document.getElementById('sh'),dw=document.getElementById('dw');
+  de.classList.toggle('kbon',open);
+  [root,sh,dw].forEach(function(el){
+    if(!el)return;
+    if(open){
+      el.style.setProperty('height',Math.round(vv.height)+'px','important');
+      if(ot)el.style.setProperty('transform','translateY('+ot+'px)','important');
+      else el.style.removeProperty('transform');
+    }else{
+      el.style.removeProperty('height');
+      el.style.removeProperty('transform');}});
+  if(window.scrollY)window.scrollTo(0,0);
+  if(open&&CV==='chat')stick();}
+if(vv){vv.addEventListener('resize',fit2);vv.addEventListener('scroll',fit2);}
+
+var _dk=-1;
+function isDark(){
+  if(D.dark==='dark')return 1;
+  if(D.dark==='light')return 0;
+  var h=new Date().getHours();
+  return(h>=19||h<7)?1:0;}
+function applyTheme(){
+  var dk=isDark();_dk=dk;
+  de.classList.toggle('dark',!!dk);
+  var mt=document.querySelector('meta[name=theme-color]');
+  if(mt)mt.content=dk?'#16140F':'#F5F3EE';}
+setInterval(function(){
+  if(D.dark!=='auto')return;
+  if(isDark()!==_dk)applyTheme();},60000);
+function shTheme(){
+  var opts=[['auto','跟着天色'],['light','浅色'],['dark','深色']];
+  var b=opts.map(function(x){
+    return'<button class="pz'+(D.dark===x[0]?' on':'')+'" onclick="pkTheme(\''+x[0]+'\')">'
+    +x[1]+'</button>';}).join('');
+  sheet({title:'深浅',body:'<div class="seg" id="t-seg">'+b+'</div>'
+  +'<div class="nt">跟着天色的话，晚上七点自己转深，早上七点转回来，不用你管。</div>'});}
+
+var BGL=null,BGV=null;
+function bgApply(){
+  if(!D.bgOn){de.classList.remove('hasbg');
+    if(BGL)BGL.style.backgroundImage='';return;}
+  dbGet('pic','__bg').then(function(r){
+    if(!r||!r.d){D.bgOn=0;de.classList.remove('hasbg');return;}
+    if(!BGL){BGL=document.createElement('div');BGL.id='bgl';document.body.appendChild(BGL);}
+    if(!BGV){BGV=document.createElement('div');BGV.id='bgv';document.body.appendChild(BGV);}
+    BGL.style.backgroundImage='url('+r.d+')';
+    BGV.style.opacity=String((D.bgv==null?45:D.bgv)/100);
+    de.classList.add('hasbg');});}
+function bgPick(){
+  var f=document.createElement('input');f.type='file';f.accept='image/*';
+  f.onchange=function(){
+    var fl=f.files&&f.files[0];if(!fl)return;
+    toast('正在处理…');
+    var rd=new FileReader();
+    rd.onerror=function(){toast('这张读不出来');};
+    rd.onload=function(){
+      var im=new Image();
+      im.onerror=function(){toast('这张读不出来');};
+      im.onload=function(){
+        var M=1600,w=im.width,h=im.height;
+        if(w>M||h>M){var sc=M/Math.max(w,h);w=Math.round(w*sc);h=Math.round(h*sc);}
+        var c=document.createElement('canvas');c.width=w;c.height=h;
+        c.getContext('2d').drawImage(im,0,0,w,h);
+        var u=c.toDataURL('image/jpeg',0.85);
+        dbPut('pic','__bg',{d:u,ts:Date.now()}).then(function(){
+          D.bgOn=1;if(D.bgv==null)D.bgv=45;
+          saveD();bgApply();closeSheet(1);toast('换好了');
+        },function(){toast('存不下这张，换小一点的');});};
+      im.src=rd.result;};
+    rd.readAsDataURL(fl);};
+  f.click();}
+function bgOff(){
+  D.bgOn=0;saveD();dbDel('pic','__bg');
+  bgApply();closeSheet(1);toast('撤下来了');}
+function bgVeil(v){
+  D.bgv=Math.max(0,Math.min(90,parseInt(v,10)||0));
+  if(BGV&&D.bgOn)BGV.style.opacity=String(D.bgv/100);
+  saveD();}
+function shBg(){
+  var v=(D.bgv==null?45:D.bgv);
+  sheet({title:'背景',
+    body:'<div class="cd cd0">'
+  +'<div class="rw pz" onclick="bgPick()"><span class="l">'
+  +(D.bgOn?'换一张':'选一张图片')+'</span>'+I.chevD+'</div>'
+  +(D.bgOn?'<div class="rw pz" onclick="bgOff()">'
+    +'<span class="l" style="color:var(--red)">撤下来</span>'+I.chevD+'</div>':'')
+  +'</div>'
+  +(D.bgOn?'<div class="lbs" style="margin-top:16px">盖一层多厚</div>'
+    +'<div class="cd"><input type="range" min="0" max="90" step="5" value="'+v+'" '
+    +'oninput="bgVeil(this.value)">'
+    +'<div style="display:flex;justify-content:space-between;font-size:12px;'
+    +'color:var(--dim2)"><span>清楚</span><span>安静</span></div></div>':'')
+  +'<div class="nt">图铺满整屏，上面盖一层跟当前主题同色的纱——浅色盖米白、'
+  +'深色盖深棕，所以两种模式下字都看得清。<br>'
+  +'纱薄一点图更清楚，厚一点字更好读。<br><br>'
+  +'图存在本地数据库里，跟着完整备份一起走。</div>'});}
+function purgeImgs(){
+  dbSize('pic').then(function(st){
+    var n=st.n-(D.bgOn?1:0);
+    if(n<=0){toast('本来就没有图片');return;}
+    sheet({title:'清掉所有图片',
+      body:'<div class="cd" style="font-size:14px;line-height:1.75;color:var(--red2)">'
+    +'会删掉聊天里全部 '+n+' 张图片，文字一句都不动，背景图留着。<br>删了拿不回来。</div>'
+    +'<div class="nt" style="padding-bottom:10px">建议先导出一次完整备份。</div>',
+      ok:'确认清掉',
+      onOk:function(){
+        dbKeys('pic').then(function(ks){
+          ks.forEach(function(k){if(k!=='__bg')dbDel('pic',k);});});
+        PICQ={};
+        SS.forEach(function(s){
+          (MSG[s.id]||[]).forEach(function(m){
+            if(m.pics&&m.pics.length){
+              m.imgLost=(m.imgLost||0)+m.pics.length;m.pics=[];}});
+          SVQ[s.id]=1;});
+        flush(1);closeSheet(1);
+        view(CV==='chat'?'chat':'more');toast('清掉了 '+n+' 张');
+        return'done';}});});}
+function vMore(){
+  function row(t,fn,c){return'<div class="rw pz" onclick="'+fn+'"><span class="l"'
+    +(c?' style="color:'+c+'"':'')+'>'+t+'</span>'+I.chevD+'</div>';}
+  return'<div class="vw"><div class="hd">'
+  +'<button class="cb pz" onclick="drawer(1)">'+I.menu+'</button><span></span></div>'
+  +'<div class="sa pgw"><div class="big">更多</div>'
+  +'<div class="sc2">怎么说话</div><div class="cd cd0">'
+  +row('表达风格','shVoice()')+row('放开一些','shFree()')
+  +row('温度和长度','shGen()')+'</div>'
+  +'<div class="sc2">我能做的</div><div class="cd cd0">'
+  +row('自己动手','shActs()')+row('先开口','shHi()')
+  +row('联网查资料','shWeb()')+row('干杂活的模型','shUtil()')+'</div>'
+  +'<div class="sc2">样子</div><div class="cd cd0">'
+  +row('深浅','shTheme()')+row('背景','shBg()')+'</div>'
+  +'<div class="sc2">接口</div><div class="cd cd0">'+row('中转设置','shApi()')+'</div>'
+  +'<div class="sc2">存了多少</div><div id="stc"><div class="stc">'
+  +'<div class="n"><b>…</b></div><div class="pb"><i style="width:2%"></i></div>'
+  +'<div class="ln">正在数</div></div></div>'
+  +'<div class="cd cd0">'
+  +row('导出备份','shExp()')+row('恢复','shRestore()')
+  +row('清掉所有图片','purgeImgs()','var(--red)')
+  +row('立刻锁上','lockNow()','var(--red)')+'</div>'
+  +'<div class="nt">存在这台手机的本地数据库里。删掉主屏幕图标、或者「清除网站数据」'
+  +'会带走它——定期导出一份放进「文件」，才是真的存住了。</div>'
+  +'<div style="height:12px"></div></div></div>';}
+var _v3=view,_bgd=0;
+view=function(v){_v3(v);if(!_bgd){_bgd=1;bgApply();applyTheme();}};
 </script>
 </body>
 </html>
