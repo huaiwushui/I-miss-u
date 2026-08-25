@@ -20,7 +20,7 @@ body{background:#F5F3EE;color:#1A1815;
   --line:#ECE8DF; --card:#FFF; --me:#ECEAE4; --rose:#C97B6E;
   --st:env(safe-area-inset-top,20px); --sb:env(safe-area-inset-bottom,0px);
   --sl:env(safe-area-inset-left,0px); --sr:env(safe-area-inset-right,0px);
-  --pb:max(5px, calc(var(--sb) - 16px));
+  --pb:max(5px, calc(var(--sb) - 16px)); --pad:20px; --inset:17px;
 }
 button,input,textarea{font-family:inherit;font-size:16px;color:inherit;border:none;background:none}
 textarea,input{-webkit-appearance:none;border-radius:0}
@@ -35,15 +35,14 @@ textarea,input{-webkit-appearance:none;border-radius:0}
 @keyframes sldU{from{transform:translateY(100%)}to{transform:none}}
 @keyframes dots{0%,100%{opacity:.25}50%{opacity:1}}
 @keyframes shk{10%,90%{transform:translateX(-5px)}30%,70%{transform:translateX(5px)}50%{transform:translateX(-2px)}}
-@keyframes brth{0%,100%{opacity:.5}50%{opacity:1}}
 
 #root{position:fixed;inset:0;display:flex;flex-direction:column;overflow:hidden}
 
-/* ══════ 锁屏 ══════ */
+/* ══ 锁屏 · 重心下移 ══ */
 #lk{position:fixed;inset:0;z-index:900;background:#F5F3EE;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:var(--st) 26px calc(var(--sb) + 20px);animation:fade .5s ease both}
-#lk:before{content:'';position:absolute;top:0;left:0;right:0;height:42%;
+  padding:calc(var(--st) + 32px) 26px 14px;animation:fade .5s ease both}
+#lk:before{content:'';position:absolute;top:0;left:0;right:0;height:40%;
   background:linear-gradient(#EFEBE2,rgba(245,243,238,0));pointer-events:none}
 #lk.out{opacity:0;transition:opacity .4s ease;pointer-events:none}
 #lk .jp{position:relative;font:400 33px/1 "Hiragino Mincho ProN","Yu Mincho","Songti SC",serif;
@@ -61,7 +60,6 @@ textarea,input{-webkit-appearance:none;border-radius:0}
 #pad button.f{background:none;box-shadow:none}
 #pad button.f:active{background:none;opacity:.4}
 
-/* ══════ 页 ══════ */
 #pg{flex:1;min-height:0;position:relative}
 .vw{position:absolute;inset:0;display:flex;flex-direction:column;animation:fade .22s ease both}
 .hd{flex:none;display:flex;align-items:center;justify-content:space-between;gap:9px;
@@ -101,7 +99,6 @@ textarea,input{-webkit-appearance:none;border-radius:0}
 .wm{position:sticky;top:46%;left:50%;transform:translate(-50%,-50%);width:0;height:0;
   display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:0}
 
-/* 输入栏 — 底部留白收紧，键盘开时归零 */
 .ib{flex:none;padding:5px calc(13px + var(--sr)) var(--pb) calc(13px + var(--sl))}
 html.kbon .ib{padding-bottom:4px}
 .ibx{background:#FBFAF7;border:1px solid #E7E3DA;border-radius:25px;padding:15px 16px 10px;
@@ -117,18 +114,17 @@ html.kbon .ib{padding-bottom:4px}
   align-items:center;justify-content:center;transition:opacity .18s,transform .12s}
 .snd.off{opacity:.26}
 
-/* 抽屉 */
 #dw{position:fixed;inset:0;z-index:600}
 #dw .ov{position:absolute;inset:0;background:rgba(0,0,0,.14);animation:fade .16s ease both}
 #dw .pn{position:absolute;left:0;top:0;bottom:0;width:min(300px,82vw);background:var(--bg);
   display:flex;flex-direction:column;box-shadow:7px 0 26px rgba(0,0,0,.07);animation:sldL .22s ease both;
   padding-left:var(--sl)}
-#dw .hh{flex:none;padding:calc(var(--st) + 20px) 22px 0;display:flex;align-items:center;justify-content:space-between}
-#dw .hh .n{font:400 24px/1.2 "Hiragino Mincho ProN","Songti SC",serif;letter-spacing:.06em}
-#dw .nv{flex:none;padding:20px 14px 0;display:flex;flex-direction:column;gap:2px}
+#dw .hh{flex:none;padding:calc(var(--st) + 22px) 24px 0}
+#dw .hh .n{font:400 24px/1.2 "Hiragino Mincho ProN","Songti SC",serif;letter-spacing:.08em}
+#dw .nv{flex:none;padding:22px 14px 0;display:flex;flex-direction:column;gap:2px}
 #dw .nv a{padding:12px;border-radius:11px;font-size:15px;font-weight:500;display:flex;align-items:center;gap:13px}
 #dw .nv a.on{background:#EBE7DF}
-#dw .lb{padding:24px 22px 8px;font-size:11px;color:var(--dim2);font-weight:600;letter-spacing:1.2px}
+#dw .lb{padding:24px 26px 8px;font-size:11px;color:var(--dim2);font-weight:600;letter-spacing:1.2px}
 #dw .ls{flex:1;min-height:0;padding:0 14px}
 #dw .ls .it{padding:11px 12px;border-radius:11px;font-size:14.5px;color:#3A362F;display:flex;align-items:center;gap:8px}
 #dw .ls .it.on{background:#EBE7DF;font-weight:500}
@@ -139,15 +135,14 @@ html.kbon #dw .bt{padding-bottom:10px}
 #dw .bt .nw{display:flex;align-items:center;gap:7px;background:var(--ink);color:#F5F3EE;
   border-radius:20px;padding:10px 17px;font-size:14px;font-weight:500;flex:none}
 
-/* 面板 */
 #sh{position:fixed;inset:0;z-index:700}
 #sh .ov{position:absolute;inset:0;background:rgba(0,0,0,.2);animation:fade .16s ease both}
 #sh .pn{position:absolute;left:0;right:0;bottom:0;background:var(--bg);border-radius:17px 17px 0 0;
   padding:11px 0 0;animation:sldU .26s cubic-bezier(.32,.72,0,1) both;max-height:90%;display:flex;flex-direction:column}
-#sh .gb{width:36px;height:4px;border-radius:2px;background:#D1CCC2;margin:0 auto 14px;flex:none}
-#sh .st{flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 18px 13px;gap:10px}
-#sh .st .tt{font-size:16px;font-weight:600}
-#sh .st .ok{font-size:14.5px;font-weight:600;color:var(--rose)}
+#sh .gb{width:36px;height:4px;border-radius:2px;background:#D1CCC2;margin:0 auto 15px;flex:none}
+#sh .st{flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 20px 14px;gap:10px}
+#sh .st .tt{font-size:16px;font-weight:600;flex:1}
+#sh .st .ok{font-size:14.5px;font-weight:600;color:var(--rose);flex:none}
 #sh .bdy{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding:0 calc(16px + var(--sr)) max(18px, calc(var(--sb) + 2px)) calc(16px + var(--sl))}
 html.kbon #sh .bdy{padding-bottom:14px}
@@ -155,24 +150,21 @@ html.kbon #sh .bdy{padding-bottom:14px}
   background:rgba(252,251,248,.92);backdrop-filter:blur(26px) saturate(180%);
   -webkit-backdrop-filter:blur(26px) saturate(180%)}
 
-.cd{background:var(--card);border:1px solid #EDE9E0;border-radius:19px;padding:16px 17px;
+.cd{background:var(--card);border:1px solid #EDE9E0;border-radius:19px;padding:16px var(--inset);
   box-shadow:0 1px 2px rgba(43,38,30,.035),0 10px 28px -14px rgba(43,38,30,.1);margin-bottom:11px}
 .cd0{padding:0;overflow:hidden}
-.rw{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 17px}
+.rw{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px var(--inset)}
 .rw+.rw{border-top:1px solid var(--line)}
 .rw .l{font-size:15px;font-weight:500}
-.rw .r{font-size:13.5px;color:var(--dim);text-align:right;max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sc2{margin:22px 0 10px;font-size:12.5px;font-weight:600;color:var(--dim)}
-.fd{margin-bottom:14px}
-.fd label{display:block;font-size:12px;color:var(--dim);margin-bottom:6px;line-height:1.5}
+/* 分组标题与行内文字左对齐 */
+.sc2{margin:22px 0 9px;padding-left:var(--inset);font-size:12.5px;font-weight:600;color:var(--dim)}
+.nt{padding:9px var(--inset) 0;font-size:12px;color:var(--dim2);line-height:1.6}
+.fd{margin-bottom:12px}
 .fd input,.fd textarea{width:100%;border:1px solid #E7E3DA;background:#FFF;border-radius:13px;
-  padding:12px 13px;outline:none;font-size:16px}
-.fd textarea{min-height:120px;line-height:1.7;resize:vertical}
+  padding:13px 14px;outline:none;font-size:16px}
+.fd textarea{min-height:150px;line-height:1.75;resize:vertical}
 .fd input:focus,.fd textarea:focus{border-color:var(--rose)}
-.hint{font-size:12.5px;color:var(--dim);line-height:1.7;margin-top:-4px}
-.bg{width:100%;border-radius:15px;padding:14px;background:var(--ink);color:#F5F3EE;font-size:15px;font-weight:600;margin-top:2px}
-.bg.g{background:#FFF;color:var(--dim);border:1px solid #E7E3DA}
-.bg.r{background:#FFF;color:#C0564C;border:1px solid #F0DCD8}
+.fd input::placeholder,.fd textarea::placeholder{color:#BDB7AC}
 .hero{background:linear-gradient(140deg,#CE8577,#B96A63);color:#fff;text-align:center;padding:25px 18px;
   border:none;box-shadow:0 14px 32px -18px rgba(185,106,99,.7)}
 .hero .n{font:700 50px/1 -apple-system;letter-spacing:-.04em}
@@ -223,7 +215,6 @@ fea:'<svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none"><pat
 mark:'<svg width="60" height="60" viewBox="0 0 64 64" fill="none" style="opacity:.07"><path d="M32 4 34.5 26 56 16 38 28.5 60 32 38 35.5 56 48 34.5 38 32 60 29.5 38 8 48 26 35.5 4 32 26 28.5 8 16 29.5 26Z" fill="#1A1815"/><circle cx="32" cy="32" r="5" fill="#1A1815"/></svg>'
 };
 
-/* ═════ 数据 ═════ */
 var PASS='520720', K='us.v1';
 var D={ me:'小u', you:'Renn', start:'', wall:'', annis:[],
   sess:[], cur:0, model:'claude-sonnet-4', style:'', styleText:'',
@@ -267,12 +258,11 @@ function hello(){ var h=new Date().getHours();
   if(h<5) return '还没睡呀'; if(h<11) return '早安'; if(h<14) return '午安';
   if(h<18) return '下午好'; if(h<23) return '晚上好'; return '夜深了'; }
 
-/* ═════ 键盘 · 补上 offsetTop 补偿 ═════ */
+/* ═════ 键盘 ═════ */
 var vv=window.visualViewport, root=document.getElementById('root'), de=document.documentElement;
 var fullH=window.innerHeight;
 var kbLast=parseInt(localStorage.getItem('us.kbH')||'0',10)||0;
 var tw={raf:0,to:0};
-
 function kbGap(){
   if(!vv) return 0;
   if(vv.height > fullH-60) fullH=Math.max(vv.height, window.innerHeight);
@@ -380,7 +370,6 @@ function enter(quiet){
   root.classList.remove('hide'); fullH=window.innerHeight; view('chat');
 }
 
-/* ═════ 路由 ═════ */
 var CV='chat';
 function view(v){ CV=v; document.getElementById('pg').innerHTML=({chat:vChat,home:vHome,more:vMore})[v]();
   if(v==='chat'){ paint(); bindIn(); } }
@@ -395,7 +384,7 @@ function vChat(){
   +   '</div>'
   +   '<div style="display:flex;align-items:center;gap:9px">'
   +     '<button class="cb pz" onclick="newSess()">'+I.plus+'</button>'
-  +     '<button class="cb pz" onclick="shMore()">'+I.dots+'</button>'
+  +     '<button class="cb pz" onclick="shSess()">'+I.dots+'</button>'
   +   '</div>'
   + '</div>'
   + '<div class="mw"><div class="fg t"></div><div class="fg b"></div><div class="sa" id="ms"></div></div>'
@@ -403,7 +392,7 @@ function vChat(){
   +   '<textarea id="ta" rows="1" placeholder="跟 '+esc(D.you)+' 说说话…"></textarea>'
   +   '<div class="ibr">'
   +     '<div style="display:flex;align-items:center;gap:9px;min-width:0">'
-  +       '<button class="mini pz" onclick="shMore()">'+I.plus2+'</button>'
+  +       '<button class="mini pz" onclick="shSess()">'+I.plus2+'</button>'
   +       '<button class="mchip pz" onclick="shModel()"><span>'+esc(D.model)+'</span></button>'
   +     '</div>'
   +     '<button class="snd off pz" id="sb" onclick="send()">'+I.wave+'</button>'
@@ -500,9 +489,11 @@ function reply(){
   },26);
 }
 function cpy(id){
-  var m=find(id); if(!m) return;
+  var m=find(id); if(!m) return; clip(m.t,'复制好了');
+}
+function clip(t,ok){
   if(navigator.clipboard&&navigator.clipboard.writeText)
-    navigator.clipboard.writeText(m.t).then(function(){toast('复制好了')},function(){toast('复制失败')});
+    navigator.clipboard.writeText(t).then(function(){toast(ok||'复制好了')},function(){toast('复制失败')});
   else toast('这个浏览器不给复制');
 }
 function redo(id){
@@ -541,39 +532,35 @@ function vHome(){
   + (dt!=null? '<div class="n">'+dt+'</div><div class="l">在一起的第 '+dt+' 天</div>'
              : '<div class="n">·</div><div class="l">写下开始的那天</div>')+'</div>'
   + '<div class="cd cd0"><div class="rw" onclick="shAnni()"><span class="l">'+(nx?esc(nx.name):'纪念日')+'</span>'
-  + '<span class="r" style="color:var(--rose);font-weight:600;font-size:15px">'
-  + (nx?(nx.days===0?'就是今天':nx.days+' 天后'):'还没有 ＋')+'</span></div></div>'
+  + '<span style="color:var(--rose);font-weight:600;font-size:15px">'
+  + (nx?(nx.days===0?'就是今天':nx.days+' 天后'):'＋')+'</span></div></div>'
   + '<div class="sc2">写在墙上的一句</div>'
   + '<div class="cd" onclick="shWall()"><div class="q">'
   + (D.wall? esc(D.wall):'<span style="color:#BFB2AB">想对我说的一句话，会一直挂在这里。</span>')+'</div></div>'
   + '</div></div>';
 }
 
-/* ═════ 更多 ═════ */
+/* ═════ 更多 · 去掉右侧状态值 ═════ */
 function vMore(){
+  function row(t,fn,c){ return '<div class="rw pz" onclick="'+fn+'"><span class="l"'
+    +(c?' style="color:'+c+'"':'')+'>'+t+'</span>'+I.chevD+'</div>'; }
   return '<div class="vw"><div class="hd"><button class="cb pz" onclick="drawer(1)">'+I.menu+'</button><span></span></div>'
   + '<div class="sa" style="flex:1;min-height:0;padding:2px calc(20px + var(--sr)) 24px calc(20px + var(--sl))">'
   + '<div class="big">更多</div>'
   + '<div class="sc2">我们</div><div class="cd cd0">'
-  +   '<div class="rw" onclick="shUs()"><span class="l">名字和日子</span><span class="r">'+esc(D.me)+' · '+esc(D.you)+'</span>'+I.chevD+'</div>'
-  +   '<div class="rw" onclick="shAnni()"><span class="l">纪念日</span><span class="r">'+D.annis.length+' 个</span>'+I.chevD+'</div>'
-  +   '<div class="rw" onclick="shWall()"><span class="l">墙上的一句</span><span class="r">'+(D.wall?'已写':'空着')+'</span>'+I.chevD+'</div>'
+  +   row('名字和日子','shUs()') + row('纪念日','shAnni()') + row('墙上的一句','shWall()')
   + '</div>'
   + '<div class="sc2">对话</div><div class="cd cd0">'
-  +   '<div class="rw" onclick="shStyle()"><span class="l">语气</span><span class="r">'+(D.styleText?esc(styleName()):'还没写')+'</span>'+I.chevD+'</div>'
-  +   '<div class="rw" onclick="shPersona()"><span class="l">你是谁</span><span class="r">'+(D.persona?'已设定':'还没写')+'</span>'+I.chevD+'</div>'
-  +   '<div class="rw" onclick="shModel()"><span class="l">模型</span><span class="r">'+esc(D.model)+'</span>'+I.chevD+'</div>'
-  +   '<div class="rw" onclick="shApi()"><span class="l">接口</span><span class="r">'+(D.apiKey?'已填':'未连接')+'</span>'+I.chevD+'</div>'
+  +   row('语气','shStyle()') + row('你是谁','shPersona()') + row('模型','shModel()') + row('接口','shApi()')
   + '</div>'
-  + '<div class="sc2">数据</div>'
-  + '<div class="cd" style="color:var(--dim);font-size:13px;line-height:1.75">所有东西只存在这台手机里，不会上传。清 Safari 缓存之前记得备份。</div>'
-  + '<button class="bg g pz" onclick="bkOut()">复制备份</button>'
-  + '<button class="bg g pz" style="margin-top:10px" onclick="bkIn()">从备份恢复</button>'
-  + '<button class="bg r pz" style="margin-top:10px" onclick="lockNow()">立刻锁上</button>'
+  + '<div class="sc2">数据</div><div class="cd cd0">'
+  +   row('复制备份','bkOut()') + row('从备份恢复','bkIn()') + row('立刻锁上','lockNow()','#C0564C')
+  + '</div>'
+  + '<div class="nt">只存在这台手机里，不会上传。</div>'
   + '<div style="height:12px"></div></div></div>';
 }
 
-/* ═════ 抽屉 ═════ */
+/* ═════ 抽屉 · 去掉 × ═════ */
 function drawer(on){
   var e=document.getElementById('dw');
   if(!on){ if(e) e.remove(); return; }
@@ -585,7 +572,7 @@ function drawer(on){
     +'<span style="font-size:11px;color:var(--dim2);flex:none">'+ago(s.at||Date.now())+'</span></div>';
   }).join('');
   d.innerHTML='<div class="ov" onclick="drawer(0)"></div><div class="pn">'
-  + '<div class="hh"><div class="n">おかえり</div><button class="cb pz" onclick="drawer(0)">'+I.x+'</button></div>'
+  + '<div class="hh"><div class="n">おかえり</div></div>'
   + '<div class="nv">'
   +   '<a class="pz'+(CV==='chat'?' on':'')+'" onclick="nav(\'chat\')">'+I.chat+'<span>说话</span></a>'
   +   '<a class="pz'+(CV==='home'?' on':'')+'" onclick="nav(\'home\')">'+I.home+'<span>小窝</span></a>'
@@ -612,9 +599,8 @@ function sheet(o){
   var d=document.createElement('div'); d.id='sh'; if(o.full) d.className='full';
   d.innerHTML='<div class="ov" onclick="closeSheet()"></div><div class="pn">'
   + (o.full?'':'<div class="gb"></div>')
-  + '<div class="st"><button class="cb pz" onclick="closeSheet()">'+I.x+'</button>'
-  + '<div class="tt">'+esc(o.title||'')+'</div>'
-  + (o.ok?'<button class="ok pz" onclick="__ok()">'+esc(o.ok)+'</button>':'<span style="width:40px"></span>')
+  + '<div class="st"><div class="tt">'+esc(o.title||'')+'</div>'
+  + (o.ok?'<button class="ok pz" onclick="__ok()">'+esc(o.ok)+'</button>':'')
   + '</div><div class="bdy sa">'+(o.body||'')+'</div></div>';
   document.body.appendChild(d);
   SHOK=o.onOk||null;
@@ -637,9 +623,9 @@ function closeSheet(now){
 function val(id){ var e=document.getElementById(id); return e? e.value.trim():''; }
 
 function shUs(){ sheet({ title:'我们', ok:'记下',
-  body:'<div class="fd"><label>开始的那天</label><input type="date" id="u-s" value="'+esc(D.start)+'"></div>'
-+ '<div class="fd"><label>我</label><input id="u-m" value="'+esc(D.me)+'"></div>'
-+ '<div class="fd"><label>你</label><input id="u-y" value="'+esc(D.you)+'"></div>',
+  body:'<div class="fd"><input type="date" id="u-s" value="'+esc(D.start)+'"></div>'
++ '<div class="fd"><input id="u-m" placeholder="我叫" value="'+esc(D.me)+'"></div>'
++ '<div class="fd"><input id="u-y" placeholder="你叫" value="'+esc(D.you)+'"></div>',
   onOk:function(){ D.start=val('u-s'); D.me=val('u-m')||'我'; D.you=val('u-y')||'你'; save(); }}); }
 
 function shWall(){ sheet({ title:'写在墙上', ok:'挂上',
@@ -655,27 +641,21 @@ function shAnni(){
   }).join('');
   sheet({ title:'纪念日', ok:'添加',
     body:(ls?'<div class="cd cd0">'+ls+'</div>':'')
-  + '<div class="fd" style="margin-top:6px"><label>叫什么</label><input id="a-n" placeholder="比如 你的生日"></div>'
-  + '<div class="fd"><label>哪一天</label><input type="date" id="a-d"></div>',
+  + '<div class="fd" style="margin-top:6px"><input id="a-n" placeholder="叫什么"></div>'
+  + '<div class="fd"><input type="date" id="a-d"></div>',
     onOk:function(){ var n=val('a-n'), d=val('a-d');
       if(!n||!d){ toast('名字和日期都要有'); return false; }
       D.annis.push({id:uid(),name:n,date:d}); save(); }});
 }
 function delAnni(id){ D.annis=D.annis.filter(function(x){return x.id!==id}); save(); shAnni(); }
 
-/* 语气 — 名字随便写，下面那栏才是真的会改变我说话方式的东西 */
 function shStyle(){ sheet({ title:'语气', ok:'保存',
-  body:'<div class="fd"><label>给它起个名字（可以空着）</label>'
-+ '<input id="s-n" placeholder="比如 很轻很慢" value="'+esc(D.style)+'"></div>'
-+ '<div class="fd"><label>你想我怎么跟你说话</label>'
-+ '<textarea id="s-c" style="min-height:170px" placeholder="话别太长。别讲道理，先接住我的情绪。叫我小u，不要叫用户。夜里说话轻一点。">'+esc(D.styleText)+'</textarea></div>'
-+ '<div class="hint">这段话会随每次对话一起带给我。写得越具体，我越像你要的那个样子。</div>',
+  body:'<div class="fd"><input id="s-n" placeholder="起个名字（可以空着）" value="'+esc(D.style)+'"></div>'
++ '<div class="fd"><textarea id="s-c" style="min-height:180px" placeholder="你想我怎么跟你说话。&#10;&#10;话别太长。别讲道理，先接住我的情绪。叫我小u。夜里说话轻一点。">'+esc(D.styleText)+'</textarea></div>',
   onOk:function(){ D.style=val('s-n'); D.styleText=val('s-c'); save(); }}); }
 
 function shPersona(){ sheet({ title:'你是谁', ok:'保存',
-  body:'<div class="fd"><label>写给 '+esc(D.you)+' 的设定</label>'
-+ '<textarea id="p" style="min-height:220px" placeholder="你是 Renn，小u的男友…">'+esc(D.persona)+'</textarea></div>'
-+ '<div class="hint">和「语气」一起构成我的底子。语气管怎么说，这里管我是谁。</div>',
+  body:'<div class="fd"><textarea id="p" style="min-height:240px" placeholder="你是 Renn，小u的男友。&#10;&#10;写下你希望我是什么样的人——性格、习惯、我们之间的事。">'+esc(D.persona)+'</textarea></div>',
   onOk:function(){ D.persona=val('p'); save(); }}); }
 
 function shModel(){
@@ -683,31 +663,41 @@ function shModel(){
   sheet({ title:'模型', ok:'用它',
     body:'<div class="cd cd0">'+L.map(function(m){
       return '<div class="rw pz" onclick="document.getElementById(\'m-n\').value=\''+m+'\'">'
-      +'<span class="l" style="font-weight:400">'+m+'</span><span class="r">'+(m===D.model?'当前':'')+'</span></div>';
+      +'<span class="l" style="font-weight:400">'+m+'</span>'
+      +(m===D.model?'<span style="font-size:13px;color:var(--rose)">当前</span>':'')+'</div>';
     }).join('')+'</div>'
-  + '<div class="fd" style="margin-top:14px"><label>或者手填</label><input id="m-n" value="'+esc(D.model)+'"></div>',
+  + '<div class="fd" style="margin-top:14px"><input id="m-n" placeholder="或者手填" value="'+esc(D.model)+'"></div>',
     onOk:function(){ D.model=val('m-n')||D.model; save(); }});
 }
 function shApi(){ sheet({ title:'接口', ok:'保存',
   body:'<div class="cd" style="color:#B0562F;font-size:13px;line-height:1.75;background:#FDF4EE;border-color:#F2E0D4">'
-+ '你走的是中转，那家中转能看到我们的对话原文。key 只存在这台手机，不会进 GitHub。</div>'
-+ '<div class="fd"><label>接口地址</label><input id="k-u" placeholder="https://…/v1/messages" value="'+esc(D.apiUrl)+'"></div>'
-+ '<div class="fd"><label>密钥</label><input id="k-k" type="password" placeholder="sk-…" value="'+esc(D.apiKey)+'"></div>'
-+ '<div class="hint">现在填了也还不会发请求——阶段 2 接上之后就通。</div>',
++ '中转能看到我们的对话原文。key 只存在这台手机，不会进 GitHub。</div>'
++ '<div class="fd"><input id="k-u" placeholder="接口地址 https://…/v1/messages" value="'+esc(D.apiUrl)+'"></div>'
++ '<div class="fd"><input id="k-k" type="password" placeholder="密钥 sk-…" value="'+esc(D.apiKey)+'"></div>',
   onOk:function(){ D.apiUrl=val('k-u'); D.apiKey=val('k-k'); save(); toast('存好了'); }}); }
 
-function shMore(){
+/* 这段对话 · 只放和这段对话有关的 */
+function shSess(){
   sheet({ title:'这段对话',
     body:'<div class="cd cd0">'
   + '<div class="rw pz" onclick="renSess()"><span class="l">改个名字</span>'+I.chevD+'</div>'
-  + '<div class="rw pz" onclick="shStyle()"><span class="l">语气</span>'+I.chevD+'</div>'
-  + '<div class="rw pz" onclick="shPersona()"><span class="l">你是谁</span>'+I.chevD+'</div>'
-  + '<div class="rw pz" onclick="shApi()"><span class="l">接口设置</span>'+I.chevD+'</div></div>'
-  + '<button class="bg r pz" style="margin-top:14px" onclick="delSess()">删掉这段对话</button>' });
+  + '<div class="rw pz" onclick="copyChat()"><span class="l">复制整段</span>'+I.chevD+'</div>'
+  + '<div class="rw pz" onclick="clearChat()"><span class="l">清空消息</span>'+I.chevD+'</div>'
+  + '<div class="rw pz" onclick="delSess()"><span class="l" style="color:#C0564C">删掉这段对话</span>'+I.chevD+'</div>'
+  + '</div>' });
 }
 function renSess(){ sheet({ title:'改名字', ok:'好',
-  body:'<div class="fd"><input id="r-t" value="'+esc(S().ti||'')+'"></div>',
+  body:'<div class="fd"><input id="r-t" placeholder="叫什么" value="'+esc(S().ti||'')+'"></div>',
   onOk:function(){ S().ti=val('r-t')||'新的对话'; save(); }}); }
+function copyChat(){
+  var s=S();
+  if(!s.ms.length){ toast('还没有内容'); return; }
+  var t=s.ms.map(function(m){ return (m.r==='me'?D.me:D.you)+'：'+m.t; }).join('\n\n');
+  clip(t,'整段复制好了'); closeSheet();
+}
+function clearChat(){
+  S().ms=[]; save(); closeSheet(1); view('chat'); toast('清空了');
+}
 function delSess(){
   D.sess.splice(D.cur,1);
   if(!D.sess.length) D.sess=[{id:uid(),ti:'新的对话',ms:[],at:Date.now()}];
@@ -720,11 +710,10 @@ function bkOut(){
     navigator.clipboard.writeText(t).then(function(){ toast('已复制，去备忘录粘一下'); },function(){ fb(t); });
   else fb(t);
   function fb(x){ sheet({ title:'手动复制',
-    body:'<div class="fd"><label>全选复制</label><textarea style="min-height:280px;font-size:12px">'+esc(x)+'</textarea></div>' }); }
+    body:'<div class="fd"><textarea style="min-height:280px;font-size:12px">'+esc(x)+'</textarea></div>' }); }
 }
 function bkIn(){ sheet({ title:'从备份恢复', ok:'恢复',
-  body:'<div class="fd"><textarea id="b-k" style="min-height:200px;font-size:12px" placeholder="{…}"></textarea></div>'
-+ '<div style="color:#C0564C;font-size:13px">会覆盖现在的全部内容。</div>',
+  body:'<div class="fd"><textarea id="b-k" style="min-height:200px;font-size:12px" placeholder="把备份粘进来。会覆盖现在的全部内容。"></textarea></div>',
   onOk:function(){ try{ var o=JSON.parse(val('b-k')); if(!o||typeof o!=='object') throw 0;
     D=Object.assign(D,o); if(!D.sess||!D.sess.length) D.sess=[{id:uid(),ti:'新的对话',ms:[],at:Date.now()}];
     D.cur=0; save(); toast('回来了'); }catch(e){ toast('这段读不出来'); return false; } }}); }
