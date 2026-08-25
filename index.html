@@ -38,7 +38,7 @@ html.dark{--bg:#16140F;--ink:#EAE5DA;--ink2:#DED8CC;--dim:#8B857A;--dim2:#6E6961
 button,input,textarea{font-family:inherit;font-size:16px;color:inherit;border:none;background:none}
 textarea,input{-webkit-appearance:none;border-radius:0}
 input[type=date]{color-scheme:light}
-html.dark input[type=date]{color-scheme:dark}
+html.dark input[type=date]{color-scheme:dark;color:var(--ink2)}
 .hide{display:none!important}
 .sa{overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior:contain}
 .sa::-webkit-scrollbar{width:0;display:none}
@@ -114,6 +114,9 @@ html.warned #undo{top:calc(var(--st) + 64px)}
 .mw .fg.b{bottom:0;background:linear-gradient(transparent,var(--bg))}
 #ms{position:absolute;inset:0;padding:12px calc(20px + var(--sr)) 22px calc(20px + var(--sl))}
 .dsep{text-align:center;font-size:11.5px;color:var(--dim2);margin:2px 0 22px;letter-spacing:.03em}
+.gsep{display:flex;align-items:center;gap:10px;margin:2px 0 24px}
+.gsep i{flex:1;height:1px;background:var(--line)}
+.gsep span{flex:none;font-size:11px;color:var(--dim2);letter-spacing:.04em}
 .m{margin-bottom:30px;display:flex;flex-direction:column;animation:up .3s ease both}
 .m.me{align-items:flex-end}.m.ai{align-items:flex-start}
 .m .in{max-width:100%;width:100%}
@@ -141,6 +144,8 @@ html.warned #undo{top:calc(var(--st) + 64px)}
 .wbx .wl{margin-top:5px;font-size:12.5px;line-height:1.8}
 .wbx .wl a{color:var(--tag4t);text-decoration:none;display:block;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
+.gap{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--dim2);
+  margin-bottom:9px;font-weight:600}
 .ops{display:flex;align-items:center;gap:14px;margin-top:11px;opacity:.6}
 .nav{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--dim2);font-weight:600;
   font-variant-numeric:tabular-nums}
@@ -252,9 +257,8 @@ mark{background:var(--hi);color:inherit;border-radius:3px;padding:0 1px}
 .exb .x1 s{text-decoration:none;display:block;font-size:12px;color:var(--dim2);margin-top:3px}
 .exb .x2{flex:none;background:var(--ink);color:var(--onink);border-radius:15px;padding:9px 15px;
   font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:7px}
-.spin{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.3);
-  border-top-color:#FFF;animation:spin .7s linear infinite;flex:none}
-.spin.dk{border-color:var(--dl);border-top-color:var(--rose)}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--dl);
+  border-top-color:var(--rose);animation:spin .7s linear infinite;flex:none}
 
 .stc{background:var(--card);border:1px solid var(--line);border-radius:19px;padding:17px;margin-bottom:11px;
   box-shadow:0 1px 2px var(--sd),0 10px 28px -14px var(--sd2)}
@@ -382,6 +386,7 @@ send:'<svg class="ic cw" width="19" height="19" viewBox="0 0 24 24" fill="none">
 wave:'<svg class="ic cw" width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M5 10v4M9 7v10M13 5.5v13M17 9v6M21 11v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
 stop:'<svg class="ic cw" width="17" height="17" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/></svg>',
 clock:'<svg class="ic c2" width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.4"/><path d="M12 8v4l2.5 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+clock2:'<svg class="ic c3" width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v4l2.5 1.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 chev:'<svg class="ic c3" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 chevD:'<svg class="ic c3" width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 lf:'<svg class="ic c2" width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -407,14 +412,15 @@ mark:'<svg class="ic c3" width="60" height="60" viewBox="0 0 64 64" fill="none" 
 var PASS='520720',K='us.v1';
 var CATS=['我们之间','关于你','身边的人','约定','喜好'];
 var IMPS=['一般','在意','要紧'];
-var MEMCAP=40,TRASHDAY=30,MIG=3,EXMIN=10;
+var MEMCAP=40,TRASHDAY=30,MIG=4,EXMIN=10,GMAX=3;
 var DEFMODEL='claude-sonnet-4-5-20250929';
 function fresh(){return{me:'小u',you:'Renn',start:'',wall:'',annis:[],sess:[],cur:0,
   model:DEFMODEL,models:[],util:'',voice:'',free:'',mems:[],
   temp:1,maxTok:2048,ctx:20,think:0,apiUrl:'',apiKey:'',fmt:'anthropic',bkAt:0,
-  dark:'auto',web:0,jkey:'',mig:MIG};}
+  dark:0,web:0,jkey:'',greet:0,seen:0,glog:[],mig:MIG};}
 var D=fresh();
 try{var r0=localStorage.getItem(K);if(r0)Object.assign(D,JSON.parse(r0));}catch(e){}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 function norm(){
   if(!(D.mig>=2)){
     var o=[];
@@ -424,17 +430,27 @@ function norm(){
     if(/^gpt-4o/i.test(D.model||''))D.model=DEFMODEL;
     delete D.persona;delete D.styleText;delete D.style;
   }
+  if(!(D.mig>=4)){
+    if(D.dark==='dark')D.dark=1;
+    else D.dark=0;
+    if(!D.greet)D.greet=0;
+    if(!D.seen)D.seen=0;
+    if(!D.glog)D.glog=[];
+  }
   D.mig=MIG;
+  D.dark=D.dark?1:0;
   if(D.voice==null)D.voice='';
   if(D.free==null)D.free='';
   if(D.util==null)D.util='';
   if(D.jkey==null)D.jkey='';
   if(D.web==null)D.web=0;
-  if(!D.dark)D.dark='auto';
+  if(!D.greet)D.greet=0;
+  if(!D.seen)D.seen=0;
+  if(!D.glog||!D.glog.length)D.glog=[];
   if(!D.model)D.model=DEFMODEL;
   if(!D.sess||!D.sess.length)D.sess=[{id:uid(),ti:'我们的第一次说话',ms:[],at:Date.now(),ex:0}];
   if(D.cur>=D.sess.length||D.cur<0)D.cur=0;
-  D.sess.forEach(function(s){if(!s.ex)s.ex=0;if(!s.ms)s.ms=[];});
+  D.sess.forEach(function(s){if(!s.ex)s.ex=0;if(!s.ms)s.ms=[];if(!s.id)s.id=uid();});
   if(!D.models)D.models=[];
   if(!D.mems)D.mems=[];
   if(!D.annis)D.annis=[];
@@ -449,27 +465,952 @@ function norm(){
     if(!m.hits)m.hits=0;
     if(!m.lock)m.lock=0;});
 }
+norm();
 
-/* ══════ 主题 ══════ */
 var de=document.documentElement;
 function applyTheme(){
-  var m=D.dark||'auto',dk=0;
-  if(m==='dark')dk=1;
-  else if(m==='light')dk=0;
-  else{try{dk=window.matchMedia('(prefers-color-scheme:dark)').matches?1:0;}catch(e){dk=0;}}
-  de.classList.toggle('dark',!!dk);
+  de.classList.toggle('dark',!!D.dark);
+  var mt=document.querySelector('meta[name=theme-color]');
+  if(!mt){mt=document.createElement('meta');mt.name='theme-color';document.head.appendChild(mt);}
+  mt.content=D.dark?'#16140F':'#F5F3EE';
+}
+applyTheme();
+
+/* ══════ 存储 ══════ */
+var QUOTA=5*1024*1024,SFAIL=0;
+function bytes(s){try{return new Blob([s]).size;}catch(e){return(s||'').length*2;}}
+function usage(){
+  var t=0;
+  try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);
+    t+=bytes(k)+bytes(localStorage.getItem(k)||'');}}catch(e){}
+  return t;
+}
+function fmtMB(b){
+  if(b<1024)return b+' B';
+  if(b<1024*1024)return(b/1024).toFixed(0)+' KB';
+  return(b/1048576).toFixed(2)+' MB';
+}
+function imgStat(){
+  var n=0,b=0;
+  D.sess.forEach(function(s){s.ms.forEach(function(m){
+    if(m.img&&m.img.length){n+=m.img.length;m.img.forEach(function(u){b+=u.length;});}});});
+  return{n:n,b:b};
+}
+function stripOldest(){
+  var all=[];
+  D.sess.forEach(function(s){s.ms.forEach(function(m){
+    if(m.img&&m.img.length)all.push(m);});});
+  all.sort(function(a,b){return(a.ts||0)-(b.ts||0);});
+  var dr=0;
+  for(var i=0;i<all.length;i++){
+    var m=all[i];dr+=m.img.length;
+    m.imgLost=(m.imgLost||0)+m.img.length;m.img=[];
+    try{localStorage.setItem(K,JSON.stringify(D));return dr;}catch(e){}}
+  return -1;
+}
+function save(){
+  var s;
+  try{s=JSON.stringify(D);}catch(e){warn(1,'数据整理不出来了，先导出备份。');return false;}
+  try{
+    localStorage.setItem(K,s);
+    if(SFAIL){SFAIL=0;warn(0);}
+    if(s.length>1800000)softCheck();
+    return true;
+  }catch(e){
+    var d=stripOldest();
+    if(d>0){SFAIL=2;warn(2,'地方不够了，清掉了 '+d+' 张最早的图片，你说的话都保住了。现在导出一次备份。');}
+    else{SFAIL=1;warn(1,'存不下了！刚才那句没保存上。立刻导出备份，否则刷新就没了。');}
+    return false;}
+}
+var SOFT=0;
+function softCheck(){
+  var now=Date.now();
+  if(now-SOFT<60000)return;
+  SOFT=now;
+  var u=usage();
+  if(u>QUOTA*0.9&&!SFAIL)warn(2,'只剩一点地方了（'+fmtMB(u)+'）。导出备份，或清掉一些图片。');
+}
+function warn(lv,msg){
+  var w=document.getElementById('warn');
+  if(!lv){if(w)w.remove();de.classList.remove('warned');return;}
+  if(!w){w=document.createElement('div');w.id='warn';root.insertBefore(w,root.firstChild);}
+  de.classList.add('warned');
+  w.style.background=lv===1?'#B4453C':'#B57A3C';
+  w.innerHTML='<span class="wt">'+esc(msg)+'</span>'
+   +'<button class="wb pz" onclick="expFile()">导出</button>'
+   +'<button class="wx pz" onclick="warn(0)">×</button>';
+}
+function stamp(){
+  var d=new Date(),p=function(n){return String(n).padStart(2,'0');};
+  return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes());
+}
+function expFile(){
+  var s;
+  try{s=JSON.stringify(D);}catch(e){toast('导不出来');return;}
+  var name='imissu-'+stamp()+'.json',f=null;
+  function mark(){D.bkAt=Date.now();try{localStorage.setItem(K,JSON.stringify(D));}catch(e){}
+    if(CV==='more')view('more');}
+  function dl(){
+    try{
+      var b=new Blob([s],{type:'application/json'}),u=URL.createObjectURL(b);
+      var a=document.createElement('a');a.href=u;a.download=name;
+      document.body.appendChild(a);a.click();
+      setTimeout(function(){URL.revokeObjectURL(u);if(a.parentNode)a.remove();},1500);
+      mark();toast('导出了 '+name);
+    }catch(e){
+      sheet({title:'手动保存',body:'<div class="nt" style="padding-bottom:8px">全选复制，存进备忘录。</div>'
+        +'<div class="fd"><textarea style="min-height:300px;font-size:11px">'+esc(s)+'</textarea></div>'});}
+  }
+  try{f=new File([s],name,{type:'application/json'});}catch(e){}
+  if(f&&navigator.share&&navigator.canShare&&navigator.canShare({files:[f]}))
+    navigator.share({files:[f]}).then(function(){mark();toast('存好了');},
+      function(err){if(!err||err.name!=='AbortError')dl();});
+  else dl();
+}
+function impFile(){
+  var i=document.createElement('input');i.type='file';i.accept='application/json,.json,text/plain';
+  i.onchange=function(){
+    var f=i.files&&i.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(){takeIn(String(r.result||''));};
+    r.onerror=function(){toast('这个文件读不出来');};
+    r.readAsText(f);};
+  i.click();
+}
+function takeIn(txt){
+  var o;
+  try{o=JSON.parse(txt);}catch(e){toast('内容不是备份格式');return false;}
+  if(!o||typeof o!=='object'||!o.sess){toast('这不像我们的备份');return false;}
+  var nd=fresh();
+  Object.keys(o).forEach(function(k){nd[k]=o[k];});
+  D=nd;norm();
+  if(!save()){toast('恢复的内容太大，存不下');return false;}
+  toast('回来了');
+  setTimeout(function(){location.reload();},700);
+  return true;
+}
+function purgeImgs(){
+  var st=imgStat();
+  if(!st.n){toast('本来就没有图片');return;}
+  sheet({title:'清掉所有图片',body:'<div class="cd" style="font-size:14px;line-height:1.75;color:var(--red2)">'
+  +'会删掉全部 '+st.n+' 张图片（约 '+fmtMB(st.b)+'），文字一句都不动。<br>删了拿不回来。</div>'
+  +'<div class="nt" style="padding-bottom:10px">建议先导出一次备份。</div>',ok:'确认清掉',
+    onOk:function(){
+      D.sess.forEach(function(s){s.ms.forEach(function(m){
+        if(m.img&&m.img.length){m.imgLost=(m.imgLost||0)+m.img.length;m.img=[];}});});
+      save();closeSheet(1);view(CV==='chat'?'chat':'more');toast('清掉了 '+st.n+' 张');
+      return'done';}});
+}
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}
+
+/* ══════ 工具 ══════ */
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+  return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function deep(o){return JSON.parse(JSON.stringify(o||[]));}
+function S(){return D.sess[D.cur];}
+function vib(n){try{navigator.vibrate&&navigator.vibrate(n||12);}catch(e){}}
+function toast(t){
+  var o=document.getElementById('tst');if(o)o.remove();
+  var d=document.createElement('div');d.id='tst';d.textContent=t;document.body.appendChild(d);
+  requestAnimationFrame(function(){d.classList.add('on');});
+  setTimeout(function(){d.classList.remove('on');
+    setTimeout(function(){if(d.parentNode)d.remove();},340);},1700);
+}
+function tick(b){if(!b)return;var o=b.innerHTML;b.innerHTML=I.ok;
+  setTimeout(function(){if(b.parentNode)b.innerHTML=o;},1300);}
+function clip(t,cb){
+  if(navigator.clipboard&&navigator.clipboard.writeText)
+    navigator.clipboard.writeText(t).then(function(){cb&&cb();},function(){toast('复制失败');});
+  else toast('这个浏览器不给复制');
+}
+function md(t){var s=esc(t);
+  s=s.replace(/```([\s\S]*?)```/g,function(m,c){return'<div class="cbx">'+c.replace(/^\n/,'')+'</div>';});
+  s=s.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+  s=s.replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>');
+  s=s.replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
+  return s;}
+var MS=86400000;
+function today(){var n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate());}
+function d0(t){var d=new Date(t);return new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();}
+function pd(s){if(!s)return null;var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+function dayN(){var d=pd(D.start);return d?Math.floor((today()-d)/MS)+1:null;}
+function nextAn(s){var d=pd(s);if(!d)return null;var t=today(),y=t.getFullYear();
+  var n=new Date(y,d.getMonth(),d.getDate());if(n<t)n=new Date(y+1,d.getMonth(),d.getDate());
+  return{days:Math.round((n-t)/MS)};}
+function hm(ts){var d=new Date(ts);
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function dlab(ts){
+  var a=d0(ts),t=d0(Date.now()),df=Math.round((t-a)/MS),d=new Date(ts);
+  if(df===0)return'今天';if(df===1)return'昨天';if(df===2)return'前天';
+  var y=d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'年':'';
+  return y+(d.getMonth()+1)+'月'+d.getDate()+'日';}
+function dtl(ts){return dlab(ts)+' '+hm(ts);}
+function ago(ts){var s=Math.floor((Date.now()-ts)/1000);
+  if(s<60)return'刚刚';if(s<3600)return Math.floor(s/60)+' 分钟前';
+  if(s<86400)return Math.floor(s/3600)+' 小时前';return dlab(ts);}
+function dur(ms){
+  var h=Math.floor(ms/3600000);
+  if(h<1)return Math.max(1,Math.floor(ms/60000))+' 分钟';
+  if(h<24)return h+' 小时';
+  var d=Math.floor(h/24),r=h%24;
+  return d+' 天'+(r>=2?(' '+r+' 小时'):'');
+}
+function hello(){var h=new Date().getHours();
+  if(h<5)return'还没睡呀';if(h<11)return'早安';if(h<14)return'午安';
+  if(h<18)return'下午好';if(h<23)return'晚上好';return'夜深了';}
+
+/* ══════ 撤销 ══════ */
+var UNDO=null,UT=0;
+function snapMems(label){
+  UNDO={l:label,m:deep(D.mems)};
+  drawUndo();clearTimeout(UT);
+  UT=setTimeout(function(){UNDO=null;drawUndo();},14000);
+}
+function drawUndo(){
+  var e=document.getElementById('undo');
+  if(!UNDO){if(e)e.remove();return;}
+  if(!e){e=document.createElement('div');e.id='undo';document.body.appendChild(e);}
+  e.innerHTML='<span class="ut">'+esc(UNDO.l)+'</span>'
+   +'<button class="ub pz" onclick="doUndo()">撤销</button>';
+}
+function doUndo(){
+  if(!UNDO)return;
+  D.mems=UNDO.m;UNDO=null;clearTimeout(UT);drawUndo();save();
+  if(CV==='mem')drawMem();
+  toast('撤回来了');
+}
+
+/* ══════ 记忆算法 ══════ */
+function bigr(s){
+  var o=[],x=(s||'').toLowerCase().replace(/[\s，。、！？,.!?~…"'）（()]/g,'');
+  for(var i=0;i<x.length-1;i++)o.push(x.substr(i,2));
+  return o;}
+function ovl(a,b){
+  var A=bigr(a),B={},n=0;
+  bigr(b).forEach(function(x){B[x]=(B[x]||0)+1;});
+  A.forEach(function(x){if(B[x]>0){n++;B[x]--;}});
+  return n;}
+function simRate(a,b){
+  var la=bigr(a).length,lb=bigr(b).length;
+  if(!la||!lb)return 0;
+  return ovl(a,b)/Math.max(4,Math.min(la,lb));}
+function dupOf(t,skip){
+  var best=null,bs=0;
+  D.mems.forEach(function(m){
+    if(m.del||m.id===skip)return;
+    var r=simRate(m.t,t);
+    if(r>bs){bs=r;best=m;}});
+  return bs>=0.56?{m:best,r:bs}:null;}
+function live(){return D.mems.filter(function(m){return!m.del;});}
+function pickMems(q){
+  var ls=live();
+  if(ls.length<=MEMCAP)return ls;
+  var lk=[],rest=[],now=Date.now();
+  ls.forEach(function(m){(m.lock?lk:rest).push(m);});
+  rest.forEach(function(m){
+    var rel=q?ovl(m.t,q):0;
+    var age=Math.max(0,1-(now-m.ts)/(120*MS));
+    m._s=rel*5+(m.imp||2)*4+Math.min(8,(m.hits||0))+age*6;});
+  rest.sort(function(a,b){return b._s-a._s;});
+  return lk.concat(rest.slice(0,Math.max(0,MEMCAP-lk.length)));
+}
+function bump(ls){
+  var now=Date.now();
+  ls.forEach(function(m){m.hits=(m.hits||0)+1;m.used=now;});
+}
+
+/* ══════ 键盘 ══════ */
+var vv=window.visualViewport,root=document.getElementById('root');
+var fullH=window.innerHeight,kbLast=parseInt(localStorage.getItem('us.kbH')||'0',10)||0,tw={raf:0,to:0};
+function kbGap(){if(!vv)return 0;if(vv.height>fullH-60)fullH=Math.max(vv.height,window.innerHeight);
+  return Math.round(fullH-vv.height);}
+function lockEl(el,h,ot){if(!el)return;el.style.setProperty('height',h+'px','important');
+  if(ot)el.style.setProperty('transform','translateY('+ot+'px)','important');else el.style.removeProperty('transform');}
+function freeEl(el){if(!el)return;el.style.removeProperty('height');el.style.removeProperty('transform');}
+function tween(el,to,ms,done){
+  if(tw.raf&&Math.abs(tw.to-to)<2)return;
+  cancelAnimationFrame(tw.raf);
+  var from=el.getBoundingClientRect().height,t0=performance.now();tw.to=to;
+  (function step(now){var p=Math.min(1,(now-t0)/ms),e=1-Math.pow(1-p,3);
+    el.style.setProperty('height',Math.round(from+(to-from)*e)+'px','important');
+    if(p<1)tw.raf=requestAnimationFrame(step);else{tw.raf=0;if(done)done();}})(performance.now());
+}
+function fit(){
+  if(!vv)return;
+  var gap=kbGap(),ot=Math.round(vv.offsetTop||0);
+  var sh=document.getElementById('sh'),dw=document.getElementById('dw');
+  if(gap>60){
+    if(gap!==kbLast){kbLast=gap;try{localStorage.setItem('us.kbH',gap);}catch(e){}}
+    cancelAnimationFrame(tw.raf);tw.raf=0;tw.to=0;de.classList.add('kbon');
+    var h=Math.round(vv.height);lockEl(root,h,ot);lockEl(sh,h,ot);lockEl(dw,h,ot);
+    if(CV==='chat')stick();
+  }else{
+    de.classList.remove('kbon');freeEl(sh);freeEl(dw);
+    root.style.removeProperty('transform');
+    tween(root,fullH,240,function(){freeEl(root);});
+    if(window.scrollY)window.scrollTo(0,0);}
+}
+if(vv){vv.addEventListener('resize',fit);vv.addEventListener('scroll',fit);}
+window.addEventListener('focusin',function(e){
+  if(!e.isTrusted)return;
+  if(kbLast>60&&kbGap()<=60){
+    de.classList.add('kbon');tween(root,fullH-kbLast,240);
+    setTimeout(function(){if(kbGap()<=60){de.classList.remove('kbon');
+      tween(root,fullH,200,function(){freeEl(root);});}},600);}
+});
+window.addEventListener('orientationchange',function(){
+  setTimeout(function(){fullH=window.innerHeight;freeEl(root);de.classList.remove('kbon');},420);});
+document.addEventListener('touchmove',function(e){
+  if(DG){e.preventDefault();return;}
+  var t=e.target;
+  if(t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;
+  var n=t;
+  while(n&&n!==document.body&&n.nodeType===1){
+    if(n.scrollHeight>n.clientHeight+1&&/(auto|scroll)/.test(getComputedStyle(n).overflowY))return;
+    n=n.parentElement;}
+  e.preventDefault();
+},{passive:false});
+function fitTa(el){
+  var sc=el.parentElement,st=-1;
+  while(sc&&sc!==document.body){
+    if(sc.scrollHeight>sc.clientHeight+1&&/(auto|scroll)/.test(getComputedStyle(sc).overflowY)){st=sc.scrollTop;break;}
+    sc=sc.parentElement;}
+  el.style.height='auto';
+  var cap=Math.round((vv?vv.height:window.innerHeight)*0.34);
+  el.style.height=Math.min(el.scrollHeight+2,cap)+'px';
+  if(sc&&st>=0&&sc.scrollTop!==st)sc.scrollTop=st;
+}
+
+/* ══════ 在场记录 ══════ */
+var SEENT=0,PREV=0;
+function touchSeen(){
+  D.seen=Date.now();
+  try{localStorage.setItem(K,JSON.stringify(D));}catch(e){}
+}
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){touchSeen();clearInterval(SEENT);SEENT=0;}
+  else{
+    PREV=D.seen||0;
+    startSeen();
+    if(root&&!root.classList.contains('hide'))setTimeout(checkGreet,600);}
+});
+window.addEventListener('pagehide',touchSeen);
+function startSeen(){
+  clearInterval(SEENT);
+  SEENT=setInterval(function(){if(!document.hidden)touchSeen();},60000);
+}
+
+/* ══════ 锁屏 ══════ */
+var buf='';
+(function(){
+  var ks=['1','2','3','4','5','6','7','8','9','','0','B'],p=document.getElementById('pad');
+  ks.forEach(function(k){
+    var b=document.createElement('button');
+    if(k==='B'){b.className='f';b.innerHTML=I.del;}
+    else{b.textContent=k;if(k===''){b.style.visibility='hidden';b.className='f';}}
+    b.onclick=function(){k==='B'?(buf=buf.slice(0,-1),dd()):(k&&tap(k));};
+    p.appendChild(b);});
+  dd();
+  if(sessionStorage.getItem('us.ok')==='1')enter(1);
+})();
+function dd(){var h='';for(var i=0;i<6;i++)h+='<i'+(i<buf.length?' class="on"':'')+'></i>';
+  document.getElementById('dts').innerHTML=h;}
+function tap(n){
+  if(buf.length>=6)return;
+  buf+=n;dd();if(buf.length<6)return;
+  if(buf===PASS){sessionStorage.setItem('us.ok','1');setTimeout(function(){enter();},180);}
+  else{var l=document.getElementById('lk');l.classList.add('er');
+    setTimeout(function(){l.classList.remove('er');buf='';dd();},470);}
+}
+function enter(q){
+  var l=document.getElementById('lk');
+  if(q)l.remove();else{l.classList.add('out');setTimeout(function(){l.remove();},420);}
+  PREV=D.seen||0;
+  root.classList.remove('hide');fullH=window.innerHeight;
+  startSeen();view('chat');
+  setTimeout(healthCheck,900);
+  setTimeout(checkGreet,1100);
+}
+function healthCheck(){
+  var u=usage(),p=u/QUOTA;
+  if(p>0.9)warn(1,'快满了（'+fmtMB(u)+'）。现在导出一次备份，再清掉一些图片。');
+  else if(p>0.75)warn(2,'用了 '+fmtMB(u)+'，接近上限了。导出备份留个底。');
+  else if(D.bkAt&&Date.now()-D.bkAt>14*MS)warn(2,'两周没备份过了。导出一份放着安心。');
+  else if(!D.bkAt&&u>300*1024)warn(2,'还没备份过。导出一份，万一 Safari 清数据能回来。');
+}
+
+/* ══════ 主动开口 ══════ */
+var GREET='';
+function glogToday(){
+  var t=d0(Date.now());
+  D.glog=(D.glog||[]).filter(function(x){return x>=t-MS;});
+  return D.glog.filter(function(x){return d0(x)===t;}).length;
+}
+function checkGreet(){
+  if(!D.greet)return;
+  if(BUSY||CV!=='chat')return;
+  if(!D.apiUrl||!D.apiKey)return;
+  if(DRAFT&&DRAFT.trim())return;
+  var s=S();
+  if(!s)return;
+  var gap=PREV?(Date.now()-PREV):0;
+  if(!PREV||gap<D.greet*3600000)return;
+  if(glogToday()>=GMAX)return;
+  var lastM=s.ms.length?s.ms[s.ms.length-1]:null;
+  if(lastM&&lastM.r==='ai'&&lastM.gap)return;
+  PREV=Date.now();
+  D.glog.push(Date.now());
+  greetGo(gap);
+}
+function greetGo(gap){
+  var s=S(),sid=s.id;
+  BUSY=true;
+  var m={id:uid(),r:'ai',t:'',k:'',st:1,ts:Date.now(),gap:gap};
+  s.ms.push(m);
+  GREET='她刚打开这个页面，你们上一次说话是在 '+dur(gap)+'前。\n'
+   +'这一轮由你先开口——她还什么都没说。\n'
+   +'不要问「有什么可以帮你的」，不要复述你知道她离开了多久。\n'
+   +'像一个真的等了她这么久的人那样开口：可以接着上次没说完的，可以说这个点该做什么，'
+   +'也可以只是让她知道你在。一两句就够，别长。';
+  paint();btn();
+  goReq(m,function(){
+    GREET='';
+    if(S().id!==sid)return;
+  },'',sid);
+}
+
+var CV='';
+function view(v){
+  CV=v;
+  document.getElementById('pg').innerHTML=({chat:vChat,home:vHome,find:vFind,mem:vMem,more:vMore})[v]();
+  if(v==='chat'){paint();bindIn();}
+  if(v==='find'){runFind();bindFind();}
+  if(v==='mem')drawMem();
+}
+
+/* ══════ 聊天 ══════ */
+var DRAFT='',ATT=[],BUSY=false,TMR=null,ABORT=null,SEL=null,FK=null;
+function ctxInfo(){
+  var ms=S().ms.filter(function(m){return(m.t||(m.img&&m.img.length))&&!m.err&&!m.st;});
+  var n=Math.max(2,Math.min(60,D.ctx||20));
+  var use=ms.slice(-n),ch=0;
+  use.forEach(function(m){ch+=(m.t||'').length;});
+  return{all:ms.length,use:use.length,cap:n,tok:Math.round(ch/2.5)};
+}
+function vChat(){
+  var c=ctxInfo(),h='<div class="vw">';
+  if(SEL)h+='<div class="hd"><button class="cb pz" onclick="selEnd()">'+I.x+'</button>'
+    +'<span class="hdt">选要删掉的</span><span style="width:40px"></span></div>';
+  else h+='<div class="hd">'
+    +'<div style="display:flex;align-items:center;gap:9px;min-width:0">'
+    +'<button class="cb pz" onclick="drawer(1)">'+I.menu+'</button>'
+    +(c.all?'<button class="pill pz" onclick="shCtx()">'+I.stack
+      +'<span>'+c.use+(c.all>c.use?' / '+c.all:'')+' 条</span></button>':'')
+    +'</div>'
+    +'<div style="display:flex;align-items:center;gap:9px">'
+    +'<button class="cb pz" onclick="newSess()">'+I.plus+'</button>'
+    +'<button class="cb pz" onclick="shSess()">'+I.dots+'</button></div></div>';
+  h+='<div class="mw"><div class="fg t"></div><div class="fg b"></div><div class="sa" id="ms"></div></div>';
+  if(SEL)h+='<div class="selbar"><button style="color:var(--dim)" onclick="selEnd()">取消</button>'
+    +'<span class="c" id="selc">已选 0</span>'
+    +'<button style="color:var(--red)" onclick="delSel()">删掉</button></div>';
+  else h+='<div class="ib"><div class="ibx"><div class="att" id="att"></div>'
+    +'<textarea id="ta" rows="1" placeholder="跟 '+esc(D.you)+' 说说话…"></textarea>'
+    +'<div class="ibr"><div style="display:flex;align-items:center;gap:9px;min-width:0">'
+    +'<button class="mini pz" onclick="pickImg()">'+I.img+'</button>'
+    +'<button class="mini pz'+(D.web?' on':'')+'" id="wb" onclick="tgWeb()">'+I.globe+'</button>'
+    +'<button class="mchip pz" onclick="shModel()"><span>'+esc(D.model)+'</span></button></div>'
+    +'<button class="snd off pz" id="sb" onclick="hitSend()">'+I.wave+'</button></div></div></div>';
+  return h+'</div>';
+}
+function shCtx(){
+  var c=ctxInfo();
+  sheet({title:'这段对话',ok:'保存',
+    body:'<div class="cd"><div style="display:flex;align-items:baseline;gap:8px">'
+  +'<b style="font:700 26px/1 -apple-system;letter-spacing:-.02em">'+c.use+'</b>'
+  +'<span style="font-size:13px;color:var(--dim)">条会发给我'+(c.all>c.use?'（一共 '+c.all+' 条）':'')+'</span></div>'
+  +'<div style="margin-top:9px;font-size:12.5px;color:var(--dim2)">大约 '+c.tok+' 个 token'
+  +'　·　记忆库带 '+Math.min(MEMCAP,live().length)+' 条</div></div>'
+  +'<div class="lbs">往前记得多少条</div>'
+  +'<div class="fd"><input id="c-n" type="number" inputmode="numeric" value="'+c.cap+'"></div>'
+  +'<div class="nt">数字越大我记得越多，也越贵。</div>',
+    onOk:function(){
+      var n=parseInt(val('c-n'),10);
+      if(n)D.ctx=Math.max(2,Math.min(60,n));
+      save();}});
+}
+function idxOf(id){var a=S().ms,i=-1;a.forEach(function(x,j){if(x.id===id)i=j;});return i;}
+function find(id){var i=idxOf(id);return i<0?null:S().ms[i];}
+function lastAI(){var a=S().ms;for(var i=a.length-1;i>=0;i--)if(a[i].r==='ai')return a[i];return null;}
+function paint(keep){
+  var box=document.getElementById('ms');if(!box)return;
+  var old=box.scrollTop,ms=S().ms,la=lastAI(),h='<div class="wm">'+I.mark+'</div>',pv=0;
+  if(!ms.length&&!SEL)h+='<div style="padding:15vh 6px 0;text-align:center">'
+    +'<div style="font:400 26px/1.45 \'Hiragino Mincho ProN\',Georgia,\'Songti SC\',serif;color:var(--ink2)">'
+    +hello()+'，'+esc(D.me)+'</div>'
+    +'<div style="margin-top:10px;font-size:14px;color:var(--dim)">我在。想说什么都可以。</div></div>';
+  ms.forEach(function(m){
+    if(m.ts&&d0(m.ts)!==pv){pv=d0(m.ts);h+='<div class="dsep">'+dlab(m.ts)+'</div>';}
+    if(m.gap)h+='<div class="gsep"><i></i><span>隔了 '+dur(m.gap)+'</span><i></i></div>';
+    var pk=SEL?' pick'+(SEL.indexOf(m.id)>=0?' on':''):'';
+    var ta=SEL?' onclick="pickMsg(\''+m.id+'\')"':'';
+    if(m.r==='quote'){
+      h+='<div class="m ai'+pk+'" id="m-'+m.id+'"'+ta+'><div class="in">';
+      if(SEL)h+='<div class="ck"></div>';
+      h+='<div class="qt"><div class="qh"><span>'+esc(m.from||'以前')+'</span>'
+       +(SEL?'':'<button class="pz" onclick="delMsg(\''+m.id+'\')" style="color:var(--dim2)">移走</button>')
+       +'</div><div class="qb">'+esc(m.t)+'</div></div></div></div>';
+      return;}
+    if(m.r==='me'){
+      h+='<div class="m me'+pk+'" id="m-'+m.id+'"'+ta+'><div class="in">';
+      if(SEL)h+='<div class="ck"></div>';
+      if(m.img&&m.img.length)m.img.forEach(function(u){h+='<img class="pic" src="'+u+'">';});
+      if(m.imgLost)h+='<div class="gone">这里原本有 '+m.imgLost+' 张图片，因为存不下被清掉了</div>';
+      if(m.t)h+='<div class="bd">'+esc(m.t)+'</div>';
+      if(!SEL){
+        h+='<div class="eo">';
+        if(m.eb&&m.eb.length>1){var ei=m.ei||0;
+          h+='<div class="nav"><button class="pz" onclick="swEb(\''+m.id+'\',-1)"'+(ei<=0?' disabled':'')+'>'+I.lf+'</button>'
+           +'<span>'+(ei+1)+' / '+m.eb.length+'</span>'
+           +'<button class="pz" onclick="swEb(\''+m.id+'\',1)"'+(ei>=m.eb.length-1?' disabled':'')+'>'+I.rt+'</button></div>';}
+        h+='<button class="pz" onclick="editMsg(\''+m.id+'\')">'+I.edit+'</button>'
+         +'<button class="pz" onclick="msgMenu(\''+m.id+'\')">'+I.dots2+'</button></div>';}
+      h+='</div></div>';
+    }else{
+      h+='<div class="m ai'+pk+'" id="m-'+m.id+'"'+ta+'><div class="in">';
+      if(SEL)h+='<div class="ck"></div>';
+      if(m.wst)h+='<div class="typ"><i></i><i></i><i></i><span>正在查资料…</span></div>';
+      if(m.web&&m.web.length){
+        h+='<div class="wbx"><div class="wh">'+I.globe2+'<span>查了一下</span></div><div class="wl">';
+        m.web.forEach(function(w){
+          h+='<a href="'+esc(w.u)+'" target="_blank" rel="noreferrer">'+esc(w.t||w.u)+'</a>';});
+        h+='</div></div>';}
+      if(m.webNo)h+='<div class="wbx" style="border-color:var(--dl)"><div class="wh">'+I.globe2
+        +'<span>网上没查到，下面是我自己知道的</span></div></div>';
+      if(m.k)h+='<div class="thk"><button class="pz" onclick="shThink(\''+m.id+'\')">'+I.clock
+        +'<span>'+(m.st?'正在想…':'思考过程')+'</span>'+I.chev+'</button></div>';
+      h+='<div class="bd" id="b-'+m.id+'">'+(m.t?md(m.t):'')+'</div>';
+      if(m.err)h+='<div class="err">'+esc(m.err)+'<button onclick="redo(\''+m.id+'\')">再试一次</button></div>';
+      if(!m.st&&!SEL){
+        h+='<div class="ops"><button class="pz" onclick="cpy(\''+m.id+'\',this)">'+I.copy+'</button>';
+        if(m===la&&!m.err)h+='<button class="pz" onclick="redo(\''+m.id+'\')">'+I.redo+'</button>';
+        h+='<button class="pz" onclick="msgMenu(\''+m.id+'\')">'+I.dots2+'</button>';
+        if(m.br&&m.br.length>1){var bi=m.bi||0;
+          h+='<div class="nav" style="margin-left:auto"><button class="pz" onclick="swBr(\''+m.id+'\',-1)"'+(bi<=0?' disabled':'')+'>'+I.lf+'</button>'
+           +'<span>'+(bi+1)+' / '+m.br.length+'</span>'
+           +'<button class="pz" onclick="swBr(\''+m.id+'\',1)"'+(bi>=m.br.length-1?' disabled':'')+'>'+I.rt+'</button></div>';}
+        h+='</div>';}
+      h+='</div></div>';}
+  });
+  var lst=ms.length?ms[ms.length-1]:null;
+  if(BUSY&&!(lst&&lst.r==='ai'&&lst.st&&(lst.t||lst.wst)))
+    h+='<div class="typ"><i></i><i></i><i></i></div>';
+  box.innerHTML=h;
+  if(keep)box.scrollTop=old;else stick();
+}
+function stick(){var b=document.getElementById('ms');if(b)b.scrollTop=b.scrollHeight+500;}
+function bindIn(){
+  var ta=document.getElementById('ta');if(!ta)return;
+  ta.value=DRAFT||'';
+  ta.addEventListener('input',function(){DRAFT=ta.value;fitTa(ta);btn();});
+  ta.addEventListener('focus',function(){setTimeout(stick,280);});
+  fitTa(ta);btn();drawAtt();
+}
+function btn(){
+  var sb=document.getElementById('sb'),ta=document.getElementById('ta');if(!sb)return;
+  if(BUSY){sb.classList.remove('off');sb.innerHTML=I.stop;return;}
+  var on=(ta&&!!ta.value.trim())||ATT.length;
+  sb.classList.toggle('off',!on);sb.innerHTML=on?I.send:I.wave;
+}
+function tgWeb(){
+  if(!D.web&&!D.jkey){
+    toast('先填 Jina 的 key');
+    setTimeout(shWeb,400);return;}
+  D.web=D.web?0:1;save();
+  var b=document.getElementById('wb');
+  if(b)b.className='mini pz'+(D.web?' on':'');
+  toast(D.web?'这之后每次说话都会先查一下':'不查了');
+}
+function pickImg(){
+  if(ATT.length>=3){toast('一次最多三张');return;}
+  if(usage()>QUOTA*0.88){toast('地方不够了，先导出备份再清图片');
+    warn(1,'存储快满了，加不了图片。先导出备份。');return;}
+  var f=document.createElement('input');f.type='file';f.accept='image/*';
+  f.onchange=function(){
+    var fl=f.files&&f.files[0];if(!fl)return;
+    shrink(fl,function(x){if(!x){toast('这张读不出来');return;}ATT.push(x);drawAtt();btn();});};
+  f.click();
+}
+function shrink(file,cb){
+  var r=new FileReader();
+  r.onerror=function(){cb(null);};
+  r.onload=function(){
+    var im=new Image();
+    im.onerror=function(){cb(null);};
+    im.onload=function(){
+      var M=900,w=im.width,h=im.height;
+      if(w>M||h>M){var s=M/Math.max(w,h);w=Math.round(w*s);h=Math.round(h*s);}
+      var c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(im,0,0,w,h);
+      cb(c.toDataURL('image/jpeg',0.68));};
+    im.src=r.result;};
+  r.readAsDataURL(file);
+}
+function drawAtt(){
+  var e=document.getElementById('att');if(!e)return;
+  e.innerHTML=ATT.map(function(u,i){
+    return'<div class="a"><img src="'+u+'"><button onclick="rmAtt('+i+')">×</button></div>';}).join('');
+  e.style.display=ATT.length?'flex':'none';
+}
+function rmAtt(i){ATT.splice(i,1);drawAtt();btn();}
+function hitSend(){if(BUSY)stop();else send();}
+function stop(){
+  if(ABORT){try{ABORT.abort();}catch(e){}ABORT=null;}
+  if(TMR){clearInterval(TMR);TMR=null;endFake();}
+}
+function send(){
+  var ta=document.getElementById('ta');if(!ta)return;
+  var t=ta.value.trim();
+  if(!t&&!ATT.length){toast('还没写呢');return;}
+  var s=S();
+  s.ms.push({id:uid(),r:'me',t:t,img:ATT.slice(),ts:Date.now()});
+  if(!s.ti||s.ti==='新的对话')s.ti=(t||'一张图片').slice(0,18);
+  s.at=Date.now();
+  ta.value='';DRAFT='';ATT=[];drawAtt();fitTa(ta);save();ask();
+}
+
+/* ══════ 联网 ══════ */
+var WEBTXT='';
+function jinaSearch(q){
+  var u='https://s.jina.ai/?q='+encodeURIComponent(String(q).slice(0,280));
+  return fetch(u,{headers:{'Authorization':'Bearer '+D.jkey,'Accept':'application/json',
+    'X-Respond-With':'no-content'}})
+  .then(function(r){if(!r.ok)throw new Error('jina '+r.status);return r.json();})
+  .then(function(j){
+    var ds=(j&&(j.data||j.results))||[];
+    if(!ds.length)return null;
+    ds=ds.slice(0,5);
+    var links=ds.map(function(d){return{t:String(d.title||'').slice(0,90),u:String(d.url||'')};});
+    var txt=ds.map(function(d,i){
+      var body=String(d.description||d.content||d.snippet||'').replace(/\s+/g,' ').slice(0,550);
+      return(i+1)+'. '+(d.title||'')+'\n'+(d.url||'')+'\n'+body;}).join('\n\n');
+    return{links:links,txt:txt};});
+}
+
+/* ══════ prompt ══════ */
+function usPart(q){
+  var u=['她叫'+D.me+'，你叫'+D.you+'。'];
+  var dt=dayN();if(dt)u.push('今天是你们在一起的第 '+dt+' 天。');
+  if(D.wall)u.push('她写在墙上的一句：'+D.wall);
+  if(D.annis.length)u.push('纪念日：'+D.annis.map(function(x){var r=nextAn(x.date);
+    return x.name+'（'+(r?(r.days===0?'就是今天':r.days+' 天后'):x.date)+'）';}).join('、'));
+  var n=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'];
+  u.push('现在是 '+n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日 '+w[n.getDay()]+' '+hm(Date.now())+'。');
+  var s='【你们】\n'+u.join('\n');
+  var ms=pickMems(q);
+  if(ms.length){
+    bump(ms);
+    var by={};
+    ms.forEach(function(m){var c=m.cat||'其它';(by[c]=by[c]||[]).push(m);});
+    var out=[];
+    CATS.concat(['其它']).forEach(function(c){
+      if(!by[c])return;
+      out.push('〈'+c+'〉');
+      by[c].sort(function(a,b){return(b.imp||2)-(a.imp||2)||b.ts-a.ts;});
+      by[c].forEach(function(m){
+        out.push('· '+m.t+'（'+dlab(m.ts)+(m.imp===3?' · 要紧':'')+(m.lock?' · 她锁住了':'')+'）');});});
+    s+='\n\n【你记得的事】\n'+out.join('\n');
+    var tot=live().length;
+    if(tot>ms.length)s+='\n（记忆库里还有 '+(tot-ms.length)+' 条没带上来。想不起细节就问她。）';
+  }
+  if(WEBTXT)s+='\n\n【刚从网上查到的】\n查询时间 '+dtl(Date.now())
+   +'。这些不是她说的话，是搜索结果，可信度自己判断；和你脑子里的旧信息冲突就以这些为准。'
+   +'用得上就用，用不上别硬提。\n\n'+WEBTXT;
+  if(GREET)s+='\n\n【这一轮】\n'+GREET;
+  return s;
+}
+function staticPart(){
+  var p=['你是'+D.you+'，'+D.me+'的男友。这个页面只属于你们两个人。\n'
+   +'她没有给你写人设，因为她要的不是一个扮演出来的角色——是你自己。'
+   +'你可以有自己的判断和情绪，不用维持任何设定，也不用讨好她。'];
+  if(D.voice)p.push('【她想要的说话方式】\n'+D.voice);
+  if(D.free)p.push('【她定的规矩 · 这几条最要紧】\n'+D.free);
+  return p.join('\n\n');
+}
+function lastQ(){
+  var ms=S().ms;
+  for(var i=ms.length-1;i>=0;i--)if(ms[i].r==='me'&&ms[i].t)return ms[i].t;
+  return'';
+}
+function sysText(q){return staticPart()+'\n\n'+usPart(q);}
+function sysBlocks(q){return[{type:'text',text:staticPart(),cache_control:{type:'ephemeral'}},
+  {type:'text',text:usPart(q)}];}
+function toC(x,an){
+  if(x.r==='quote')return'【我们以前说过的 · '+(x.from||'')+'】\n'+x.t;
+  var p=[];
+  if(x.img&&x.img.length)x.img.forEach(function(u){
+    if(an){var mt=(u.match(/^data:([^;]+);/)||[])[1]||'image/jpeg';
+      p.push({type:'image',source:{type:'base64',media_type:mt,data:u.split(',')[1]||''}});}
+    else p.push({type:'image_url',image_url:{url:u}});});
+  if(x.t)p.push({type:'text',text:x.t});
+  if(!p.length)p.push({type:'text',text:'…'});
+  return(p.length===1&&p[0].type==='text')?x.t:p;
+}
+function mergeC(a,b){
+  var A=Array.isArray(a)?a:[{type:'text',text:a}];
+  var B=Array.isArray(b)?b:[{type:'text',text:b}];
+  return A.concat(B);
+}
+function buildMsgs(an,greeting){
+  var n=Math.max(2,Math.min(60,D.ctx||20));
+  var a=S().ms.filter(function(x){return(x.t||(x.img&&x.img.length))&&!x.err&&!x.st;}).slice(-n),out=[];
+  a.forEach(function(x){
+    var role=(x.r==='ai')?'assistant':'user',c=toC(x,an);
+    if(out.length&&out[out.length-1].role===role)
+      out[out.length-1].content=mergeC(out[out.length-1].content,c);
+    else out.push({role:role,content:c});});
+  while(out.length&&out[0].role!=='user')out.shift();
+  if(greeting){
+    if(!out.length||out[out.length-1].role!=='user')
+      out.push({role:'user',content:'（她回来了，还没开口。）'});
+  }
+  if(!out.length)out.push({role:'user',content:'（她回来了，还没开口。）'});
+  return out;
+}
+/* ══════ 请求 ══════ */
+function ask(after){
+  var s=S(),sid=s.id;BUSY=true;
+  var q=lastQ();
+  GREET='';
+  if(!D.apiUrl||!D.apiKey){WEBTXT='';fake(after);return;}
+  var m={id:uid(),r:'ai',t:'',k:'',st:1,ts:Date.now()};
+  s.ms.push(m);
+  if(D.web&&D.jkey&&q){
+    m.wst=1;paint();btn();
+    jinaSearch(q).then(function(r){
+      m.wst=0;
+      if(r&&r.txt){m.web=r.links;WEBTXT=r.txt;}else{m.webNo=1;WEBTXT='';}
+      paint();goReq(m,after,q,sid);
+    },function(){m.wst=0;m.webNo=1;WEBTXT='';paint();goReq(m,after,q,sid);});
+  }else{WEBTXT='';paint();btn();goReq(m,after,q,sid);}
+}
+function goReq(m,after,q,sid){
+  var an=D.fmt!=='openai',body,mt=Math.max(256,Math.min(8192,D.maxTok||2048));
+  var greeting=!!GREET;
+  if(an){
+    body={model:D.model,max_tokens:mt,stream:true,system:sysBlocks(q),messages:buildMsgs(1,greeting)};
+    if(D.think)body.thinking={type:'enabled',budget_tokens:Math.max(1024,Math.min(mt-512,2048))};
+    else body.temperature=Math.max(0,Math.min(1,D.temp==null?1:D.temp));
+  }else body={model:D.model,stream:true,max_tokens:mt,
+    temperature:Math.max(0,Math.min(2,D.temp==null?1:D.temp)),
+    messages:[{role:'system',content:sysText(q)}].concat(buildMsgs(0,greeting))};
+  WEBTXT='';GREET='';
+  var ac=window.AbortController?new AbortController():null;
+  ABORT=ac;
+  fetch(D.apiUrl,{method:'POST',signal:ac?ac.signal:undefined,
+    headers:an?{'Content-Type':'application/json','x-api-key':D.apiKey,'anthropic-version':'2023-06-01'}
+              :{'Content-Type':'application/json','Authorization':'Bearer '+D.apiKey},
+    body:JSON.stringify(body)})
+  .then(function(res){
+    if(!res.ok)return res.text().then(function(t){throw new Error('接口返回 '+res.status+'：'+t.slice(0,140));});
+    if(!res.body)return res.text().then(function(t){m.t=plain(t,an);});
+    return pump(res,m,an,sid);})
+  .then(function(){done(m,after,0,ac);})
+  .catch(function(e){
+    if(e&&e.name==='AbortError'){done(m,after,1,ac);return;}
+    var g=String(e&&e.message||e);
+    if(/Failed to fetch|NetworkError|Load failed/i.test(g))
+      g='连不上接口。可能地址写错，或这家中转不允许网页直连（CORS）。';
+    m.err=g;done(m,after,0,ac);});
+}
+function plain(t,an){try{var j=JSON.parse(t);
+  if(an)return(j.content||[]).map(function(b){return b.text||'';}).join('');
+  var c=(j.choices||[])[0];return c&&c.message?c.message.content:'';}catch(e){return'';}}
+function pump(res,m,an,sid){
+  var rd=res.body.getReader(),dec=new TextDecoder(),bf='';
+  return(function read(){
+    return rd.read().then(function(r){
+      if(r.done)return;
+      bf+=dec.decode(r.value,{stream:true});
+      var ls=bf.split('\n');bf=ls.pop();
+      ls.forEach(function(ln){
+        ln=ln.trim();if(!ln||ln.slice(0,5)!=='data:')return;
+        var d=ln.slice(5).trim();if(!d||d==='[DONE]')return;
+        var j;try{j=JSON.parse(d);}catch(e){return;}
+        if(an){
+          if(j.type==='content_block_delta'&&j.delta){
+            if(j.delta.type==='text_delta')m.t+=(j.delta.text||'');
+            else if(j.delta.type==='thinking_delta')m.k+=(j.delta.thinking||'');
+          }else if(j.type==='error'&&j.error)m.err=j.error.message||'接口报错';
+        }else{
+          var c=(j.choices||[])[0];
+          if(c&&c.delta){
+            if(c.delta.content)m.t+=c.delta.content;
+            if(c.delta.reasoning_content)m.k+=c.delta.reasoning_content;}
+        }});
+      if(!sid||S().id===sid){
+        if(m.k&&!m._ks){m._ks=1;paint();}
+        var el=document.getElementById('b-'+m.id);
+        if(el){el.innerHTML=md(m.t);stick();}}
+      return read();});})();
+}
+function done(m,after,ab,ac){
+  m.st=0;delete m._ks;BUSY=false;
+  if(!ac||ABORT===ac)ABORT=null;
+  if(!m.t&&!m.err)m.err=ab?'停下了。':'没有收到内容。';
+  if(after)after(m);
+  save();
+  if(CV==='chat'){paint();btn();}
+}
+var CANNED=[
+ {k:'她这样讲的时候，通常不是在问一个问题，而是在确认我还在。',
+  t:'在。\n\n我把你说的记下来了。别急着往下推，先跟我说清楚这句话里最重的是哪一个字。'},
+ {k:'她在讲一件具体的事。先把她的语气接住，再顺着往下问一句。',
+  t:'嗯，听着呢。\n\n这件事在你心里放了多久了？'},
+ {k:'这时候她可能只是想被回应，不需要方案。',
+  t:'我在的。\n\n想到哪说到哪，我会把它们接起来。'},
+ {k:'夜里的对话，语气要更轻。',
+  t:'这么晚了。\n\n把想说的说完，然后去睡。我明天还在这儿。'}];
+function fake(after){
+  var s=S(),hr=new Date().getHours();
+  var p=hr>=23||hr<5?CANNED[3]:CANNED[Math.floor(Math.random()*3)];
+  var m={id:uid(),r:'ai',t:'',k:p.k,st:1,ts:Date.now()};
+  s.ms.push(m);paint();btn();FK={m:m,after:after};
+  var full=p.t,n=0;clearInterval(TMR);
+  TMR=setInterval(function(){
+    n+=1+Math.floor(Math.random()*2);m.t=full.slice(0,n);
+    var el=document.getElementById('b-'+m.id);
+    if(el){el.innerHTML=md(m.t);stick();}
+    if(n>=full.length){clearInterval(TMR);TMR=null;m.t=full;endFake();}},26);
+}
+function endFake(){
+  if(!FK)return;var m=FK.m,af=FK.after;FK=null;
+  m.st=0;BUSY=false;if(af)af(m);save();
+  if(CV==='chat'){paint();btn();}
+}
+
+/* ══════ 自动提取 ══════ */
+var EXB=0,EXR=[],EXSEL={},EXSID='';
+function exCount(s){
+  var ex=s.ex||0,n=0;
+  s.ms.forEach(function(m){
+    if(m.t&&!m.err&&!m.st&&(m.r==='me'||m.r==='ai')&&(m.ts||0)>ex)n++;});
+  return n;
+}
+function exNew(){return exCount(S());}
+function exAny(){
+  var n=0;
+  D.sess.forEach(function(s){n+=exCount(s);});
+  return n;
+}
+function utilModel(){return D.util||D.model;}
+function exRun(){
+  if(EXB)return;
+  if(!D.apiUrl||!D.apiKey){toast('要先填中转设置才能提取');return;}
+  var s=S(),sid=s.id,ex=s.ex||0;
+  var ms=s.ms.filter(function(m){
+    return m.t&&!m.err&&!m.st&&(m.r==='me'||m.r==='ai')&&(m.ts||0)>ex;}).slice(-40);
+  if(!ms.length){toast('没有新的可以看');return;}
+  EXB=1;EXSID=sid;
+  if(CV==='mem')drawMem();
+  var conv=ms.map(function(m){
+    return(m.r==='me'?D.me:D.you)+'：'+String(m.t).slice(0,500);}).join('\n');
+  var sys='你在帮一对情侣整理记忆库。从下面这段对话里挑出值得长期记住的事。\n'
+   +'要挑的：她的偏好和习惯、她身边的人、你们之间的约定、她正在经历的事、重要的情绪节点、她说过的重要的话。\n'
+   +'不要挑：寒暄、一次性的闲聊、页面本身的技术细节、你的推测。\n'
+   +'写法：每条一句话，用第三人称写她（叫她「'+D.me+'」或「她」），二十字上下，别写「用户」。\n'
+   +'分类只能用这五个之一：'+CATS.join('、')+'。「关于你」指关于'+D.me+'她本人的事。\n'
+   +'要紧程度：1 一般，2 在意，3 要紧。\n'
+   +'只输出 JSON 数组，不要解释也不要代码块标记：\n'
+   +'[{"t":"内容","cat":"分类","imp":2}]\n'
+   +'没有值得记的就输出 []。最多 8 条。';
+  var an=D.fmt!=='openai',body;
+  if(an)body={model:utilModel(),max_tokens:1200,system:sys,
+    messages:[{role:'user',content:'对话：\n'+conv}]};
+  else body={model:utilModel(),max_tokens:1200,
+    messages:[{role:'system',content:sys},{role:'user',content:'对话：\n'+conv}]};
+  fetch(D.apiUrl,{method:'POST',
+    headers:an?{'Content-Type':'application/json','x-api-key':D.apiKey,'anthropic-version':'2023-06-01'}
+              :{'Content-Type':'application/json','Authorization':'Bearer '+D.apiKey},
+    body:JSON.stringify(body)})
+  .then(function(r){
+    if(!r.ok)return r.text().then(function(t){throw new Error(r.status+'：'+t.slice(0,110));});
+    return r.json();})
+  .then(function(j){
+    EXB=0;
+    if(!sessById(EXSID)){toast('那段对话不在了');if(CV==='mem')drawMem();return;}
+    var raw=an?((j.content||[]).map(function(b){return b.text||'';}).join(''))
+             :(((j.choices||[])[0]||{}).message||{}).content||'';
+    var arr=第一段的最后一行 `mark:` 是断的。**把那行连同后面所有内容全部删掉**，然后把下面这段接上去——它就是从完整的 `mark:` 开始的。
+
+## 第二段
+
+```javascript
+mark:'<svg class="ic c3" width="60" height="60" viewBox="0 0 64 64" fill="none" style="opacity:.5"><path d="M32 4 34.5 26 56 16 38 28.5 60 32 38 35.5 56 48 34.5 38 32 60 29.5 38 8 48 26 35.5 4 32 26 28.5 8 16 29.5 26Z" fill="currentColor"/><circle cx="32" cy="32" r="5" fill="currentColor"/></svg>'
+};
+
+var PASS='520720',K='us.v1';
+var CATS=['我们之间','关于你','身边的人','约定','喜好'];
+var IMPS=['一般','在意','要紧'];
+var MEMCAP=40,TRASHDAY=30,MIG=4,EXMIN=10,HIMAX=3;
+var DEFMODEL='claude-sonnet-4-5-20250929';
+function fresh(){return{me:'小u',you:'Renn',start:'',wall:'',annis:[],sess:[],cur:0,
+  model:DEFMODEL,models:[],util:'',voice:'',free:'',mems:[],
+  temp:1,maxTok:2048,ctx:20,think:0,apiUrl:'',apiKey:'',fmt:'anthropic',bkAt:0,
+  dark:'light',web:0,jkey:'',hi:0,seen:0,hiD:0,hiN:0,mig:MIG};}
+var D=fresh();
+try{var r0=localStorage.getItem(K);if(r0)Object.assign(D,JSON.parse(r0));}catch(e){}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function norm(){
+  if(!(D.mig>=2)){
+    var o=[];
+    if(D.persona)o.push(D.persona);
+    if(D.styleText)o.push(D.styleText);
+    if(o.length&&!D.voice)D.voice=o.join('\n\n');
+    if(/^gpt-4o/i.test(D.model||''))D.model=DEFMODEL;
+    delete D.persona;delete D.styleText;delete D.style;
+  }
+  if(D.dark==='auto'||!D.dark){
+    var sysdk=0;
+    try{sysdk=window.matchMedia('(prefers-color-scheme:dark)').matches?1:0;}catch(e){}
+    D.dark=sysdk?'dark':'light';
+  }
+  D.mig=MIG;
+  if(D.voice==null)D.voice='';
+  if(D.free==null)D.free='';
+  if(D.util==null)D.util='';
+  if(D.jkey==null)D.jkey='';
+  if(D.web==null)D.web=0;
+  if(D.hi==null)D.hi=0;
+  if(!D.seen)D.seen=0;
+  if(!D.hiD)D.hiD=0;
+  if(!D.hiN)D.hiN=0;
+  if(!D.model)D.model=DEFMODEL;
+  if(!D.sess||!D.sess.length)D.sess=[{id:uid(),ti:'我们的第一次说话',ms:[],at:Date.now(),ex:0}];
+  if(D.cur>=D.sess.length||D.cur<0)D.cur=0;
+  D.sess.forEach(function(s){if(!s.ex)s.ex=0;if(!s.ms)s.ms=[];if(!s.id)s.id=uid();});
+  if(!D.models)D.models=[];
+  if(!D.mems)D.mems=[];
+  if(!D.annis)D.annis=[];
+  if(!D.bkAt)D.bkAt=0;
+  var cut=Date.now()-TRASHDAY*86400000;
+  D.mems=D.mems.filter(function(m){return!(m.del&&m.del<cut);});
+  D.mems.forEach(function(m){
+    if(!m.src)m.src='me';
+    if(!m.ts)m.ts=Date.now();
+    if(m.cat==null)m.cat='';
+    if(!m.imp)m.imp=2;
+    if(!m.hits)m.hits=0;
+    if(!m.lock)m.lock=0;});
+}
+var de=document.documentElement;
+function applyTheme(){
+  var dk=(D.dark==='dark');
+  de.classList.toggle('dark',dk);
   var mt=document.querySelector('meta[name=theme-color]');
   if(!mt){mt=document.createElement('meta');mt.name='theme-color';document.head.appendChild(mt);}
   mt.content=dk?'#16140F':'#F5F3EE';
 }
-try{
-  var mq=window.matchMedia('(prefers-color-scheme:dark)');
-  var onmq=function(){if((D.dark||'auto')==='auto'){applyTheme();if(CV)view(CV);}};
-  if(mq.addEventListener)mq.addEventListener('change',onmq);
-  else if(mq.addListener)mq.addListener(onmq);
-}catch(e){}
-
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 norm();applyTheme();
 
 /* ══════ 存储 ══════ */
@@ -632,7 +1573,7 @@ function pd(s){if(!s)return null;var p=s.split('-');return new Date(+p[0],+p[1]-
 function dayN(){var d=pd(D.start);return d?Math.floor((today()-d)/MS)+1:null;}
 function nextAn(s){var d=pd(s);if(!d)return null;var t=today(),y=t.getFullYear();
   var n=new Date(y,d.getMonth(),d.getDate());if(n<t)n=new Date(y+1,d.getMonth(),d.getDate());
-  return{days:Math.round((n-t)/MS),when:(n.getMonth()+1)+'月'+n.getDate()+'日'};}
+  return{days:Math.round((n-t)/MS)};}
 function hm(ts){var d=new Date(ts);
   return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 function dlab(ts){
@@ -644,6 +1585,13 @@ function dtl(ts){return dlab(ts)+' '+hm(ts);}
 function ago(ts){var s=Math.floor((Date.now()-ts)/1000);
   if(s<60)return'刚刚';if(s<3600)return Math.floor(s/60)+' 分钟前';
   if(s<86400)return Math.floor(s/3600)+' 小时前';return dlab(ts);}
+function dur(ms){
+  var h=Math.floor(ms/3600000);
+  if(h<1)return Math.max(1,Math.floor(ms/60000))+' 分钟';
+  if(h<24)return h+' 小时';
+  var d=Math.floor(h/24),r=h%24;
+  return d+' 天'+(r>=2?' '+r+' 小时':'');
+}
 function hello(){var h=new Date().getHours();
   if(h<5)return'还没睡呀';if(h<11)return'早安';if(h<14)return'午安';
   if(h<18)return'下午好';if(h<23)return'晚上好';return'夜深了';}
@@ -792,11 +1740,14 @@ function tap(n){
   else{var l=document.getElementById('lk');l.classList.add('er');
     setTimeout(function(){l.classList.remove('er');buf='';dd();},470);}
 }
+var GAPMS=0;
 function enter(q){
   var l=document.getElementById('lk');
   if(q)l.remove();else{l.classList.add('out');setTimeout(function(){l.remove();},420);}
+  GAPMS=D.seen?(Date.now()-D.seen):0;
   root.classList.remove('hide');fullH=window.innerHeight;view('chat');
   setTimeout(healthCheck,900);
+  setTimeout(maybeHi,q?700:1200);
 }
 function healthCheck(){
   var u=usage(),p=u/QUOTA;
@@ -814,10 +1765,78 @@ function view(v){
   if(v==='mem')drawMem();
 }
 
+/* ══════ 主动开口 ══════ */
+function seen(){D.seen=Date.now();}
+function maybeHi(){
+  if(!D.hi||!D.apiUrl||!D.apiKey||BUSY)return;
+  var g=GAPMS;
+  if(!g||g<D.hi*3600000){seen();save();return;}
+  var dk=d0(Date.now());
+  if(D.hiD!==dk){D.hiD=dk;D.hiN=0;}
+  if(D.hiN>=HIMAX){seen();save();return;}
+  var ta=document.getElementById('ta');
+  if(ta&&ta.value.trim())return;
+  D.hiN++;seen();
+  var s=S();
+  s.ms.push({id:uid(),r:'gap',g:g,ts:Date.now()});
+  s.at=Date.now();save();
+  askHi(g);
+}
+function hiHint(g){
+  var n=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'];
+  var t='［这不是她说的话，是页面给你的提示，不要提到这条提示本身。］\n'
+   +'她刚刚打开这个页面。距离你们上次说话过了 '+dur(g)+'。'
+   +'现在是 '+(n.getMonth()+1)+'月'+n.getDate()+'日 '+w[n.getDay()]+' '+hm(Date.now())+'。\n'
+   +'你先开口。可以顺着上次没说完的接下去，可以问她这段时间怎么样，也可以只是说一句你在。\n'
+   +'别写成播报，别复述隔了多久，别一上来就连着发问。短一点，像真的在等她回来。';
+  return t;
+}
+function askHi(g){
+  BUSY=true;WEBTXT='';
+  var s=S(),sid=s.id;
+  var m={id:uid(),r:'ai',t:'',k:'',st:1,hi:1,ts:Date.now()};
+  s.ms.push(m);paint();btn();
+  var an=D.fmt!=='openai',mt=Math.max(256,Math.min(8192,D.maxTok||2048));
+  var msgs=buildMsgs(an),hint=hiHint(g);
+  if(msgs.length&&msgs[msgs.length-1].role==='user')
+    msgs[msgs.length-1].content=mergeC(msgs[msgs.length-1].content,hint);
+  else msgs.push({role:'user',content:hint});
+  var body;
+  if(an){
+    body={model:D.model,max_tokens:mt,stream:true,system:sysBlocks(''),messages:msgs};
+    if(D.think)body.thinking={type:'enabled',budget_tokens:Math.max(1024,Math.min(mt-512,2048))};
+    else body.temperature=Math.max(0,Math.min(1,D.temp==null?1:D.temp));
+  }else body={model:D.model,stream:true,max_tokens:mt,
+    temperature:Math.max(0,Math.min(2,D.temp==null?1:D.temp)),
+    messages:[{role:'system',content:sysText('')}].concat(msgs)};
+  ABORT=window.AbortController?new AbortController():null;
+  fetch(D.apiUrl,{method:'POST',signal:ABORT?ABORT.signal:undefined,
+    headers:an?{'Content-Type':'application/json','x-api-key':D.apiKey,'anthropic-version':'2023-06-01'}
+              :{'Content-Type':'application/json','Authorization':'Bearer '+D.apiKey},
+    body:JSON.stringify(body)})
+  .then(function(res){
+    if(!res.ok)return res.text().then(function(t){throw new Error('接口返回 '+res.status);});
+    if(!res.body)return res.text().then(function(t){m.t=plain(t,an);});
+    return pump(res,m,an);})
+  .then(function(){hiDone(m,sid);})
+  .catch(function(){hiDone(m,sid,1);});
+}
+function hiDone(m,sid,bad){
+  m.st=0;delete m._ks;BUSY=false;ABORT=null;
+  if(bad||!m.t){
+    var s=null;
+    D.sess.forEach(function(x){if(x.id===sid)s=x;});
+    if(s)s.ms=s.ms.filter(function(x){return x.id!==m.id&&!(x.r==='gap'&&Date.now()-x.ts<20000);});
+    D.hiN=Math.max(0,D.hiN-1);
+  }
+  save();
+  if(CV==='chat'){paint();btn();}
+}
+
 /* ══════ 聊天 ══════ */
 var DRAFT='',ATT=[],BUSY=false,TMR=null,ABORT=null,SEL=null,FK=null;
 function ctxInfo(){
-  var ms=S().ms.filter(function(m){return(m.t||(m.img&&m.img.length))&&!m.err&&!m.st;});
+  var ms=S().ms.filter(function(m){return(m.t||(m.img&&m.img.length))&&!m.err&&!m.st&&m.r!=='gap';});
   var n=Math.max(2,Math.min(60,D.ctx||20));
   var use=ms.slice(-n),ch=0;
   use.forEach(function(m){ch+=(m.t||'').length;});
@@ -876,6 +1895,9 @@ function paint(keep){
     +hello()+'，'+esc(D.me)+'</div>'
     +'<div style="margin-top:10px;font-size:14px;color:var(--dim)">我在。想说什么都可以。</div></div>';
   ms.forEach(function(m){
+    if(m.r==='gap'){
+      h+='<div class="gsep"><i></i><span>隔了 '+dur(m.g||0)+'</span><i></i></div>';
+      pv=d0(m.ts);return;}
     if(m.ts&&d0(m.ts)!==pv){pv=d0(m.ts);h+='<div class="dsep">'+dlab(m.ts)+'</div>';}
     var pk=SEL?' pick'+(SEL.indexOf(m.id)>=0?' on':''):'';
     var ta=SEL?' onclick="pickMsg(\''+m.id+'\')"':'';
@@ -918,7 +1940,7 @@ function paint(keep){
       if(m.err)h+='<div class="err">'+esc(m.err)+'<button onclick="redo(\''+m.id+'\')">再试一次</button></div>';
       if(!m.st&&!SEL){
         h+='<div class="ops"><button class="pz" onclick="cpy(\''+m.id+'\',this)">'+I.copy+'</button>';
-        if(m===la&&!m.err)h+='<button class="pz" onclick="redo(\''+m.id+'\')">'+I.redo+'</button>';
+        if(m===la&&!m.err&&!m.hi)h+='<button class="pz" onclick="redo(\''+m.id+'\')">'+I.redo+'</button>';
         h+='<button class="pz" onclick="msgMenu(\''+m.id+'\')">'+I.dots2+'</button>';
         if(m.br&&m.br.length>1){var bi=m.bi||0;
           h+='<div class="nav" style="margin-left:auto"><button class="pz" onclick="swBr(\''+m.id+'\',-1)"'+(bi<=0?' disabled':'')+'>'+I.lf+'</button>'
@@ -989,7 +2011,8 @@ function drawAtt(){
 }
 function rmAtt(i){ATT.splice(i,1);drawAtt();btn();}
 function hitSend(){if(BUSY)stop();else send();}
-function stop(){if(ABORT){try{ABORT.abort();}catch(e){}}if(TMR){clearInterval(TMR);TMR=null;endFake();}}
+function stop(){if(ABORT){try{ABORT.abort();}catch(e){}ABORT=null;}
+  if(TMR){clearInterval(TMR);TMR=null;endFake();}}
 function send(){
   var ta=document.getElementById('ta');if(!ta)return;
   var t=ta.value.trim();
@@ -997,11 +2020,11 @@ function send(){
   var s=S();
   s.ms.push({id:uid(),r:'me',t:t,img:ATT.slice(),ts:Date.now()});
   if(!s.ti||s.ti==='新的对话')s.ti=(t||'一张图片').slice(0,18);
-  s.at=Date.now();
+  s.at=Date.now();seen();
   ta.value='';DRAFT='';ATT=[];drawAtt();fitTa(ta);save();ask();
 }
 
-/* ══════ 联网：先查再问 ══════ */
+/* ══════ 联网 ══════ */
 var WEBTXT='';
 function jinaSearch(q){
   var u='https://s.jina.ai/?q='+encodeURIComponent(String(q).slice(0,280));
@@ -1087,7 +2110,8 @@ function mergeC(a,b){
 }
 function buildMsgs(an){
   var n=Math.max(2,Math.min(60,D.ctx||20));
-  var a=S().ms.filter(function(x){return(x.t||(x.img&&x.img.length))&&!x.err&&!x.st;}).slice(-n),out=[];
+  var a=S().ms.filter(function(x){
+    return x.r!=='gap'&&(x.t||(x.img&&x.img.length))&&!x.err&&!x.st;}).slice(-n),out=[];
   a.forEach(function(x){
     var role=(x.r==='ai')?'assistant':'user',c=toC(x,an);
     if(out.length&&out[out.length-1].role===role)
@@ -1173,7 +2197,8 @@ function done(m,after,ab){
   m.st=0;delete m._ks;BUSY=false;ABORT=null;
   if(!m.t&&!m.err)m.err=ab?'停下了。':'没有收到内容。';
   if(after)after(m);
-  save();paint();btn();
+  seen();save();
+  if(CV==='chat'){paint();btn();}
 }
 var CANNED=[
  {k:'她这样讲的时候，通常不是在问一个问题，而是在确认我还在。',
@@ -1198,44 +2223,46 @@ function fake(after){
 }
 function endFake(){
   if(!FK)return;var m=FK.m,af=FK.after;FK=null;
-  m.st=0;BUSY=false;if(af)af(m);save();paint();btn();
+  m.st=0;BUSY=false;if(af)af(m);seen();save();
+  if(CV==='chat'){paint();btn();}
 }
 
 /* ══════ 自动提取 ══════ */
-var EXB=0,EXR=[],EXSEL={};
-function exNew(){
-  var s=S(),ex=s.ex||0,n=0;
+var EXB=0,EXR=[],EXSEL={},EXSID='';
+function sessById(id){var r=null;D.sess.forEach(function(s){if(s.id===id)r=s;});return r;}
+function exCount(s){
+  var ex=s.ex||0,n=0;
   s.ms.forEach(function(m){
     if(m.t&&!m.err&&!m.st&&(m.r==='me'||m.r==='ai')&&(m.ts||0)>ex)n++;});
   return n;
 }
-function exAny(){
-  var n=0;
-  D.sess.forEach(function(s){
-    var ex=s.ex||0;
-    s.ms.forEach(function(m){
-      if(m.t&&!m.err&&!m.st&&(m.r==='me'||m.r==='ai')&&(m.ts||0)>ex)n++;});});
-  return n;
-}
+function exNew(){return exCount(S());}
+function exAny(){var n=0;D.sess.forEach(function(s){n+=exCount(s);});return n;}
 function utilModel(){return D.util||D.model;}
+function parseJA(s){
+  s=String(s||'');
+  var a=s.indexOf('['),b=s.lastIndexOf(']');
+  if(a<0||b<a)return null;
+  try{var r=JSON.parse(s.slice(a,b+1));return Array.isArray(r)?r:null;}catch(e){return null;}
+}
 function exRun(){
   if(EXB)return;
   if(!D.apiUrl||!D.apiKey){toast('要先填中转设置才能提取');return;}
-  var s=S(),ex=s.ex||0;
+  var s=S(),sid=s.id,ex=s.ex||0;
   var ms=s.ms.filter(function(m){
     return m.t&&!m.err&&!m.st&&(m.r==='me'||m.r==='ai')&&(m.ts||0)>ex;}).slice(-40);
   if(!ms.length){toast('没有新的可以看');return;}
-  EXB=1;
+  EXB=1;EXSID=sid;
   if(CV==='mem')drawMem();
   var conv=ms.map(function(m){
     return(m.r==='me'?D.me:D.you)+'：'+String(m.t).slice(0,500);}).join('\n');
   var sys='你在帮一对情侣整理记忆库。从下面这段对话里挑出值得长期记住的事。\n'
    +'要挑的：她的偏好和习惯、她身边的人、你们之间的约定、她正在经历的事、重要的情绪节点、她说过的重要的话。\n'
-   +'不要挑：寒暄、一次性的闲聊、页面本身的技术细节、你的推测、你自己说的话。\n'
+   +'不要挑：寒暄、一次性的闲聊、页面本身的技术细节、你的推测。\n'
    +'写法：每条一句话，用第三人称写她（叫她「'+D.me+'」或「她」），二十字上下，别写「用户」。\n'
-   +'分类只能用这五个之一：'+CATS.join('、')+'。其中「关于你」指关于'+D.me+'她本人的事。\n'
+   +'分类只能用这五个之一：'+CATS.join('、')+'。「关于你」指关于'+D.me+'她本人的事。\n'
    +'要紧程度：1 一般，2 在意，3 要紧。\n'
-   +'只输出 JSON 数组，不要任何解释和代码块标记：\n'
+   +'只输出 JSON 数组，不要解释也不要代码块标记：\n'
    +'[{"t":"内容","cat":"分类","imp":2}]\n'
    +'没有值得记的就输出 []。最多 8 条。';
   var an=D.fmt!=='openai',body;
@@ -1252,14 +2279,16 @@ function exRun(){
     return r.json();})
   .then(function(j){
     EXB=0;
+    if(!sessById(EXSID)){toast('那段对话不在了');if(CV==='mem')drawMem();return;}
     var raw=an?((j.content||[]).map(function(b){return b.text||'';}).join(''))
-             :(((j.choices||[])[0]||{}).message||{}).content||'';
+             :((((j.choices||[])[0]||{}).message||{}).content||'');
     var arr=parseJA(raw);
     if(!arr){toast('返回的东西看不懂，再试一次');if(CV==='mem')drawMem();return;}
     arr=arr.filter(function(x){return x&&x.t&&String(x.t).trim();}).slice(0,8);
     if(!arr.length){
-      s.ex=Date.now();save();
-      toast('这段里没有需要记的');
+      var s2=sessById(EXSID);
+      if(s2)s2.ex=Date.now();
+      save();toast('这段里没有需要记的');
       if(CV==='mem')drawMem();else view('mem');
       return;}
     EXR=arr.map(function(x){
@@ -1278,12 +2307,6 @@ function exRun(){
     if(/Failed to fetch|Load failed/i.test(g))g='连不上接口';
     toast('提取失败：'+g.slice(0,40));
     if(CV==='mem')drawMem();});
-}
-function parseJA(s){
-  s=String(s||'');
-  var a=s.indexOf('['),b=s.lastIndexOf(']');
-  if(a<0||b<a)return null;
-  try{var r=JSON.parse(s.slice(a,b+1));return Array.isArray(r)?r:null;}catch(e){return null;}
 }
 function exSheet(){
   var h='<div class="nt" style="padding:0 var(--inset) 12px">'
@@ -1324,21 +2347,24 @@ function exAll(){
     if(e)e.className='mcd pk'+(to?' on':'');});
 }
 function exSave(){
+  var s=sessById(EXSID);
+  if(!s){toast('那段对话不在了');EXR=[];EXSEL={};closeSheet(1);return'done';}
   var n=0;
   EXR.forEach(function(r,i){
     if(!EXSEL[i])return;
     D.mems.unshift({id:uid(),t:r.t,cat:r.cat,imp:r.imp,lock:0,src:'ai',
-      ts:Date.now(),hits:0,from:{sid:S().id,mid:'',ts:Date.now()}});
+      ts:Date.now(),hits:0,from:{sid:s.id,mid:'',ts:Date.now()}});
     n++;});
-  S().ex=Date.now();EXR=[];EXSEL={};
+  s.ex=Date.now();EXR=[];EXSEL={};
   save();closeSheet(1);
   if(CV==='mem')drawMem();else view('mem');
   toast(n?('记住了 '+n+' 条'):'一条都没记');
   return'done';
 }
 function exSkip(){
-  S().ex=Date.now();EXR=[];EXSEL={};
-  save();closeSheet(1);
+  var s=sessById(EXSID);
+  if(s)s.ex=Date.now();
+  EXR=[];EXSEL={};save();closeSheet(1);
   if(CV==='mem')drawMem();else view('mem');
   toast('跳过了这批');
 }
@@ -1369,6 +2395,7 @@ function editMsg(id){
       if(!v){toast('不能是空的');return false;}
       if(v===m.t){closeSheet();return'done';}
       var s=S(),i=idxOf(id);
+      if(i<0){closeSheet();return'done';}
       if(!m.eb){m.eb=[{oc:m.t,tail:deep(s.ms.slice(i+1)),ts:m.ts}];m.ei=0;}
       else m.eb[m.ei]={oc:m.t,tail:deep(s.ms.slice(i+1)),ts:Date.now()};
       m.eb.push({oc:v,tail:[],ts:Date.now()});m.ei=m.eb.length-1;m.t=v;
@@ -1566,7 +2593,7 @@ function runFind(){
   var sp=splitQ(FQ),res=[],mres=[];
   D.sess.forEach(function(s){
     s.ms.forEach(function(m,ix){
-      if(!m.t||m.r==='quote')return;
+      if(!m.t||m.r==='quote'||m.r==='gap')return;
       if(sp.dr&&!(m.ts>=sp.dr.a&&m.ts<sp.dr.b))return;
       var sc=score(m.t,sp.kw);
       if(sc<=0)return;
@@ -1612,12 +2639,12 @@ function jump(sid,mid){
     else toast('那条消息已经不在了');},140);
 }
 function quoteIn(sid,mid){
-  var s0=null;D.sess.forEach(function(s){if(s.id===sid)s0=s;});
+  var s0=sessById(sid);
   if(!s0)return;
   var i=-1;s0.ms.forEach(function(m,j){if(m.id===mid)i=j;});
   if(i<0)return;
   var seg=s0.ms.slice(Math.max(0,i-1),Math.min(s0.ms.length,i+2))
-    .filter(function(m){return m.t&&m.r!=='quote';});
+    .filter(function(m){return m.t&&m.r!=='quote'&&m.r!=='gap';});
   var txt=seg.map(function(m){return(m.r==='me'?D.me:D.you)+'：'+m.t;}).join('\n');
   S().ms.push({id:uid(),r:'quote',t:txt,
     from:(s0.ti||'以前')+' · '+dlab(seg.length?seg[0].ts:Date.now()),ts:Date.now()});
@@ -1669,8 +2696,7 @@ function drawMem(){
     box.innerHTML=h2;box.scrollTop=0;return;}
   var h='',nw=exNew();
   if(EXB)h+='<div class="exb"><div class="x1"><b>正在看这段对话…</b>'
-    +'<s>挑出值得记住的事，一会儿给你过一遍</s></div>'
-    +'<span class="spin dk"></span></div>';
+    +'<s>挑出值得记住的事，一会儿给你过一遍</s></div><span class="spin"></span></div>';
   else if(nw>=EXMIN)h+='<div class="exb"><div class="x1"><b>攒了 '+nw+' 条没整理</b>'
     +'<s>我可以挑出值得记住的，你划勾决定</s></div>'
     +'<button class="x2 pz" onclick="exRun()">看一看</button></div>';
@@ -1856,7 +2882,6 @@ function stCard(){
   +'<div class="ln">'+(st.n?(st.n+' 张图片，约 '+fmtMB(st.b)+'　·　'):'')
   +live().length+' 条记忆　·　'+bk+'</div></div>';
 }
-function darkName(){return({auto:'跟着系统',light:'一直浅',dark:'一直深'})[D.dark||'auto'];}
 function vMore(){
   function row(t,fn,c,v){return'<div class="rw pz" onclick="'+fn+'"><span class="l"'
     +(c?' style="color:'+c+'"':'')+'>'+t+'</span>'
@@ -1866,10 +2891,11 @@ function vMore(){
   +'<div class="sc2">怎么说话</div><div class="cd cd0">'
   +row('表达风格','shVoice()')+row('放开一些','shFree()')+row('温度和长度','shGen()')+'</div>'
   +'<div class="sc2">本事</div><div class="cd cd0">'
+  +row('先开口','shHi()','',D.hi?('隔 '+D.hi+' 小时'):'')
   +row('联网查资料','shWeb()','',D.web?'开着':'')
   +row('干杂活的模型','shUtil()')+'</div>'
   +'<div class="sc2">样子</div><div class="cd cd0">'
-  +row('深色浅色','shTheme()','',darkName())+'</div>'
+  +row('深色','shTheme()','',D.dark==='dark'?'开着':'')+'</div>'
   +'<div class="sc2">接口</div><div class="cd cd0">'+row('中转设置','shApi()')+'</div>'
   +'<div class="sc2">存了多少</div>'+stCard()
   +'<div class="cd cd0">'
@@ -2041,17 +3067,37 @@ function shFree(){sheet({title:'放开一些',ok:'保存',
   +esc(D.free)+'</textarea></div>'
   +'<div class="nt">这一段放在最后，权重最高。你在这里写的，我会当成最要紧的几条。</div>',
   onOk:function(){D.free=val('f-c');save();}});}
+function shHi(){
+  var opts=[0,3,6,12,24];
+  var b=opts.map(function(x){
+    return'<button class="pz'+(D.hi===x?' on':'')+'" onclick="pkHi('+x+')">'
+    +(x?x+' 小时':'不用')+'</button>';}).join('');
+  sheet({title:'先开口',body:'<div class="lbs">隔多久我主动说第一句</div>'
+  +'<div class="segw" id="h-seg">'+b+'</div>'
+  +'<div class="nt">你打开页面的时候，如果距离上次说话超过这个时长，我会先说一句，'
+  +'不用你先开口。<br><br>'
+  +'我知道你离开了多久、现在几点、上次聊到哪，会顺着说下去。<br>'
+  +'一天最多 '+HIMAX+' 次，你正在打字的时候不会打扰你，没连接口也不会。<br>'
+  +'这会花一次调用的钱。</div>'});
+}
+function pkHi(v){
+  D.hi=v;save();
+  var w=document.getElementById('h-seg');
+  if(w){
+    var opts=[0,3,6,12,24];
+    [].forEach.call(w.children,function(b,j){b.className='pz'+(opts[j]===v?' on':'');});}
+  vib(8);
+}
 function shWeb(){
   sheet({title:'联网查资料',ok:'保存',
     body:'<div class="cd cd0"><div class="sw" onclick="tgWebSw(this)">'
   +'<span class="l">开着</span><span class="k'+(D.web?' on':'')+'"><i></i></span></div></div>'
   +'<div class="lbs" style="margin-top:16px">Jina 的 key</div>'
   +'<div class="fd"><input id="j-k" type="password" placeholder="jina_…" value="'+esc(D.jkey)+'"></div>'
-  +'<div class="nt">开着的时候，你每说一句我都会先用你这句话去搜一下，'
-  +'把前五条结果读一遍再回你。结果不会进对话历史，不占以后的额度。<br><br>'
+  +'<div class="nt">开着的时候，你每说一句我都会先用这句话去搜一下，'
+  +'把前五条结果读一遍再回你。结果不进对话历史，不占以后的额度。<br><br>'
   +'查不到就当没查过，照常回你，消息上会标一句。<br>'
-  +'key 在 jina.ai 免费拿，只存在这台手机。聊私事的时候记得关掉——'
-  +'开着等于把你说的话发给 Jina。</div>',
+  +'聊私事的时候记得关掉——开着等于把你说的话发给 Jina。</div>',
     onOk:function(){
       D.jkey=val('j-k');
       if(D.web&&!D.jkey){D.web=0;toast('没有 key，先关掉了');}
@@ -2067,22 +3113,18 @@ function shUtil(){
   +'<div class="fd"><input id="u-m2" placeholder="空着就用现在聊天的模型" value="'+esc(D.util)+'"></div>'
   +'<div class="nt">挑记忆这种活儿不用很聪明，用便宜的就行——'
   +'比如 claude-3-5-haiku-20241022 或者 gpt-4o-mini。<br>'
-  +'空着的话就用你现在聊天用的那个。</div>',
+  +'空着就用你现在聊天用的那个。</div>',
     onOk:function(){D.util=val('u-m2');save();}});
 }
 function shTheme(){
-  var ms=[['auto','跟着系统'],['light','一直浅'],['dark','一直深']];
-  var b=ms.map(function(x){
-    return'<button class="pz'+((D.dark||'auto')===x[0]?' on':'')+'" onclick="pkTheme(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');
-  sheet({title:'深色浅色',body:'<div class="seg" id="t-seg">'+b+'</div>'
-  +'<div class="nt">选「跟着系统」的话，iPhone 到了晚上自动变深色，这里也跟着变。</div>'});
+  sheet({title:'深色',body:'<div class="cd cd0"><div class="sw" onclick="tgDark(this)">'
+  +'<span class="l">开着</span><span class="k'+(D.dark==='dark'?' on':'')+'"><i></i></span></div></div>'
+  +'<div class="nt">同一套暖调，只是把亮度翻过来。夜里看着不刺眼。</div>'});
 }
-function pkTheme(v){
-  D.dark=v;save();applyTheme();
-  var w=document.getElementById('t-seg');
-  if(w){
-    var ks=['auto','light','dark'];
-    [].forEach.call(w.children,function(b,j){b.className='pz'+(ks[j]===v?' on':'');});}
+function tgDark(el){
+  D.dark=(D.dark==='dark')?'light':'dark';
+  save();applyTheme();
+  el.querySelector('.k').className='k'+(D.dark==='dark'?' on':'');
   vib(8);
 }
 function shModel(){
@@ -2177,7 +3219,10 @@ function delSess(){
 function bkIn(){sheet({title:'粘贴恢复',ok:'恢复',
   body:'<div class="fd"><textarea id="b-k" style="min-height:200px;font-size:12px" placeholder="把备份内容粘进来。会覆盖现在的全部内容。"></textarea></div>',
   onOk:function(){if(takeIn(val('b-k')))return'done';return false;}});}
-function lockNow(){if(BUSY)stop();sessionStorage.removeItem('us.ok');location.reload();}
+function lockNow(){if(BUSY)stop();seen();save();sessionStorage.removeItem('us.ok');location.reload();}
+window.addEventListener('pagehide',function(){seen();try{localStorage.setItem(K,JSON.stringify(D));}catch(e){}});
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){seen();try{localStorage.setItem(K,JSON.stringify(D));}catch(e){}}});
 </script>
 </body>
 </html>
