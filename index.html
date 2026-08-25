@@ -2754,6 +2754,44 @@ document.addEventListener('focusin',function(e){
   if(t&&/^(INPUT|TEXTAREA)$/.test(t.tagName))ktrack(900);},true);
 document.addEventListener('focusout',function(e){
   if(e.isTrusted)ktrack(700);},true);
+  /* ══════ 补丁 · 壁纸铺满 ══════ */
+(function(){
+  var a=document.getElementById('bgl'),b=document.getElementById('bgv');
+  if(a)a.remove();if(b)b.remove();
+  BGL=null;BGV=null;
+  var s=document.createElement('style');
+  s.textContent='html.hasbg,html.hasbg body{background-color:transparent}'
+   +'html.hasbg #root{background:transparent}';
+  document.head.appendChild(s);})();
+
+var BGDATA=null;
+function bgVeilColor(){
+  var a=(D.bgv==null?45:D.bgv)/100;
+  return isDark()?'rgba(22,20,15,'+a+')':'rgba(245,243,238,'+a+')';}
+function bgPaint(){
+  var el=document.documentElement;
+  if(!D.bgOn||!BGDATA){
+    el.classList.remove('hasbg');
+    el.style.backgroundImage='';return;}
+  var c=bgVeilColor();
+  el.style.backgroundImage='linear-gradient('+c+','+c+'),url('+BGDATA+')';
+  el.style.backgroundSize='cover';
+  el.style.backgroundPosition='center';
+  el.style.backgroundRepeat='no-repeat';
+  el.classList.add('hasbg');}
+function bgApply(){
+  if(!D.bgOn){BGDATA=null;bgPaint();return;}
+  dbGet('pic','__bg').then(function(r){
+    if(!r||!r.d){D.bgOn=0;BGDATA=null;bgPaint();return;}
+    BGDATA=r.d;bgPaint();});}
+function bgVeil(v){
+  D.bgv=Math.max(0,Math.min(90,parseInt(v,10)||0));
+  bgPaint();saveD();}
+function applyTheme(){
+  var dk=isDark();_dk=dk;
+  de.classList.toggle('dark',!!dk);
+  bgPaint();}
+bgApply();
 </script>
 </body>
 </html>
