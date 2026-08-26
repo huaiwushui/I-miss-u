@@ -3487,6 +3487,85 @@ function stripMarks(t){
   var s=String(t||'').replace(MKRE,'');
   s=s.replace(/\[{1,2}\s*(查|展开|记住|锁住)\s*[:：]?[^\[\]\n]*$/,'');
   return s.replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();}
+  /* ══════════ 补丁 h3 ══════════ */
+/* 手指在屏幕上时，谁也别抢滚动 */
+var TOUCH=0,TT=0,STICKY=1;
+function _tEnd(){clearTimeout(TT);TT=setTimeout(function(){TOUCH=0;},420);}
+document.addEventListener('touchstart',function(){
+  TOUCH=1;clearTimeout(TT);},{passive:true});
+document.addEventListener('touchmove',function(){
+  var b=document.getElementById('ms');if(b)STICKY=atEnd();},{passive:true});
+document.addEventListener('touchend',_tEnd,{passive:true});
+document.addEventListener('touchcancel',_tEnd,{passive:true});
+
+function stick(){
+  var b=document.getElementById('ms');if(!b)return;
+  if(TOUCH||!STICKY){clampSc(b);return;}
+  toEnd(b);
+  requestAnimationFrame(function(){
+    var c=document.getElementById('ms');if(!c)return;
+    if(TOUCH||!STICKY){clampSc(c);return;}
+    toEnd(c);});}
+
+/* 只有高度真变了才管滚动，偏移挪动一概不碰 */
+var _by3,_kh3,_kot3,_wasE3;
+function _fix(){
+  var b=document.getElementById('ms');if(!b)return;
+  if(TOUCH||!STICKY){clampSc(b);return;}
+  if(_wasE3)toEnd(b);else clampSc(b);}
+function kpaint(){
+  if(!vv)return;
+  if(window.scrollY)window.scrollTo(0,0);
+  var gap=kbGap(),ot=Math.round(vv.offsetTop||0),h=Math.round(vv.height);
+  var by=ot+Math.round(window.scrollY||0);
+  if(by!==_by3){
+    _by3=by;
+    var t=by?'translate3d(0,'+by+'px,0)':'';
+    if(BGL)BGL.style.transform=t;
+    if(BGV)BGV.style.transform=t;}
+  var dh=(h!==_kh3);
+  if(!dh&&ot===_kot3)return;
+  var box=document.getElementById('ms');
+  if(dh&&box)_wasE3=atEnd();
+  _kh3=h;_kot3=ot;KLAST=h;KOT=ot;
+  var open=gap>60;
+  if(open&&gap!==kbH){kbH=gap;
+    try{localStorage.setItem('us.kbH',gap);}catch(e){}}
+  de.classList.toggle('kbon',open);
+  kSet(open?h:0,ot);
+  if(dh&&box)requestAnimationFrame(_fix);}
+function ktrack(t){
+  KEND=performance.now()+(t||520);
+  if(KT)return;
+  KT=1;
+  (function loop(){
+    kpaint();
+    if(performance.now()<KEND)requestAnimationFrame(loop);
+    else{KT=0;_kh3=void 0;kpaint();
+      if(window.scrollY)window.scrollTo(0,0);
+      requestAnimationFrame(_fix);}})();}
+
+/* 翻查前后说重了，页面直接删 */
+function dedupePara(m){
+  if(!m||!m.parts||!m.parts.length||!m.t)return;
+  var seen={};
+  m.parts.forEach(function(p){
+    if(p.ty==='t'&&p.t)String(p.t).split(/\n{2,}/).forEach(function(x){
+      var k=x.replace(/\s+/g,'');if(k.length>6)seen[k]=1;});});
+  var out=[];
+  String(m.t).split(/\n{2,}/).forEach(function(x){
+    MKRE.lastIndex=0;
+    if(!MKRE.test(x)){
+      var k=stripMarks(x).replace(/\s+/g,'');
+      if(k.length>6&&seen[k])return;}
+    out.push(x);});
+  m.t=out.join('\n\n');}
+var _doneH=done;
+done=function(m,after,ab,ac,q,sid){
+  dedupePara(m);
+  return _doneH(m,after,ab,ac,q,sid);};
+var _askH=ask;
+ask=function(a){STICKY=1;return _askH(a);};
 </script>
 </body>
 </html>
