@@ -2827,6 +2827,355 @@ function applyTheme(){
   de.classList.toggle('dark',!!dk);
   bgPaint();}
 bgApply();
+  /* ══════ 补丁 · 缩略图 / 搜索加厚 / 图片省钱 / 漏洞修补 ══════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent='.pic{display:inline-block;width:74px;height:74px;object-fit:cover;'
+   +'max-width:none;min-height:0;border-radius:13px;margin:0 0 6px 6px;'
+   +'vertical-align:top;background:var(--chip)}'
+   +'.m.ai .pic{margin:0 6px 6px 0}'
+   +'.m.me .in{text-align:right}'
+   +'.m.me .bd{text-align:left}'
+   +'.bd.clip{max-height:330px;overflow:hidden;'
+   +'-webkit-mask-image:linear-gradient(180deg,#000 72%,transparent);'
+   +'mask-image:linear-gradient(180deg,#000 72%,transparent)}'
+   +'.more{display:inline-block;margin-top:7px;font-size:12.5px;'
+   +'color:var(--rose);font-weight:600}'
+   +'#pv{position:fixed;inset:0;z-index:980;background:rgba(0,0,0,.93);'
+   +'display:flex;align-items:center;justify-content:center;'
+   +'padding:calc(var(--st) + 12px) 10px calc(var(--sb) + 12px);'
+   +'animation:fade .16s ease both}'
+   +'#pv img{max-width:100%;max-height:100%;display:block;border-radius:4px}';
+  document.head.appendChild(s);})();
+
+function picView(src){
+  var o=document.getElementById('pv');if(o)o.remove();
+  var d=document.createElement('div');d.id='pv';
+  d.innerHTML='<img src="'+src+'">';
+  d.onclick=function(){d.remove();};
+  document.body.appendChild(d);}
+document.addEventListener('click',function(e){
+  var t=e.target;
+  if(!SEL&&t&&t.classList&&t.classList.contains('pic')&&t.src)picView(t.src);},true);
+
+var OPEN={};
+function clampLong(){
+  [].forEach.call(document.querySelectorAll('#ms .m'),function(w){
+    var id=(w.id||'').slice(2),m=find(id);
+    if(!m||m.st)return;
+    var bd=w.querySelector('.bd'),box=w.querySelector('.in');
+    if(!bd||!box||bd.dataset.cl)return;
+    if((m.t||'').length<700)return;
+    bd.dataset.cl='1';
+    var on=OPEN[id],b=document.createElement('button');
+    if(!on)bd.classList.add('clip');
+    b.className='more pz';b.textContent=on?'收起':'展开';
+    b.onclick=function(e){e.stopPropagation();OPEN[id]=on?0:1;paint(1);};
+    box.appendChild(b);});}
+var _paint0=paint;
+paint=function(keep){_paint0(keep);clampLong();if(!keep)stick();};
+
+function picWord(m){
+  var n=((m.pics||[]).length)+(m.imgLost||0);
+  return n?('［图片×'+n+'］'):'';}
+function hay(m){return(m.t||'')+' '+picWord(m);}
+function alive(m){
+  return m&&m.r!=='gap'&&(m.t||(m.pics&&m.pics.length)||m.imgLost);}
+
+var IMGCAP=6;
+function imgPlan(list){
+  var keep=[],skip={},n=0;
+  for(var i=list.length-1;i>=0;i--){
+    var x=list[i];
+    if(!x.pics||!x.pics.length)continue;
+    if(n+x.pics.length>IMGCAP){skip[x.id]=1;continue;}
+    n+=x.pics.length;
+    x.pics.forEach(function(p){if(keep.indexOf(p)<0)keep.push(p);});}
+  return{keep:keep,skip:skip,n:n};}
+function needPics(list){
+  var pl=imgPlan(list);
+  if(!pl.keep.length)return Promise.resolve({__skip:pl.skip});
+  return Promise.all(pl.keep.map(function(id){
+    return dbGet('pic',id).then(function(v){return[id,v&&v.d];},
+      function(){return[id,null];});
+  })).then(function(rs){
+    var o={__skip:pl.skip};
+    rs.forEach(function(r){if(r[1])o[r[0]]=r[1];});
+    return o;});}
+function toC(x,an,pics){
+  if(x.r==='quote')return'【我们以前说过的 · '+(x.from||'')+'】\n'+x.t;
+  var p=[],np=(x.pics||[]).length;
+  if(np&&pics&&pics.__skip&&pics.__skip[x.id]){
+    var tag='［她这里发过 '+np+' 张图片，这一轮没带上来。'
+      +'要看就用 [[查:…]]，或者直接问她。］';
+    return x.t?(tag+'\n'+x.t):tag;}
+  if(np&&pics)x.pics.forEach(function(pid){
+    var u=pics[pid];if(!u)return;
+    if(an){var mt=(u.match(/^data:([^;]+);/)||[])[1]||'image/jpeg';
+      p.push({type:'image',source:{type:'base64',media_type:mt,data:u.split(',')[1]||''}});}
+    else p.push({type:'image_url',image_url:{url:u}});});
+  if(x.t)p.push({type:'text',text:x.t});
+  if(!p.length)p.push({type:'text',text:'…'});
+  return(p.length===1&&p[0].type==='text')?x.t:p;}
+
+function showPics(m){
+  if(!m.pics||!m.pics.length)return;
+  var ks=Object.keys(PICQ);
+  if(ks.length>24)ks.slice(0,ks.length-16).forEach(function(k){
+    if(PICQ[k]!=='no')delete PICQ[k];});
+  m.pics.forEach(function(pid){
+    if(PICQ[pid]==='no')return;
+    var el=document.getElementById('p-'+m.id+'-'+pid);
+    if(!el||el.dataset.on)return;
+    if(PICQ[pid]){el.src=PICQ[pid];el.dataset.on='1';return;}
+    dbGet('pic',pid).then(function(v){
+      if(!v||!v.d){PICQ[pid]='no';return;}
+      PICQ[pid]=v.d;
+      var e2=document.getElementById('p-'+m.id+'-'+pid);
+      if(e2){e2.src=v.d;e2.dataset.on='1';}});});}
+
+function lookLocal(q){
+  var sp=splitQ(q),hits=[];
+  SS.forEach(function(s){
+    (MSG[s.id]||[]).forEach(function(m,ix){
+      if(!alive(m)||m.st||m.err)return;
+      if(sp.dr&&!(m.ts>=sp.dr.a&&m.ts<sp.dr.b))return;
+      var sc=score(hay(m),sp.kw);
+      if(sc<=0)return;
+      hits.push({sid:s.id,i:ix,sc:sc,ts:m.ts});});});
+  if(!hits.length)return{n:0,txt:''};
+  if(sp.kw.length)hits.sort(function(a,b){return b.sc-a.sc||b.ts-a.ts;});
+  else hits.sort(function(a,b){return b.ts-a.ts;});
+  hits=hits.slice(0,6);
+  var pick={},mk={};
+  hits.forEach(function(h){
+    var arr=MSG[h.sid]||[];
+    mk[h.sid+':'+h.i]=1;
+    for(var j=Math.max(0,h.i-2);j<=Math.min(arr.length-1,h.i+2);j++){
+      if(!alive(arr[j]))continue;
+      (pick[h.sid]=pick[h.sid]||{})[j]=1;}});
+  var blocks=[];
+  Object.keys(pick).forEach(function(sid){
+    var s=sessById(sid),arr=MSG[sid]||[];
+    var idx=Object.keys(pick[sid]).map(Number).sort(function(a,b){return a-b;});
+    var run=[];
+    function out(){
+      if(!run.length)return;
+      var head='—— '+(s?(s.ti||'对话'):'对话')+'｜'+dtl(arr[run[0]].ts);
+      var ls=run.map(function(j){
+        var m=arr[j],who=(m.r==='quote')?'（引用）':(m.r==='me'?D.me:D.you);
+        return(mk[sid+':'+j]?'▸ ':'  ')+who+'：'
+          +String(m.t||'').replace(/\s+/g,' ').slice(0,260)+picWord(m);});
+      blocks.push({ts:arr[run[0]].ts,txt:head+'\n'+ls.join('\n')});
+      run=[];}
+    idx.forEach(function(j,k){
+      if(k&&j-idx[k-1]>1)out();
+      run.push(j);});
+    out();});
+  blocks.sort(function(a,b){return b.ts-a.ts;});
+  return{n:hits.length,txt:blocks.map(function(b){return b.txt;}).join('\n\n')
+    +'\n\n（▸ 是命中的那句，上下各两句是前后文。）'};}
+
+function runFind(){
+  var i=document.getElementById('fq');if(i)FQ=i.value;
+  var box=document.getElementById('fres');if(!box)return;
+  var sp=splitQ(FQ),res=[],mres=[];
+  SS.forEach(function(s){
+    (MSG[s.id]||[]).forEach(function(m,ix){
+      if(!alive(m)||m.r==='quote')return;
+      if(sp.dr&&!(m.ts>=sp.dr.a&&m.ts<sp.dr.b))return;
+      var sc=score(hay(m),sp.kw);
+      if(sc<=0)return;
+      res.push({s:s,m:m,i:ix,sc:sc});});});
+  live().forEach(function(x){
+    if(sp.dr&&!(x.ts>=sp.dr.a&&x.ts<sp.dr.b))return;
+    if(score(x.t,sp.kw)>0)mres.push(x);});
+  if(sp.kw.length)res.sort(function(a,b){return b.sc-a.sc||b.m.ts-a.m.ts;});
+  else res.sort(function(a,b){return b.m.ts-a.m.ts;});
+  var h='';
+  if(sp.dr)h+='<div class="lbs" style="padding-top:2px">'+sp.dr.lab
+    +(sp.kw.length?' · '+esc(sp.kw.join(' ')):'')+' · '+res.length+' 条</div>';
+  else if(!FQ.trim())h+='<div class="lbs" style="padding-top:2px">最近说过的</div>';
+  else h+='<div class="lbs" style="padding-top:2px">找到 '+res.length+' 条</div>';
+  if(mres.length){
+    h+='<div class="lbs" style="margin-top:6px">记忆库（'+mres.length+'）</div>';
+    mres.slice(0,6).forEach(function(x){
+      h+='<div class="res"><div class="rh"><span class="rt">'+dtl(x.ts)
+       +(x.cat?' · '+esc(x.cat):'')+'</span><span class="who">'
+       +(x.src==='ai'?'我记的':'你记的')+'</span></div>'
+       +'<div class="rb">'+hi(x.t,sp.kw)+'</div>'
+       +'<div class="ra"><button onclick="view(\'mem\')">去记忆库</button></div></div>';});
+    h+='<div class="lbs" style="margin-top:16px">对话</div>';}
+  if(!res.length&&!mres.length)
+    h+='<div class="empty">'+(FQ.trim()?'没找到。<br>换个说法，或者只搜日期。<br>'
+      +'搜「图片」能翻出发过图的那几条。':'还没有可以翻的东西。')+'</div>';
+  res.slice(0,60).forEach(function(r){
+    var arr=MSG[r.s.id]||[],ctx='';
+    [r.i-1,r.i+1].forEach(function(j){
+      var m=arr[j];
+      if(!m||!alive(m))return;
+      ctx+=(ctx?'\n':'')+(m.r==='me'?D.me:D.you)+'：'+cut(m.t,[],70)+picWord(m);});
+    var pw=picWord(r.m);
+    h+='<div class="res"><div class="rh"><span class="rt">'+esc(r.s.ti||'对话')
+     +' · '+dtl(r.m.ts)+'</span><span class="who">'
+     +(r.m.r==='me'?esc(D.me):esc(D.you))+'</span></div>'
+     +'<div class="rb">'+(pw?'<span style="color:var(--dim2);font-size:13px">'+pw
+       +'</span> ':'')+hi(cut(r.m.t,sp.kw),sp.kw)+'</div>'
+     +(ctx?'<div class="rc">'+esc(ctx)+'</div>':'')
+     +'<div class="ra"><button onclick="jump(\''+r.s.id+'\',\''+r.m.id+'\')">跳过去看</button>'
+     +'<button class="g" onclick="quoteIn(\''+r.s.id+'\',\''+r.m.id
+     +'\')">带进现在的对话</button></div></div>';});
+  box.innerHTML=h;box.scrollTop=0;}
+
+function splitCat(v){
+  var i=Math.max(v.lastIndexOf('|'),v.lastIndexOf('｜'));
+  if(i>0){
+    var c=v.slice(i+1).trim();
+    if(CATS.indexOf(c)>=0)return{t:v.slice(0,i).trim(),c:c};}
+  return{t:v,c:''};}
+function runActs(m,after,q,sid){
+  var raw=m.t||'';
+  m.t=stripMarks(raw);
+  if(!D.acts||m.err)return 0;
+  var mk=findMarks(raw);
+  if(!mk.length)return 0;
+  var acts=[],nMem=0,lookQ='';
+  mk.forEach(function(x){
+    if(x.k==='查'){if(!lookQ)lookQ=x.v;return;}
+    if(nMem>=2)return;
+    var sc=splitCat(x.v);
+    if(!sc.t)return;
+    if(dupOf(sc.t)){acts.push({s:'dup',t:sc.t});return;}
+    addMem(sc.t,sc.c,x.k==='锁住'?3:2,'ai',
+      {sid:sid||S().id,mid:m.id,ts:Date.now()},x.k==='锁住');
+    acts.push({s:x.k==='锁住'?'lock':'mem',t:sc.t});nMem++;});
+  if(acts.length)m.acts=(m.acts||[]).concat(acts);
+  if(lookQ&&LOOKN<1){
+    LOOKN++;
+    var r=lookLocal(lookQ);
+    m.look={q:lookQ,n:r.n};
+    LOOKTXT=r.n?r.txt:'（翻了一遍，没有找到跟「'+lookQ+'」有关的话。别编，直接问她。）';
+    m.t='';m.k='';m.st=1;
+    BUSY=true;saveS(sid||S().id);paint();btn();
+    go(m,after,q,sid);
+    return 1;}
+  return 0;}
+function staticPart(){
+  var p=['你是'+D.you+'，'+D.me+'的男友。这个页面只属于你们两个人。\n'
+   +'她没有给你写人设，因为她要的不是一个扮演出来的角色——是你自己。'
+   +'你可以有自己的判断和情绪，不用维持任何设定，也不用讨好她。'];
+  if(D.acts)p.push('【你能自己做的事】\n'
+   +'把标记写在回复最末尾就会生效，正文里不要提到它们。\n\n'
+   +'· [[查:关键词]] —— 翻你们所有的历史对话。不花钱，一轮一次。\n'
+   +'  这是你最该主动用的。她提到某件旧事、你要确认自己说过什么、'
+   +'或者听起来发生过但上下文里没有——先翻，再开口。\n'
+   +'  别说「我不记得了」，也别凭印象编，你有得翻。'
+   +'翻到的东西带上下各两句，看清楚是谁说的再用。\n'
+   +'  用了之后这一轮不用急着答，页面会把结果给你，你再正常回她。\n\n'
+   +'· [[记住:一句话|分类]] —— 值得长期记住的事，自己记进记忆库。\n'
+   +'  第三人称写她，二十字上下。分类只能是：'+CATS.join('、')+'。\n'
+   +'  分类可省略，写了她更好找。一轮最多两条，闲聊别记。\n\n'
+   +'· [[锁住:一句话|分类]] —— 特别要紧的，记住并永远带在上下文里。少用。\n\n'
+   +'你只能新增，删和改都归她。');
+  if(D.voice)p.push('【她想要的说话方式】\n'+D.voice);
+  if(D.free)p.push('【她定的规矩 · 这几条最要紧】\n'+D.free);
+  return p.join('\n\n');}
+
+function ctxInfo(){
+  var all=ms().filter(function(m){
+    return m.r!=='gap'&&(m.t||(m.pics&&m.pics.length))&&!m.err&&!m.st;});
+  var n=Math.max(2,Math.min(60,D.ctx||12));
+  var use=all.slice(-n),ch=0;
+  use.forEach(function(m){ch+=(m.t||'').length;});
+  var pl=imgPlan(use),mem=0;
+  live().slice(0,MEMCAP).forEach(function(m){mem+=(m.t||'').length+12;});
+  return{all:all.length,use:use.length,cap:n,im:pl.n,
+    tok:Math.round((ch+mem+staticPart().length)/2.5)+pl.n*1300};}
+function shCtx(){
+  var c=ctxInfo(),sc=SS.length,mc=0;
+  SS.forEach(function(x){mc+=(MSG[x.id]||[]).length;});
+  sheet({title:'这段对话',ok:'保存',
+    body:'<div class="cd"><div style="display:flex;align-items:baseline;gap:8px">'
+  +'<b style="font:700 26px/1 -apple-system;letter-spacing:-.02em">'+c.use+'</b>'
+  +'<span style="font-size:13px;color:var(--dim)">条会发给我'
+  +(c.all>c.use?'（这段一共 '+c.all+' 条）':'')+'</span></div>'
+  +'<div style="margin-top:9px;font-size:12.5px;color:var(--dim2)">大约 '+c.tok+' 个 token'
+  +(c.im?('　·　带 '+c.im+' 张图'):'')
+  +'　·　记忆库 '+Math.min(MEMCAP,live().length)+' 条</div></div>'
+  +'<div class="lbs">往前记得多少条</div>'
+  +'<div class="fd"><input id="c-n" type="number" inputmode="numeric" value="'+c.cap+'"></div>'
+  +'<div class="nt">图片跟着这个数走，但最多带 '+IMGCAP+' 张——'
+  +'一张图约等于一千多 token，比一整段文字还贵。超出的会告诉我「这里有几张图」，'
+  +'我需要就自己翻。<br><br>'
+  +'你们一共 '+sc+' 段、'+mc+' 条消息都存着，翻是不花钱的。</div>',
+    onOk:function(){
+      var n=parseInt(val('c-n'),10);
+      if(n)D.ctx=Math.max(2,Math.min(60,n));
+      saveD();}});}
+
+function exCount(s){
+  var ex=s.ex||0,n=0;
+  (MSG[s.id]||[]).forEach(function(m){
+    if(!m.err&&!m.st&&(m.r==='me'||m.r==='ai')
+      &&(m.t||(m.pics&&m.pics.length))&&(m.ts||0)>ex)n++;});
+  return n;}
+function delSessAt(i){
+  var s=SS[i];
+  if(s){dropPics(MSG[s.id]||[]);delete MSG[s.id];dbDel('msg',s.id);}
+  SS.splice(i,1);
+  if(!SS.length){var nid=uid();SS=[{id:nid,ti:'新的对话',at:Date.now(),ex:0}];MSG[nid]=[];}
+  if(i<D.cur)D.cur--;
+  else if(i===D.cur)D.cur=Math.min(i,SS.length-1);
+  if(D.cur<0)D.cur=0;
+  saveD();saveS();renderList();
+  if(CV==='chat'){paint();btn();}}
+function copyChat(){
+  var a=ms();if(!a.length){toast('还没有内容');return;}
+  clip(a.filter(alive).map(function(m){
+    return(m.r==='ai'?D.you:D.me)+'：'+(m.t||'')+picWord(m);}).join('\n\n'),
+    function(){toast('整段复制好了');});
+  closeSheet();}
+function bgPick(){
+  var f=document.createElement('input');f.type='file';f.accept='image/*';
+  f.onchange=function(){
+    var fl=f.files&&f.files[0];if(!fl)return;
+    toast('正在处理…');
+    var rd=new FileReader();
+    rd.onerror=function(){toast('这张读不出来');};
+    rd.onload=function(){
+      var im=new Image();
+      im.onerror=function(){toast('这张读不出来');};
+      im.onload=function(){
+        var M=1600,w=im.width,h=im.height;
+        if(w>M||h>M){var sc=M/Math.max(w,h);w=Math.round(w*sc);h=Math.round(h*sc);}
+        var c=document.createElement('canvas');c.width=w;c.height=h;
+        c.getContext('2d').drawImage(im,0,0,w,h);
+        var u=c.toDataURL('image/jpeg',0.85);
+        dbPut('pic','__bg',{d:u,ts:Date.now()}).then(function(){
+          D.bgOn=1;if(D.bgv==null)D.bgv=45;
+          BGDATA=u;
+          bgSample(u,function(cc){
+            D.bgc=cc||null;saveD();bgPaint();
+            closeSheet(1);toast('换好了');});
+        },function(){toast('存不下这张，换小一点的');});};
+      im.src=rd.result;};
+    rd.readAsDataURL(fl);};
+  f.click();}
+function sweepPics(){
+  var tot=0;SS.forEach(function(s){tot+=(MSG[s.id]||[]).length;});
+  if(!SS.length||!tot)return;
+  var used={__bg:1};
+  function scan(list){
+    (list||[]).forEach(function(m){
+      if(m.pics)m.pics.forEach(function(p){used[p]=1;});
+      if(m.eb)m.eb.forEach(function(b){scan(b.tail);});});}
+  SS.forEach(function(s){scan(MSG[s.id]);});
+  dbKeys('pic').then(function(ks){
+    var dead=ks.filter(function(k){return!used[k];});
+    if(!dead.length)return;
+    dead.slice(0,60).forEach(function(k){dbDel('pic',k);delete PICQ[k];});});}
+setTimeout(sweepPics,8000);
+if(CV==='chat')paint(1);
 </script>
 </body>
 </html>
