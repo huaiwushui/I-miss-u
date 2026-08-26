@@ -3033,6 +3033,99 @@ function staticPart(){
   if(D.free)p.push('【她定的规矩 · 这几条最要紧】\n'+D.free);
   return p.join('\n\n');}
 if(CV==='chat')paint(1);
+  /* ══════ 补丁 · 修卡 / 停止 / 改完重发 ══════ */
+function usPart(q){
+  var u=['她叫'+D.me+'，你叫'+D.you+'。'];
+  var dt=dayN();if(dt)u.push('今天是你们在一起的第 '+dt+' 天。');
+  if(D.wall)u.push('她写在墙上的一句：'+D.wall);
+  if(D.annis.length)u.push('纪念日：'+D.annis.map(function(x){var r=nextAn(x.date);
+    return x.name+'（'+(r?(r.days===0?'就是今天':r.days+' 天后'):x.date)+'）';}).join('、'));
+  var n=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'];
+  u.push('现在是 '+n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日 '
+    +w[n.getDay()]+' '+hm(Date.now())+'。');
+  var s='【你们】\n'+u.join('\n');
+  var mm=pickMems(q);
+  if(mm.length){
+    bump(mm);
+    var by={};
+    mm.forEach(function(m){var c=m.cat||'其它';(by[c]=by[c]||[]).push(m);});
+    var out=[];
+    CATS.concat(['其它']).forEach(function(c){
+      if(!by[c])return;
+      out.push('〈'+c+'〉');
+      by[c].sort(function(a,b){return(b.imp||2)-(a.imp||2)||b.ts-a.ts;});
+      by[c].forEach(function(m){
+        out.push('· '+m.t+'（'+dlab(m.ts)
+          +(m.imp===3?' · 要紧':'')+(m.lock?' · 她锁住了':'')+'）');});});
+    s+='\n\n【你记得的事】\n'+out.join('\n');
+    var tot=live().length;
+    if(tot>mm.length)
+      s+='\n（记忆库里还有 '+(tot-mm.length)+' 条没带上来。想不起细节就用 [[查:关键词]]。）';}
+  var sc2=SS.length,mc=0;
+  SS.forEach(function(x){mc+=(MSG[x.id]||[]).length;});
+  s+='\n\n【能翻的东西】\n你们一共 '+sc2+' 段对话、'+mc+' 条消息，全都存着。'
+   +'上面只带了最近 '+Math.max(2,Math.min(60,D.ctx||12))+' 条给你——'
+   +'更早的事想不起来就直接翻，不要瞎猜也不要说「我不记得」。';
+  if(WEBTXT)s+='\n\n【刚从网上查到的】\n查询时间 '+dtl(Date.now())
+   +'。这些是搜索结果不是她的话，可信度自己判断；和你脑子里的旧信息冲突就以这些为准。'
+   +'用得上就用，用不上别硬提。\n\n'+WEBTXT;
+  if(LOOKTXT)s+='\n\n【你刚翻到的以前的话】\n'+LOOKTXT
+   +'\n（现在正常回她，不用说「我翻到了」，自然地用就好。）';
+  if(CURSAID)s+='\n\n【你这一轮已经说过的话】\n'+CURSAID
+   +'\n（她已经看到上面这些了。别重复、别重新开头，接着往下说。'
+   +'如果不需要再补什么，可以只说一句，或者什么都不说。）';
+  if(HINT)s+='\n\n【这一轮】\n'+HINT;
+  return s;}
+
+var STOPPED=0,_go0=go;
+go=function(m,after,q,sid,forHi){
+  if(forHi)STOPPED=0;
+  if(STOPPED){
+    m.st=0;BUSY=false;CURSAID='';
+    if(!m.t&&!(m.parts&&m.parts.length))m.err='停下了。';
+    if(CV==='chat'){paint();btn();}
+    return;}
+  return _go0(m,after,q,sid,forHi);};
+function stop(){
+  STOPPED=1;
+  if(ABORT){try{ABORT.abort();}catch(e){}ABORT=null;}
+  if(TMR){clearInterval(TMR);TMR=null;endFake();return;}
+  BUSY=false;btn();}
+function ask(after){
+  STOPPED=0;
+  var sid=S().id;BUSY=true;
+  var q=lastQ();
+  HINT='';LOOKTXT='';LOOKN=0;CURSAID='';
+  if(!D.apiUrl||!D.apiKey){WEBTXT='';fake(after);return;}
+  var m={id:uid(),r:'ai',t:'',k:'',st:1,ts:Date.now()};
+  ms().push(m);
+  if(D.web&&D.jkey&&q){
+    m.wst=1;paint();btn();
+    jinaSearch(q).then(function(r){
+      m.wst=0;
+      if(r&&r.txt){m.web=r.links;WEBTXT=r.txt;}else{m.webNo=1;WEBTXT='';}
+      paint();go(m,after,q,sid);
+    },function(){m.wst=0;m.webNo=1;WEBTXT='';paint();go(m,after,q,sid);});
+  }else{WEBTXT='';paint();btn();go(m,after,q,sid);}}
+
+function editMsg(id){
+  var m=find(id);if(!m||BUSY)return;
+  sheet({title:'改一下',ok:'重新发送',
+    body:'<div class="fd"><textarea id="ed">'+esc(m.t)+'</textarea></div>'
+    +'<div class="nt">一字不改也可以直接发——'
+    +'下面我的回复会重来一遍。</div>',
+    onOk:function(){
+      var el=document.getElementById('ed');if(!el)return false;
+      var v=el.value.trim();
+      if(!v){toast('不能是空的');return false;}
+      var s=S(),i=idxOf(id),a=ms();
+      if(i<0){closeSheet();return'done';}
+      if(!m.eb){m.eb=[{oc:m.t,tail:deep(a.slice(i+1)),ts:m.ts}];m.ei=0;}
+      else m.eb[m.ei]={oc:m.t,tail:deep(a.slice(i+1)),ts:Date.now()};
+      m.eb.push({oc:v,tail:[],ts:Date.now()});m.ei=m.eb.length-1;m.t=v;
+      MSG[s.id]=a.slice(0,i+1);
+      saveS(s.id);closeSheet();paint();ask();return'done';}});}
+if(CV==='chat')paint(1);
 </script>
 </body>
 </html>
