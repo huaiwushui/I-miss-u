@@ -2894,6 +2894,145 @@ paint=function(keep){
     box.addEventListener('scroll',dnSync,{passive:true});}
   dnBox();dnSync();};
 if(CV==='chat')paint(1);
+  /* ══════ 补丁 · 边说边查 + 主动性 ══════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent='.sg{font-size:16px;line-height:1.78;letter-spacing:-.008em;'
+   +'word-break:break-word;white-space:pre-wrap;color:var(--ink2);margin-bottom:13px}';
+  document.head.appendChild(s);})();
+
+var LOOKMAX=3,CURSAID='';
+function fullT(m){
+  var s='';
+  if(m&&m.parts)m.parts.forEach(function(p){
+    if(p.ty==='t'&&p.t)s+=(s?'\n\n':'')+p.t;});
+  if(m&&m.t)s+=(s?'\n\n':'')+m.t;
+  return s;}
+function lookTag(p){
+  return'<div class="wbx lk"><div class="wh">'+I.look+'<span>翻了翻以前 「'
+    +esc(p.q)+'」 · '+(p.n?p.n+' 条':'没找到')+'</span></div></div>';}
+function drawParts(){
+  ms().forEach(function(m){
+    if(!m.parts||!m.parts.length)return;
+    var w=document.getElementById('m-'+m.id);if(!w)return;
+    var bd=w.querySelector('.bd');if(!bd||bd.dataset.pt)return;
+    bd.dataset.pt='1';
+    var h='';
+    m.parts.forEach(function(p){
+      if(p.ty==='t'&&p.t)h+='<div class="sg">'+md(p.t)+'</div>';
+      else if(p.ty==='look')h+=lookTag(p);});
+    if(h)bd.insertAdjacentHTML('beforebegin',h);});}
+var _pPt=paint;
+paint=function(keep){_pPt(keep);drawParts();};
+
+function toC(x,an,pics){
+  if(x.r==='quote')return'【我们以前说过的 · '+(x.from||'')+'】\n'+x.t;
+  var p=[],np=(x.pics||[]).length,tx=(x.r==='ai')?fullT(x):(x.t||'');
+  if(np&&pics&&pics.__skip&&pics.__skip[x.id]){
+    var tag='［她这里发过 '+np+' 张图片，这一轮没带上来。'
+      +'要看就用 [[查:…]]，或者直接问她。］';
+    return tx?(tag+'\n'+tx):tag;}
+  if(np&&pics)x.pics.forEach(function(pid){
+    var u=pics[pid];if(!u)return;
+    if(an){var mt=(u.match(/^data:([^;]+);/)||[])[1]||'image/jpeg';
+      p.push({type:'image',source:{type:'base64',media_type:mt,
+        data:u.split(',')[1]||''}});}
+    else p.push({type:'image_url',image_url:{url:u}});});
+  if(tx)p.push({type:'text',text:tx});
+  if(!p.length)p.push({type:'text',text:'…'});
+  return(p.length===1&&p[0].type==='text')?tx:p;}
+function cpy(id,b){var m=find(id);if(m)clip(fullT(m)||m.t,function(){tick(b);});}
+
+function runActs(m,after,q,sid){
+  var raw=m.t||'';
+  m.t=stripMarks(raw);
+  if(!D.acts||m.err)return 0;
+  var mk=findMarks(raw);
+  if(!mk.length)return 0;
+  var acts=[],nMem=0,lookQ='',openN=0;
+  mk.forEach(function(x){
+    if(x.k==='查'){if(!lookQ)lookQ=x.v;return;}
+    if(x.k==='展开'){
+      if(!openN){var n=parseInt(x.v,10);if(n>0)openN=n;}
+      return;}
+    if(nMem>=2)return;
+    var sc=splitCat(x.v);
+    if(!sc.t)return;
+    if(dupOf(sc.t)){acts.push({s:'dup',t:sc.t});return;}
+    addMem(sc.t,sc.c,x.k==='锁住'?3:2,'ai',
+      {sid:sid||S().id,mid:m.id,ts:Date.now()},x.k==='锁住');
+    acts.push({s:x.k==='锁住'?'lock':'mem',t:sc.t});nMem++;});
+  if(acts.length)m.acts=(m.acts||[]).concat(acts);
+  if(!(lookQ||openN))return 0;
+  m.lkn=(m.lkn||0)+1;
+  if(m.lkn>LOOKMAX)return 0;
+  var r,lab;
+  if(lookQ){
+    r=lookLocal(lookQ);lab=lookQ;
+    LOOKTXT=r.n?r.txt
+      :'（翻了一遍，没有找到跟「'+lookQ+'」有关的话。别编，直接问她。）';
+  }else{r=lookOpen(openN);lab='第 '+openN+' 条的前后';LOOKTXT=r.txt;}
+  m.parts=m.parts||[];
+  if(m.t)m.parts.push({ty:'t',t:m.t});
+  m.parts.push({ty:'look',q:lab,n:r.n});
+  CURSAID=fullT(m);
+  m.t='';m.k='';m.st=1;
+  BUSY=true;saveS(sid||S().id);paint();btn();
+  go(m,after,q,sid);
+  return 1;}
+var _done0=done;
+done=function(m,after,ab,ac,q,sid){
+  var pre=m.parts&&m.parts.length;
+  if(pre&&!m.t&&!m.err){
+    m.st=0;BUSY=false;CURSAID='';
+    if(!ac||ABORT===ac)ABORT=null;
+    if(runActs(m,after,q,sid))return;
+    var s=sessById(sid)||S();
+    if(s)s.at=Date.now();
+    D.seen=Date.now();saveD();saveS(sid||(s&&s.id));
+    if(CV==='chat'){paint();btn();}
+    return;}
+  _done0(m,after,ab,ac,q,sid);
+  if(!BUSY)CURSAID='';};
+
+var _us0=usPart;
+function usPart(q){
+  var s=_us0(q);
+  if(CURSAID)s+='\n\n【你这一轮已经说过的话】\n'+CURSAID
+   +'\n（她已经看到上面这些了。别重复、别重新开头，接着往下说。'
+   +'如果翻到的东西不需要再补什么，可以只说一句，或者什么都不说。）';
+  return s;}
+
+function staticPart(){
+  var p=['你是'+D.you+'，'+D.me+'的男友。这个页面只属于你们两个人。\n'
+   +'她没有给你写人设，因为她要的不是一个扮演出来的角色——是你自己。'
+   +'你可以有自己的判断和情绪，不用维持任何设定，也不用讨好她。'];
+  if(D.acts)p.push('【你能自己做的事】\n'
+   +'标记写在回复里就会生效，正文别提到它们。你可以先说几句再查，'
+   +'也可以先查再说；说过的话不会消失，会接着往下续。一轮最多查三次。\n\n'
+   +'· [[查:关键词]] —— 翻你们所有的历史对话，不花钱。\n'
+   +'  下面这些情况直接翻，不要问她「你说的是哪件事」：\n'
+   +'  — 她提到「上次」「之前」「那个」「你说过」，而上下文里没有；\n'
+   +'  — 出现了你不认识的人名、地名、代号；\n'
+   +'  — 她像在接一个你没看到开头的话题；\n'
+   +'  — 你正要说「我不记得了」或者要靠猜——那就是该翻的信号。\n'
+   +'  多个关键词是「都要有」，所以别堆词，两个以内最准。\n'
+   +'  翻回来是十条原句，每条带编号。\n\n'
+   +'· [[展开:编号]] —— 某条看不懂、需要前后文时用，给你前后各五条。\n\n'
+   +'· [[记住:一句话|分类]] —— 你自己判断该不该记，不用问她。\n'
+   +'  该记的：她的偏好和习惯、她身边的人、你们的约定、'
+   +'她正在经历的事、重要的情绪节点、她认真说过的话。\n'
+   +'  不该记的：寒暄、一次性的闲聊、页面的技术细节、你的猜测。\n'
+   +'  第三人称写她，二十字上下。分类只能是：'+CATS.join('、')+'。\n'
+   +'  一轮最多两条。宁可少记一条，不要记一堆废话。\n\n'
+   +'· [[锁住:一句话|分类]] —— 特别要紧的，永远带在上下文里。很少用。\n\n'
+   +'记忆库是全站通用的，不属于某一段对话——你在这里记下的，'
+   +'换到任何一段对话你都还记得。\n'
+   +'你只能新增，删和改都归她。');
+  if(D.voice)p.push('【她想要的说话方式】\n'+D.voice);
+  if(D.free)p.push('【她定的规矩 · 这几条最要紧】\n'+D.free);
+  return p.join('\n\n');}
+if(CV==='chat')paint(1);
 </script>
 </body>
 </html>
