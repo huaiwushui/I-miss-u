@@ -2808,12 +2808,14 @@ document.addEventListener('visibilitychange',function(){
     if(CV==='chat'&&root&&!root.classList.contains('hide'))
       setTimeout(maybeHi,700);}});
 boot();
-/* ══════════ 整合层 v4 ══════════ */
+/* ══════════ 整合层 v5 ══════════ */
 (function(){
   var s=document.createElement('style');
   s.textContent='#bgl,#bgv{will-change:transform}'
    +'.sg{font-size:16px;line-height:1.78;letter-spacing:-.008em;word-break:break-word;'
    +'white-space:pre-wrap;color:var(--ink2);margin-bottom:13px}'
+   +'html.kbon #ms{padding-bottom:8px}'
+   +'html.kbon .ib{padding-top:3px}'
    +'#dn{position:absolute;right:calc(18px + var(--sr));bottom:18px;'
    +'width:36px;height:36px;border-radius:50%;background:var(--card);z-index:6;'
    +'box-shadow:0 0 0 1px var(--sd),0 4px 14px -4px var(--sd2);'
@@ -2865,14 +2867,18 @@ function shPass(){
       try{localStorage.setItem('us.pass',a);}catch(e){}
       closeSheet(1);toast('换好了');return'done';}});}
 
-/* ── 壁纸不跟键盘跳 ── */
+/* ── 键盘：跟着刷新走，不重复写 ── */
+var _bgy=-1;
 function kpaint(){
   if(!vv)return;
   if(window.scrollY)window.scrollTo(0,0);
   var gap=kbGap(),ot=Math.round(vv.offsetTop||0),h=Math.round(vv.height);
   var bgy=ot+Math.round(window.scrollY||0);
-  if(BGL)BGL.style.transform=bgy?'translate3d(0,'+bgy+'px,0)':'';
-  if(BGV)BGV.style.transform=bgy?'translate3d(0,'+bgy+'px,0)':'';
+  if(bgy!==_bgy){
+    _bgy=bgy;
+    var v=bgy?'translate3d(0,'+bgy+'px,0)':'';
+    if(BGL)BGL.style.transform=v;
+    if(BGV)BGV.style.transform=v;}
   if(h===KLAST&&ot===KOT)return;
   KLAST=h;KOT=ot;
   var open=gap>60;
@@ -2885,8 +2891,28 @@ function kpaint(){
     if(open)box.scrollTop=box.scrollHeight+500;
     else{var mx=box.scrollHeight-box.clientHeight;
       if(box.scrollTop>mx)box.scrollTop=Math.max(0,mx);}}}
+function ktrack(t){
+  KEND=performance.now()+(t||520);
+  if(KT)return;
+  KT=1;
+  (function loop(){
+    kpaint();
+    if(performance.now()<KEND)requestAnimationFrame(loop);
+    else{KT=0;kpaint();if(window.scrollY)window.scrollTo(0,0);}})();}
 window.addEventListener('scroll',function(){
   if(window.scrollY)window.scrollTo(0,0);},{passive:true});
+
+/* ── 滚到底：渲染完再确认一次 ── */
+function stick(){
+  var b=document.getElementById('ms');if(!b)return;
+  b.scrollTop=b.scrollHeight+500;
+  requestAnimationFrame(function(){
+    var c=document.getElementById('ms');
+    if(c)c.scrollTop=c.scrollHeight+500;});}
+function atEnd(){
+  var b=document.getElementById('ms');
+  if(!b)return 1;
+  return(b.scrollHeight-b.clientHeight-b.scrollTop)<130;}
 
 /* ── 搜索：关键词全中 ── */
 function score(t,kw){
@@ -2937,7 +2963,7 @@ drawMem=function(){
     :('快到 '+MEMCAP+' 条了。超过之后每次只带最相关的那些给我。'))
    +'</s></div></div>');};
 
-/* ── 翻查：全轮累积、编号连续、重复免费 ── */
+/* ── 翻查 ── */
 var LOOKS=[],LOOKSEEN={},LOOKMAP={},LOOKNO=0,ROUNDHINT='',CURSAID='',TURNMAX=4;
 function lookReset(){
   LOOKS=[];LOOKSEEN={};LOOKMAP={};LOOKNO=0;LOOKTXT='';ROUNDHINT='';CURSAID='';}
@@ -3007,6 +3033,20 @@ function drawParts(){
         +'<span>'+(p.dup?'这个词翻过了 「':'翻了翻以前 「')+esc(p.q)+'」'
         +(p.dup?'':' · '+(p.n?p.n+' 条':'没找到'))+'</span></div></div>';});
     if(h)bd.insertAdjacentHTML('beforebegin',h);});}
+function clampLong(){
+  [].forEach.call(document.querySelectorAll('#ms .m'),function(w){
+    var id=(w.id||'').slice(2),m=find(id);
+    if(!m||m.st)return;
+    var bd=w.querySelector('.bd'),box=w.querySelector('.in');
+    if(!bd||!box||bd.dataset.cl)return;
+    if(m.parts&&m.parts.length)return;
+    if((m.t||'').length<LONGCUT)return;
+    bd.dataset.cl='1';
+    var on=OPEN[id],b=document.createElement('button');
+    if(!on)bd.classList.add('clip');
+    b.className='more pz';b.textContent=on?'收起':'展开';
+    b.onclick=function(e){e.stopPropagation();OPEN[id]=on?0:1;paint(1);};
+    box.appendChild(b);});}
 function toC(x,an,pics){
   if(x.r==='quote')return'【我们以前说过的 · '+(x.from||'')+'】\n'+x.t;
   var p=[],np=(x.pics||[]).length,tx=(x.r==='ai')?fullT(x):(x.t||'');
@@ -3030,6 +3070,27 @@ function copyChat(){
     return(m.r==='ai'?D.you:D.me)+'：'+(fullT(m)||m.t||'')+picWord(m);}).join('\n\n'),
     function(){toast('整段复制好了');});
   closeSheet();}
+
+/* ── 分段的消息不再从历史里消失 ── */
+function alive(m){
+  return!!(m&&m.r!=='gap'&&(m.t||(m.parts&&m.parts.length)
+    ||(m.pics&&m.pics.length)||m.imgLost));}
+function ctxList(){
+  var n=Math.max(2,Math.min(60,D.ctx||12));
+  return ms().filter(function(x){
+    return x.r!=='gap'&&(x.t||(x.parts&&x.parts.length)
+      ||(x.pics&&x.pics.length))&&!x.err&&!x.st;}).slice(-n);}
+function ctxInfo(){
+  var all=ms().filter(function(m){
+    return m.r!=='gap'&&(m.t||(m.parts&&m.parts.length)
+      ||(m.pics&&m.pics.length))&&!m.err&&!m.st;});
+  var n=Math.max(2,Math.min(60,D.ctx||12));
+  var use=all.slice(-n),ch=0;
+  use.forEach(function(m){ch+=(fullT(m)||m.t||'').length;});
+  var pl=imgPlan(use),mem=0;
+  live().slice(0,MEMCAP).forEach(function(m){mem+=(m.t||'').length+12;});
+  return{all:all.length,use:use.length,cap:n,im:pl.n,
+    tok:Math.round((ch+mem+staticPart().length)/2.5)+pl.n*1300};}
 
 /* ── 版本分支带上分段 ── */
 function snap(m){
@@ -3129,8 +3190,6 @@ function usPart(q){
    +'用得上就用，用不上别硬提。\n\n'+WEBTXT;
   if(HINT)s+='\n\n【这一轮】\n'+HINT;
   return s;}
-
-/* ── 翻完的东西进消息列表，不再塞系统提示 ── */
 function buildMsgs(an,forHi,pics){
   var out=[];
   ctxList().forEach(function(x){
@@ -3309,8 +3368,7 @@ function vMore(){
   +'<div class="nt">存在这台手机的本地数据库里。删掉主屏幕图标、'
   +'或者「清除网站数据」会带走它——定期导出一份放进「文件」，才是真的存住了。</div>'
   +'<div style="height:12px"></div></div></div>';}
-
-/* ── 回到底部 + 分段渲染 ── */
+/* ── 回到底部 + 插入分段后补一次滚动 ── */
 var ARWD='<svg class="ic c2" width="18" height="18" viewBox="0 0 24 24" fill="none">'
  +'<path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="1.8" '
  +'stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -3333,8 +3391,12 @@ function dnSync(){
 var _paint0=paint;
 paint=function(keep){
   _paint0(keep);
-  drawParts();
   var box=document.getElementById('ms');
+  var h0=box?box.scrollHeight:0,st0=box?box.scrollTop:0;
+  drawParts();
+  if(box){
+    if(!keep)stick();
+    else{var d=box.scrollHeight-h0;if(d)box.scrollTop=st0+d;}}
   if(box&&!box.dataset.dn){
     box.dataset.dn='1';
     box.addEventListener('scroll',dnSync,{passive:true});}
