@@ -3475,6 +3475,18 @@ function ktrack(t){
         if(_wasE)toEnd(b);else clampSc(b);});}})();}
 if(CV==='chat')requestAnimationFrame(function(){
   toEnd(document.getElementById('ms'));});
+  /* ══════════ 补丁 h2 ══════════ */
+var MKRE=/\[{1,2}\s*(查|展开|记住|锁住)\s*[:：]\s*([^\[\]\n]{1,120}?)\s*\]{1,2}/g;
+function findMarks(t){
+  var o=[],m;MKRE.lastIndex=0;
+  while((m=MKRE.exec(String(t||'')))){
+    var v=(m[2]||'').trim();
+    if(v)o.push({k:m[1],v:v});}
+  return o;}
+function stripMarks(t){
+  var s=String(t||'').replace(MKRE,'');
+  s=s.replace(/\[{1,2}\s*(查|展开|记住|锁住)\s*[:：]?[^\[\]\n]*$/,'');
+  return s.replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();}
 </script>
 </body>
 </html>
