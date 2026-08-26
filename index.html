@@ -2837,6 +2837,63 @@ function kpaint(){
 
 window.addEventListener('scroll',function(){
   if(window.scrollY)window.scrollTo(0,0);},{passive:true});
+  /* ══════ 补丁 · 关键词全中 + 回到底部 ══════ */
+function score(t,kw){
+  if(!kw.length)return 1;
+  var low=(t||'').toLowerCase(),sc=0,all=1;
+  kw.forEach(function(w){
+    var W=w.toLowerCase(),s=0;
+    if(low.indexOf(W)>=0)s=10;
+    if(!s)expand(w).forEach(function(x){
+      if(x!==w&&low.indexOf(x.toLowerCase())>=0)s=Math.max(s,4);});
+    if(!s&&W.length>=3){
+      var hit=0,tot=0;
+      for(var i=0;i<W.length-1;i++){tot++;if(low.indexOf(W.substr(i,2))>=0)hit++;}
+      if(tot&&hit/tot>=0.6)s=2;}
+    if(!s)all=0;
+    sc+=s;});
+  return all?sc:0;}
+
+(function(){
+  var s=document.createElement('style');
+  s.textContent='#dn{position:absolute;right:calc(18px + var(--sr));bottom:18px;'
+   +'width:36px;height:36px;border-radius:50%;background:var(--card);z-index:6;'
+   +'box-shadow:0 0 0 1px var(--sd),0 4px 14px -4px var(--sd2);'
+   +'display:flex;align-items:center;justify-content:center;'
+   +'opacity:0;pointer-events:none;transform:translateY(8px) scale(.9);'
+   +'transition:opacity .22s ease,transform .22s ease}'
+   +'#dn.on{opacity:.82;pointer-events:auto;transform:none}'
+   +'#dn:active{opacity:1;transform:scale(.9)}';
+  document.head.appendChild(s);})();
+
+var ARWD='<svg class="ic c2" width="18" height="18" viewBox="0 0 24 24" fill="none">'
+ +'<path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="1.8" '
+ +'stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function dnBox(){
+  var mw=document.querySelector('#pg .mw');if(!mw)return null;
+  var b=document.getElementById('dn');
+  if(!b){
+    b=document.createElement('button');b.id='dn';b.innerHTML=ARWD;
+    b.onclick=function(){
+      var box=document.getElementById('ms');if(!box)return;
+      try{box.scrollTo({top:box.scrollHeight,behavior:'smooth'});}
+      catch(e){box.scrollTop=box.scrollHeight;}};
+    mw.appendChild(b);}
+  return b;}
+function dnSync(){
+  var box=document.getElementById('ms'),b=dnBox();
+  if(!box||!b)return;
+  b.classList.toggle('on',
+    (box.scrollHeight-box.clientHeight-box.scrollTop)>400);}
+var _pDn=paint;
+paint=function(keep){
+  _pDn(keep);
+  var box=document.getElementById('ms');
+  if(box&&!box.dataset.dn){
+    box.dataset.dn='1';
+    box.addEventListener('scroll',dnSync,{passive:true});}
+  dnBox();dnSync();};
+if(CV==='chat')paint(1);
 </script>
 </body>
 </html>
