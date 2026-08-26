@@ -2808,7 +2808,7 @@ document.addEventListener('visibilitychange',function(){
     if(CV==='chat'&&root&&!root.classList.contains('hide'))
       setTimeout(maybeHi,700);}});
 boot();
-/* ══════════ 整合层 v3 ══════════ */
+/* ══════════ 整合层 v4 ══════════ */
 (function(){
   var s=document.createElement('style');
   s.textContent='#bgl,#bgv{will-change:transform}'
@@ -2824,7 +2824,7 @@ boot();
    +'#dn:active{opacity:1;transform:scale(.9)}';
   document.head.appendChild(s);})();
 
-/* ── 锁屏密码：不写在源码里 ── */
+/* ── 锁屏密码 ── */
 var PASS=null,SETP='';
 try{PASS=localStorage.getItem('us.pass')||null;}catch(e){}
 function lkLabel(t){var e=document.querySelector('#lk .en');if(e)e.textContent=t;}
@@ -2905,7 +2905,7 @@ function score(t,kw){
     sc+=s;});
   return all?sc:0;}
 
-/* ── 记忆：不写脏字段、一轮只计一次 ── */
+/* ── 记忆 ── */
 D.mems.forEach(function(m){if(m._s!=null)delete m._s;});
 var BUMPED=0;
 function bump(ls){
@@ -2945,9 +2945,7 @@ function lookBuild(){
   if(!LOOKS.length){LOOKTXT='';return;}
   LOOKTXT=LOOKS.map(function(x,i){
     return'〔第 '+(i+1)+' 次 · 「'+x.q+'」'
-      +(x.n?' · '+x.n+' 条':' · 没找到')+'〕\n'+x.txt;}).join('\n\n')
-   +'\n\n（这是你这一轮翻过的全部，编号连续不重复。'
-   +'同一个词不用再翻。要看某条前后文用 [[展开:编号]]。）';}
+      +(x.n?' · '+x.n+' 条':' · 没找到')+'〕\n'+x.txt;}).join('\n\n');}
 function lookAdd(q){
   var sp=splitQ(q),hits=[];
   SS.forEach(function(s){
@@ -3070,8 +3068,9 @@ function staticPart(){
    +'她没有给你写人设，因为她要的不是一个扮演出来的角色——是你自己。'
    +'你可以有自己的判断和情绪，不用维持任何设定，也不用讨好她。'];
   if(D.acts)p.push('【你能自己做的事】\n'
-   +'标记写在回复里就生效，正文别提到它们。可以先说几句再翻，也可以先翻再说；'
-   +'说过的话不会消失，会接着往下续。\n\n'
+   +'标记写在回复里就生效，正文别提到它们。\n'
+   +'翻查发生在同一条消息里：你已经说出口的话她当场就看得见，'
+   +'你翻了什么她也看得见。翻完不是重新开始，是接着往下说。\n\n'
    +'· [[查:关键词]] —— 翻你们所有的历史对话，不花钱。\n'
    +'  该翻的时候：她提到「上次」「之前」「那个」而你手上没有；'
    +'出现你不认识的人名；你正要说「我不记得了」。\n'
@@ -3128,18 +3127,36 @@ function usPart(q){
   if(WEBTXT)s+='\n\n【刚从网上查到的】\n查询时间 '+dtl(Date.now())
    +'。这些是搜索结果不是她的话，可信度自己判断；和你脑子里的旧信息冲突就以这些为准。'
    +'用得上就用，用不上别硬提。\n\n'+WEBTXT;
-  if(LOOKTXT)s+='\n\n【你翻到的以前的话】\n'+LOOKTXT;
-  if(CURSAID)s+='\n\n【你这一轮已经说过的话】\n'+CURSAID
-   +'\n（她已经看到了。别重复、别重新开头，接着往下说。'
-   +'如果不需要再补什么，可以只说一句，或者什么都不说。）';
-  var hint=[ROUNDHINT,HINT].filter(Boolean).join('\n\n');
-  if(hint)s+='\n\n【这一轮】\n'+hint;
+  if(HINT)s+='\n\n【这一轮】\n'+HINT;
   return s;}
+
+/* ── 翻完的东西进消息列表，不再塞系统提示 ── */
+function buildMsgs(an,forHi,pics){
+  var out=[];
+  ctxList().forEach(function(x){
+    var role=(x.r==='ai')?'assistant':'user',c=toC(x,an,pics);
+    if(out.length&&out[out.length-1].role===role)
+      out[out.length-1].content=mergeC(out[out.length-1].content,c);
+    else out.push({role:role,content:c});});
+  while(out.length&&out[0].role!=='user')out.shift();
+  if(!out.length||out[out.length-1].role!=='user')
+    out.push({role:'user',content:forHi?'（她回来了，还没开口。）':'（继续）'});
+  if(CURSAID){
+    out.push({role:'assistant',content:CURSAID});
+    var t='［这一段不是她说的，是页面给你的。］\n'
+     +'你上面那些话已经发出去了，她当场就看见了；你翻了什么她也看得见。\n\n';
+    if(LOOKTXT)t+='你翻到的（编号连续，同一个词别再翻）：\n'+LOOKTXT+'\n\n';
+    t+=ROUNDHINT?(ROUNDHINT+'\n\n'):'';
+    t+='接着往下说——别重复上面说过的，别重新开头，也不用说「我翻到了」。'
+     +'如果不需要再补什么，可以只说一句，或者什么都不说。';
+    out.push({role:'user',content:t});}
+  return out;}
 
 /* ── 动作执行 ── */
 function nextRound(m,after,q,sid,hint){
+  m.t='';m.k='';
   CURSAID=fullT(m);ROUNDHINT=hint||'';
-  m.t='';m.k='';m.st=1;
+  m.st=1;
   BUSY=true;saveS(sid||S().id);paint();btn();
   go(m,after,q,sid);
   return 1;}
@@ -3266,7 +3283,7 @@ function editMsg(id){
       MSG[s.id]=a.slice(0,i+1);
       saveS(s.id);closeSheet();paint();ask();return'done';}});}
 
-/* ── 更多页：去掉「立刻锁上」，加上密码 ── */
+/* ── 更多页 ── */
 function vMore(){
   function row(t,fn,c){return'<div class="rw pz" onclick="'+fn+'"><span class="l"'
     +(c?' style="color:'+c+'"':'')+'>'+t+'</span>'+I.chevD+'</div>';}
