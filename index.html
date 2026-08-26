@@ -2808,6 +2808,35 @@ document.addEventListener('visibilitychange',function(){
     if(CV==='chat'&&root&&!root.classList.contains('hide'))
       setTimeout(maybeHi,700);}});
 boot();
+  /* ══════ 补丁 · 壁纸不再跟着键盘跳 ══════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent='#bgl,#bgv{will-change:transform}';
+  document.head.appendChild(s);})();
+
+function kpaint(){
+  if(!vv)return;
+  if(window.scrollY)window.scrollTo(0,0);
+  var gap=kbGap(),ot=Math.round(vv.offsetTop||0),h=Math.round(vv.height);
+  var sy=Math.round(window.scrollY||0);
+  var bgy=ot+sy;
+  if(BGL)BGL.style.transform=bgy?'translate3d(0,'+bgy+'px,0)':'';
+  if(BGV)BGV.style.transform=bgy?'translate3d(0,'+bgy+'px,0)':'';
+  if(h===KLAST&&ot===KOT)return;
+  KLAST=h;KOT=ot;
+  var open=gap>60;
+  if(open&&gap!==kbH){kbH=gap;
+    try{localStorage.setItem('us.kbH',gap);}catch(e){}}
+  de.classList.toggle('kbon',open);
+  kSet(open?h:0,ot);
+  var box=document.getElementById('ms');
+  if(box){
+    if(open)box.scrollTop=box.scrollHeight+500;
+    else{var mx=box.scrollHeight-box.clientHeight;
+      if(box.scrollTop>mx)box.scrollTop=Math.max(0,mx);}}}
+
+window.addEventListener('scroll',function(){
+  if(window.scrollY)window.scrollTo(0,0);},{passive:true});
 </script>
 </body>
 </html>
