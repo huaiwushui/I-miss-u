@@ -3402,13 +3402,16 @@ paint=function(keep){
     box.addEventListener('scroll',dnSync,{passive:true});}
   dnBox();dnSync();};
 if(CV==='chat')paint(1);
-  /* ══════════ 手感补丁 h1 ══════════ */
+/* ══════════ 手感层 v1 · 第一段 ══════════ */
 (function(){
   var s=document.createElement('style');
-  s.textContent='#ms{overflow-anchor:none}';
+  s.textContent='#ms{overflow-anchor:none}'
+   +'#ms>.m{content-visibility:auto;contain-intrinsic-size:auto 170px;'
+   +'animation:none!important}'
+   +'#ms>.m.nu{content-visibility:visible;animation:up .3s ease both!important}';
   document.head.appendChild(s);})();
 
-/* 全高基准：不信 innerHeight 的瞬时值 */
+/* ── 键盘缺口：全高基准，不信 innerHeight 瞬时值 ── */
 var FULLH;
 function kbGap(){
   if(!vv)return 0;
@@ -3416,49 +3419,117 @@ function kbGap(){
   if(vv.height>FULLH-60)FULLH=Math.max(Math.round(vv.height),window.innerHeight);
   return Math.round(FULLH-vv.height);}
 
-/* 贴底永远 clamp，绝不写超界值 */
-function toEnd(b){
+/* ── 唯一的位置权威 ── */
+var SC={pin:1,hold:0,ht:0,raf:0,st:0,el:null,off:0,pre:-1,in:0};
+function msBox(){return document.getElementById('ms');}
+function scMax(b){var m=b.scrollHeight-b.clientHeight;return m>0?m:0;}
+function scEnd(b){return(scMax(b)-b.scrollTop)<130;}
+function atEnd(){var b=msBox();return b?(scEnd(b)?1:0):1;}
+function toEnd(b){if(b)b.scrollTop=scMax(b);}
+function clampSc(b){if(!b)return;var m=scMax(b);if(b.scrollTop>m)b.scrollTop=m;}
+function scAnchor(){
+  var b=msBox();SC.el=null;
   if(!b)return;
-  var mx=b.scrollHeight-b.clientHeight;
-  b.scrollTop=mx>0?mx:0;}
-function clampSc(b){
-  if(!b)return;
-  var mx=b.scrollHeight-b.clientHeight;
-  if(mx<0)mx=0;
-  if(b.scrollTop>mx)b.scrollTop=mx;}
-function atEnd(){
-  var b=document.getElementById('ms');
-  if(!b)return 1;
-  return(b.scrollHeight-b.clientHeight-b.scrollTop)<130;}
-function stick(){
-  var b=document.getElementById('ms');if(!b)return;
-  toEnd(b);
-  requestAnimationFrame(function(){toEnd(document.getElementById('ms'));});}
+  var st=b.scrollTop,ch=b.children,i,el;
+  for(i=0;i<ch.length;i++){
+    el=ch[i];
+    if(!el.id)continue;
+    if(el.offsetTop+el.offsetHeight>st){SC.el=el;SC.off=el.offsetTop-st;return;}}}
+function scSync(){
+  var b=msBox();if(!b)return;
+  SC.pin=scEnd(b)?1:0;
+  if(SC.pin)SC.el=null;else scAnchor();}
+function scDrift(){
+  var b=msBox();if(!b||!SC.el)return;
+  if(!SC.el.isConnected||SC.el.parentNode!==b){scAnchor();return;}
+  var d=(SC.el.offsetTop-b.scrollTop)-SC.off;
+  if(Math.abs(d)>1&&Math.abs(d)<4000)b.scrollTop+=d;}
+function scFix(){
+  var b=msBox();if(!b)return;
+  if(SC.hold){clampSc(b);return;}
+  if(SC.pin){toEnd(b);return;}
+  scDrift();clampSc(b);}
+function scAfter(){
+  if(SC.raf)return;
+  SC.raf=requestAnimationFrame(function(){SC.raf=0;scFix();});}
+function stick(){scFix();scAfter();}
+function stickHard(){
+  SC.pin=1;SC.el=null;
+  toEnd(msBox());scAfter();}
+function scBind(){
+  var b=msBox();if(!b||b.dataset.sc)return;
+  b.dataset.sc='1';
+  b.addEventListener('scroll',function(){
+    if(SC.st)return;
+    SC.st=1;
+    requestAnimationFrame(function(){SC.st=0;scSync();});},{passive:true});}
 
-/* 键盘：每帧只写 transform，布局一步到位，改完下一帧再修滚动 */
-var _by,_kh,_kot,_wasE;
+/* ── 手势：只有真的滑过才算你要自己看 ── */
+document.addEventListener('touchstart',function(e){
+  var t=e.target;
+  SC.in=(t&&t.closest&&t.closest('#ms'))?1:0;
+  var b=msBox();SC.pre=b?b.scrollTop:-1;
+  clearTimeout(SC.ht);},{passive:true});
+document.addEventListener('touchmove',function(){
+  if(!SC.in)return;
+  SC.hold=1;scSync();},{passive:true});
+function scLoose(){
+  clearTimeout(SC.ht);
+  SC.ht=setTimeout(function(){SC.hold=0;scSync();},280);}
+document.addEventListener('touchend',scLoose,{passive:true});
+document.addEventListener('touchcancel',scLoose,{passive:true});
+
+/* ── 真实高度写回，离屏就不再是猜的 ── */
+var HC={},RO=null;
+function roBind(){
+  if(!RO){
+    if(!window.ResizeObserver)return;
+    RO=new ResizeObserver(function(es){
+      for(var i=0;i<es.length;i++){
+        var el=es[i].target,h=Math.round(el.offsetHeight),id=(el.id||'').slice(2);
+        if(h>0){el.style.containIntrinsicSize='auto '+h+'px';if(id)HC[id]=h;}}
+      scAfter();});}
+  var b=msBox();if(!b)return;
+  [].forEach.call(b.querySelectorAll('.m'),function(el){
+    if(el.dataset.ro)return;
+    el.dataset.ro='1';RO.observe(el);});}
+function hApply(){
+  var b=msBox();if(!b)return;
+  [].forEach.call(b.querySelectorAll('.m'),function(el){
+    var h=HC[(el.id||'').slice(2)];
+    if(h)el.style.containIntrinsicSize='auto '+h+'px';});}
+
+/* ── 进场动画只给真正的新消息 ── */
+var SEEN={};
+function markNew(first){
+  var b=msBox();if(!b)return;
+  [].forEach.call(b.querySelectorAll('.m'),function(el){
+    var id=(el.id||'').slice(2);
+    if(!id||SEEN[id])return;
+    SEEN[id]=1;
+    if(!first)el.classList.add('nu');});}
+/* ══════════ 手感层 v1 · 第二段 ══════════ */
+/* ── 键盘：只写 transform，布局一步到位，滚动交给权威 ── */
+var _bgy2,_kh2,_kot2;
 function kpaint(){
   if(!vv)return;
   if(window.scrollY)window.scrollTo(0,0);
   var gap=kbGap(),ot=Math.round(vv.offsetTop||0),h=Math.round(vv.height);
   var by=ot+Math.round(window.scrollY||0);
-  if(by!==_by){
-    _by=by;
+  if(by!==_bgy2){
+    _bgy2=by;
     var t=by?'translate3d(0,'+by+'px,0)':'';
     if(BGL)BGL.style.transform=t;
     if(BGV)BGV.style.transform=t;}
-  if(h===_kh&&ot===_kot)return;
-  var box=document.getElementById('ms');
-  _wasE=box?atEnd():1;
-  _kh=h;_kot=ot;KLAST=h;KOT=ot;
+  var dh=(h!==_kh2);
+  if(!dh&&ot===_kot2)return;
+  _kh2=h;_kot2=ot;KLAST=h;KOT=ot;
   var open=gap>60;
   if(open&&gap!==kbH){kbH=gap;
     try{localStorage.setItem('us.kbH',gap);}catch(e){}}
   de.classList.toggle('kbon',open);
   kSet(open?h:0,ot);
-  if(box)requestAnimationFrame(function(){
-    var b=document.getElementById('ms');
-    if(_wasE)toEnd(b);else clampSc(b);});}
+  if(dh)scAfter();}
 function ktrack(t){
   KEND=performance.now()+(t||520);
   if(KT)return;
@@ -3466,16 +3537,21 @@ function ktrack(t){
   (function loop(){
     kpaint();
     if(performance.now()<KEND)requestAnimationFrame(loop);
-    else{
-      KT=0;_kh=void 0;
-      kpaint();
+    else{KT=0;_kh2=void 0;kpaint();
       if(window.scrollY)window.scrollTo(0,0);
-      requestAnimationFrame(function(){
-        var b=document.getElementById('ms');
-        if(_wasE)toEnd(b);else clampSc(b);});}})();}
-if(CV==='chat')requestAnimationFrame(function(){
-  toEnd(document.getElementById('ms'));});
-  /* ══════════ 补丁 h2 ══════════ */
+      scAfter();}})();}
+document.addEventListener('focusin',function(e){
+  if(!e.isTrusted)return;
+  var t=e.target;
+  if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
+  var b=msBox();
+  if(b){
+    if(SC.pin)toEnd(b);
+    else if(SC.pre>=0)b.scrollTop=Math.min(SC.pre,scMax(b));
+    clampSc(b);}
+  scAfter();},true);
+
+/* ── 标记：认和剥用同一套判断 ── */
 var MKRE=/\[{1,2}\s*(查|展开|记住|锁住)\s*[:：]\s*([^\[\]\n]{1,120}?)\s*\]{1,2}/g;
 function findMarks(t){
   var o=[],m;MKRE.lastIndex=0;
@@ -3487,65 +3563,6 @@ function stripMarks(t){
   var s=String(t||'').replace(MKRE,'');
   s=s.replace(/\[{1,2}\s*(查|展开|记住|锁住)\s*[:：]?[^\[\]\n]*$/,'');
   return s.replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();}
-  /* ══════════ 补丁 h3 ══════════ */
-/* 手指在屏幕上时，谁也别抢滚动 */
-var TOUCH=0,TT=0,STICKY=1;
-function _tEnd(){clearTimeout(TT);TT=setTimeout(function(){TOUCH=0;},420);}
-document.addEventListener('touchstart',function(){
-  TOUCH=1;clearTimeout(TT);},{passive:true});
-document.addEventListener('touchmove',function(){
-  var b=document.getElementById('ms');if(b)STICKY=atEnd();},{passive:true});
-document.addEventListener('touchend',_tEnd,{passive:true});
-document.addEventListener('touchcancel',_tEnd,{passive:true});
-
-function stick(){
-  var b=document.getElementById('ms');if(!b)return;
-  if(TOUCH||!STICKY){clampSc(b);return;}
-  toEnd(b);
-  requestAnimationFrame(function(){
-    var c=document.getElementById('ms');if(!c)return;
-    if(TOUCH||!STICKY){clampSc(c);return;}
-    toEnd(c);});}
-
-/* 只有高度真变了才管滚动，偏移挪动一概不碰 */
-var _by3,_kh3,_kot3,_wasE3;
-function _fix(){
-  var b=document.getElementById('ms');if(!b)return;
-  if(TOUCH||!STICKY){clampSc(b);return;}
-  if(_wasE3)toEnd(b);else clampSc(b);}
-function kpaint(){
-  if(!vv)return;
-  if(window.scrollY)window.scrollTo(0,0);
-  var gap=kbGap(),ot=Math.round(vv.offsetTop||0),h=Math.round(vv.height);
-  var by=ot+Math.round(window.scrollY||0);
-  if(by!==_by3){
-    _by3=by;
-    var t=by?'translate3d(0,'+by+'px,0)':'';
-    if(BGL)BGL.style.transform=t;
-    if(BGV)BGV.style.transform=t;}
-  var dh=(h!==_kh3);
-  if(!dh&&ot===_kot3)return;
-  var box=document.getElementById('ms');
-  if(dh&&box)_wasE3=atEnd();
-  _kh3=h;_kot3=ot;KLAST=h;KOT=ot;
-  var open=gap>60;
-  if(open&&gap!==kbH){kbH=gap;
-    try{localStorage.setItem('us.kbH',gap);}catch(e){}}
-  de.classList.toggle('kbon',open);
-  kSet(open?h:0,ot);
-  if(dh&&box)requestAnimationFrame(_fix);}
-function ktrack(t){
-  KEND=performance.now()+(t||520);
-  if(KT)return;
-  KT=1;
-  (function loop(){
-    kpaint();
-    if(performance.now()<KEND)requestAnimationFrame(loop);
-    else{KT=0;_kh3=void 0;kpaint();
-      if(window.scrollY)window.scrollTo(0,0);
-      requestAnimationFrame(_fix);}})();}
-
-/* 翻查前后说重了，页面直接删 */
 function dedupePara(m){
   if(!m||!m.parts||!m.parts.length||!m.t)return;
   var seen={};
@@ -3560,12 +3577,32 @@ function dedupePara(m){
       if(k.length>6&&seen[k])return;}
     out.push(x);});
   m.t=out.join('\n\n');}
+
+/* ── 重画之后统一收尾 ── */
+var _pH=paint;
+paint=function(keep){
+  var b=msBox(),st=b?b.scrollTop:0,pin=SC.pin;
+  if(RO)RO.disconnect();
+  _pH(keep);
+  var c=msBox();if(!c)return;
+  hApply();roBind();markNew();scBind();
+  if(pin){SC.pin=1;SC.el=null;toEnd(c);}
+  else{c.scrollTop=Math.min(st,scMax(c));scAnchor();}
+  scAfter();};
 var _doneH=done;
 done=function(m,after,ab,ac,q,sid){
   dedupePara(m);
   return _doneH(m,after,ab,ac,q,sid);};
 var _askH=ask;
-ask=function(a){STICKY=1;return _askH(a);};
+ask=function(a){stickHard();return _askH(a);};
+var _viewH=view;
+view=function(v){
+  if(v==='chat'){SC.pin=1;SC.hold=0;SC.el=null;}
+  return _viewH(v);};
+var _jumpH=jump;
+jump=function(sid,mid){SC.pin=0;return _jumpH(sid,mid);};
+markNew(1);hApply();roBind();scBind();scSync();
+if(CV==='chat')requestAnimationFrame(function(){stickHard();});
 </script>
 </body>
 </html>
