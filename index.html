@@ -3402,6 +3402,79 @@ paint=function(keep){
     box.addEventListener('scroll',dnSync,{passive:true});}
   dnBox();dnSync();};
 if(CV==='chat')paint(1);
+  /* ══════════ 手感补丁 h1 ══════════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent='#ms{overflow-anchor:none}';
+  document.head.appendChild(s);})();
+
+/* 全高基准：不信 innerHeight 的瞬时值 */
+var FULLH;
+function kbGap(){
+  if(!vv)return 0;
+  if(!FULLH)FULLH=Math.max(window.innerHeight,Math.round(vv.height));
+  if(vv.height>FULLH-60)FULLH=Math.max(Math.round(vv.height),window.innerHeight);
+  return Math.round(FULLH-vv.height);}
+
+/* 贴底永远 clamp，绝不写超界值 */
+function toEnd(b){
+  if(!b)return;
+  var mx=b.scrollHeight-b.clientHeight;
+  b.scrollTop=mx>0?mx:0;}
+function clampSc(b){
+  if(!b)return;
+  var mx=b.scrollHeight-b.clientHeight;
+  if(mx<0)mx=0;
+  if(b.scrollTop>mx)b.scrollTop=mx;}
+function atEnd(){
+  var b=document.getElementById('ms');
+  if(!b)return 1;
+  return(b.scrollHeight-b.clientHeight-b.scrollTop)<130;}
+function stick(){
+  var b=document.getElementById('ms');if(!b)return;
+  toEnd(b);
+  requestAnimationFrame(function(){toEnd(document.getElementById('ms'));});}
+
+/* 键盘：每帧只写 transform，布局一步到位，改完下一帧再修滚动 */
+var _by,_kh,_kot,_wasE;
+function kpaint(){
+  if(!vv)return;
+  if(window.scrollY)window.scrollTo(0,0);
+  var gap=kbGap(),ot=Math.round(vv.offsetTop||0),h=Math.round(vv.height);
+  var by=ot+Math.round(window.scrollY||0);
+  if(by!==_by){
+    _by=by;
+    var t=by?'translate3d(0,'+by+'px,0)':'';
+    if(BGL)BGL.style.transform=t;
+    if(BGV)BGV.style.transform=t;}
+  if(h===_kh&&ot===_kot)return;
+  var box=document.getElementById('ms');
+  _wasE=box?atEnd():1;
+  _kh=h;_kot=ot;KLAST=h;KOT=ot;
+  var open=gap>60;
+  if(open&&gap!==kbH){kbH=gap;
+    try{localStorage.setItem('us.kbH',gap);}catch(e){}}
+  de.classList.toggle('kbon',open);
+  kSet(open?h:0,ot);
+  if(box)requestAnimationFrame(function(){
+    var b=document.getElementById('ms');
+    if(_wasE)toEnd(b);else clampSc(b);});}
+function ktrack(t){
+  KEND=performance.now()+(t||520);
+  if(KT)return;
+  KT=1;
+  (function loop(){
+    kpaint();
+    if(performance.now()<KEND)requestAnimationFrame(loop);
+    else{
+      KT=0;_kh=void 0;
+      kpaint();
+      if(window.scrollY)window.scrollTo(0,0);
+      requestAnimationFrame(function(){
+        var b=document.getElementById('ms');
+        if(_wasE)toEnd(b);else clampSc(b);});}})();}
+if(CV==='chat')requestAnimationFrame(function(){
+  toEnd(document.getElementById('ms'));});
 </script>
 </body>
 </html>
