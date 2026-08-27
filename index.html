@@ -4674,6 +4674,144 @@ function drawParts(){
 
 /* 6 · 代码里的上限跟提示词说的对齐 */
 TURNMAX=3;
+  /* ══════ 对话摘要：换个方向 ══════ */
+function exCount(s){
+  var ex=s.ex||0,n=0;
+  (MSG[s.id]||[]).forEach(function(m){
+    if(!m.err&&!m.st&&(m.r==='me'||m.r==='ai')
+      &&(fullT(m)||m.t||(m.pics&&m.pics.length))&&(m.ts||0)>ex)n++;});
+  return n;
+}
+var SUMT='';
+function exRun(){
+  if(EXB)return;
+  if(!D.apiUrl||!D.apiKey){toast('要先填中转设置');return;}
+  var s=S(),sid=s.id,ex=s.ex||0;
+  var arr=(MSG[sid]||[]).filter(function(m){
+    return!m.err&&!m.st&&(m.r==='me'||m.r==='ai')
+      &&(fullT(m)||m.t||(m.pics&&m.pics.length))&&(m.ts||0)>ex;}).slice(-60);
+  if(!arr.length){toast('没有新的可以看');return;}
+  EXB=1;EXSID=sid;
+  if(CV==='mem')drawMem();
+  var conv=arr.map(function(m){
+    return(m.r==='me'?D.me:D.you)+'：'
+      +String(fullT(m)||m.t||'').slice(0,600)+picWord(m);}).join('\n');
+  var sys='把下面这段对话收成一小段话，给'+D.you+'以后回想用。\n\n'
+   +'写：这段主要在聊什么、她当时是什么状态、说定了什么事、'
+   +'有没有话说到一半没说完。\n'
+   +'不写：寒暄客套、页面和代码的技术细节、你自己的猜测。\n'
+   +'怎么写：一段连着的话，不要分点不要小标题。第三人称写她，叫她「'
+   +D.me+'」。一百五十字以内，没那么多话就少写，别灌水。\n\n'
+   +'只输出这段话本身，不要前言、不要引号、不要解释。\n'
+   +'这段确实没什么值得留下的，就只输出四个字：没什么事。';
+  var an=D.fmt!=='openai',body;
+  if(an)body={model:utilModel(),max_tokens:700,system:sys,
+    messages:[{role:'user',content:'对话：\n'+conv}]};
+  else body={model:utilModel(),max_tokens:700,
+    messages:[{role:'system',content:sys},
+              {role:'user',content:'对话：\n'+conv}]};
+  fetch(D.apiUrl,{method:'POST',
+    headers:an?{'Content-Type':'application/json','x-api-key':D.apiKey,
+                'anthropic-version':'2023-06-01'}
+              :{'Content-Type':'application/json',
+                'Authorization':'Bearer '+D.apiKey},
+    body:JSON.stringify(body)})
+  .then(function(r){
+    if(!r.ok)return r.text().then(function(t){
+      throw new Error(r.status+'：'+t.slice(0,110));});
+    return r.json();})
+  .then(function(j){
+    EXB=0;
+    if(!sessById(EXSID)){toast('那段对话不在了');
+      if(CV==='mem')drawMem();return;}
+    var raw=an?((j.content||[]).map(function(b){return b.text||'';}).join(''))
+             :((((j.choices||[])[0]||{}).message||{}).content||'');
+    var t=String(raw||'').trim()
+      .replace(/^[「『"'（(]+/,'').replace(/[」』"'）)]+$/,'').trim();
+    if(!t){toast('返回是空的，再试一次');
+      if(CV==='mem')drawMem();return;}
+    if(/^没什么事[。.!！]?$/.test(t)){
+      var s2=sessById(EXSID);
+      if(s2){s2.ex=Date.now();saveS();}
+      toast('这段没什么要留的');
+      if(CV==='mem')drawMem();else view('mem');
+      return;}
+    SUMT=t.slice(0,400);
+    sumSheet();})
+  .catch(function(e){
+    EXB=0;
+    var g=String(e&&e.message||e);
+    if(/Failed to fetch|Load failed/i.test(g))g='连不上接口';
+    toast('读不出来：'+g.slice(0,40));
+    if(CV==='mem')drawMem();});
+}
+function sumSheet(){
+  var s=sessById(EXSID),n=s?exCount(s):0;
+  sheet({full:1,title:'这段聊了什么',ok:'记进记忆库',
+    body:'<div class="nt" style="padding:0 var(--inset) 12px">'
+  +'读了 '+n+' 句，收成下面这段。改了再存也行，不想留就往下滑。</div>'
+  +'<div class="fd"><textarea id="sm" style="min-height:210px;'
+  +'line-height:1.8">'+esc(SUMT)+'</textarea></div>'
+  +'<div class="cd cd0"><div class="rw pz" onclick="exSkip()">'
+  +'<span class="l" style="color:var(--dim)">不留了，只标记看过</span>'
+  +I.chevD+'</div></div>'
+  +'<div class="nt">存进去算一条，归到〈聊过什么〉，要紧程度是「一般」——'
+  +'记忆库满了它会先被挤掉。想让它一直带着，去记忆库点「锁」。</div>',
+    onOk:function(){
+      var t=val('sm');
+      if(!t){toast('是空的');return false;}
+      var s2=sessById(EXSID);
+      if(!s2){toast('那段对话不在了');closeSheet(1);return'done';}
+      addMem(t.slice(0,400),'聊过什么',1,'ai',
+        {sid:s2.id,mid:'',ts:Date.now()});
+      s2.ex=Date.now();SUMT='';
+      saveD();saveS();closeSheet(1);
+      if(CV==='mem')drawMem();else view('mem');
+      toast('存好了');
+      return'done';}});
+}
+function exSkip(){
+  var s=sessById(EXSID);
+  if(s){s.ex=Date.now();saveS();}
+  SUMT='';EXR=[];EXSEL={};closeSheet(1);
+  if(CV==='mem')drawMem();else view('mem');
+  toast('标记看过了');
+}
+var _dmS=drawMem;
+drawMem=function(){
+  _dmS();
+  var box=document.getElementById('mls');if(!box)return;
+  var tgt=null;
+  [].forEach.call(box.querySelectorAll('.exb'),function(e){
+    if(e.querySelector('.x2')||e.querySelector('.spin'))tgt=e;});
+  if(tgt)tgt.remove();
+  var n=exNew(),h='';
+  if(EXB)h='<div class="exb"><div class="x1"><b>正在读这段对话…</b>'
+   +'<s>一会儿给你一段摘要</s></div><span class="spin"></span></div>';
+  else if(n)h='<div class="exb"'
+   +(n>=EXMIN?'':' style="border-color:var(--dl)"')
+   +'><div class="x1"><b>'+n+' 句还没整理</b><s>'
+   +(n>=EXMIN?'我读一遍，收成一段给你看'
+     :'随时能读，攒多一点收出来更完整')+'</s></div>'
+   +'<button class="x2 pz" onclick="exRun()">读一读</button></div>';
+  if(h)box.insertAdjacentHTML('afterbegin',h);
+};
+function shSess(){
+  var nw=exNew();
+  sheet({title:'这段对话',body:'<div class="cd cd0">'
+  +(nw?'<div class="rw pz" onclick="closeSheet(1);exRun()">'
+    +'<span class="l">收成一段摘要（'+nw+' 句没整理）</span>'
+    +I.chevD+'</div>':'')
+  +'<div class="rw pz" onclick="renSess()"><span class="l">改个名字</span>'
+  +I.chevD+'</div>'
+  +'<div class="rw pz" onclick="copyChat()"><span class="l">复制整段</span>'
+  +I.chevD+'</div>'
+  +'<div class="rw pz" onclick="clearChat()"><span class="l">清空消息</span>'
+  +I.chevD+'</div>'
+  +'<div class="rw pz" onclick="delSess()">'
+  +'<span class="l" style="color:var(--red)">删掉这段对话</span>'
+  +I.chevD+'</div></div>'});
+}
 if(CV==='chat')pillSync();
 if(CV==='more')view('more');
 </script>
