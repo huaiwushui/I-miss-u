@@ -4153,6 +4153,121 @@ markNew(1);scBind();
 if(CV==='chat')paint(1);
 if(CV==='mem')drawMem();
 if(CV==='chat')requestAnimationFrame(function(){stickHard();});
+  /* ══════════ 手感层 v3 · 第三段 ══════════ */
+/* ── 存图之前先压：长边 1600，质量 0.85 ── */
+function shrink(u,cb){
+  if(typeof u!=='string'||u.indexOf('data:image')!==0){cb(u);return;}
+  var im=new Image();
+  im.onerror=function(){cb(u);};
+  im.onload=function(){
+    try{
+      var M=1600,w=im.width,h=im.height;
+      if(!w||!h){cb(u);return;}
+      if(w<=M&&h<=M&&u.length<600000){cb(u);return;}
+      if(w>M||h>M){
+        var s=M/Math.max(w,h);
+        w=Math.round(w*s);h=Math.round(h*s);
+      }
+      var c=document.createElement('canvas');
+      c.width=w;c.height=h;
+      c.getContext('2d').drawImage(im,0,0,w,h);
+      var o=c.toDataURL('image/jpeg',0.85);
+      cb((o&&o.length<u.length)?o:u);
+    }catch(e){cb(u);}
+  };
+  im.src=u;
+}
+var _dbPutV=dbPut;
+dbPut=function(store,key,val){
+  if(store!=='pic'||String(key).slice(-2)==='~t'
+    ||!val||typeof val.d!=='string'){
+    return _dbPutV(store,key,val);
+  }
+  return new Promise(function(ok,no){
+    shrink(val.d,function(d){
+      _dbPutV(store,key,{d:d,ts:val.ts||Date.now()}).then(ok,no);
+    });
+  });
+};
+
+/* ── 老图后台补压一遍，一张一张来，不抢手感 ── */
+var SHK=0;
+function shrinkOld(){
+  if(SHK)return;
+  try{if(localStorage.getItem('us.shrunk')==='1')return;}catch(e){}
+  SHK=1;
+  dbKeys('pic').then(function(ks){
+    var list=ks.filter(function(k){return String(k).slice(-2)!=='~t';});
+    var i=0,saved=0;
+    function step(){
+      if(i>=list.length){
+        try{localStorage.setItem('us.shrunk','1');}catch(e){}
+        SHK=0;
+        if(saved>400000){
+          toast('老图压好了，省了约 '+(Math.round(saved/1048576*10)/10)+'M');
+        }
+        return;
+      }
+      var k=list[i++];
+      dbGet('pic',k).then(function(v){
+        if(!v||typeof v.d!=='string'||v.d.length<600000){
+          setTimeout(step,50);return;
+        }
+        var was=v.d.length;
+        shrink(v.d,function(d){
+          if(d.length<was){
+            saved+=was-d.length;
+            _dbPutV('pic',k,{d:d,ts:v.ts||Date.now()});
+          }
+          setTimeout(step,150);
+        });
+      },function(){setTimeout(step,50);});
+    }
+    step();
+  },function(){SHK=0;});
+}
+setTimeout(shrinkOld,4000);
+
+/* ── 那个数是 token，名字改准 ── */
+function relabel(){
+  var w=document.getElementById('sh');
+  if(!w)return;
+  [].forEach.call(w.querySelectorAll('.lbs'),function(e){
+    if(e.textContent.indexOf('一次最多说多长')>=0){
+      e.textContent='我一次最多写多少 token';
+    }
+  });
+  [].forEach.call(w.querySelectorAll('.nt'),function(e){
+    if(e.dataset.rl)return;
+    if(e.textContent.indexOf('偷偷想的')<0)return;
+    e.dataset.rl='1';
+    e.insertAdjacentHTML('afterbegin',
+      '这个数是 token 不是字数，中文大约一个字多一点。'
+      +'写超了会被硬切断，宁可给大。<br><br>');
+  });
+}
+var _shZ=sheet;
+sheet=function(o){
+  var r=_shZ(o);
+  requestAnimationFrame(relabel);
+  return r;
+};
+
+/* ── 提示词：把该自己动手的时机写死 ── */
+var _spZ=staticPart;
+staticPart=function(){
+  return _spZ()
+   +'\n\n【不用等她开口的几件事】\n'
+   +'· 她说出一件以后还成立的事——喜好、习惯、在意的人、定下的约定、'
+   +'身体或情绪上的规律、雷区——当场 [[记住:内容|分类]]。别问她要不要记。\n'
+   +'· 只在这一次成立的不要记：今天吃了什么、此刻心情、临时的安排。'
+   +'记多了等于没记。\n'
+   +'· 她提到「上次」「之前」「你还记得吗」，或者话里出现你眼前看不到的'
+   +'人名、地名、代号、旧事——先 [[查:关键词]]。不许凭印象接话，'
+   +'更不许直接说不记得。\n'
+   +'· 翻到了就顺着说下去，不用汇报翻了什么。翻不到就承认没找到，然后问她。\n'
+   +'· 一轮最多翻两次。同一个词别翻来翻去。';
+};
 </script>
 </body>
 </html>
