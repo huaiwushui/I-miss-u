@@ -5419,6 +5419,94 @@ ask=function(after){
     fail(mm,e,'发送');}
 };
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
+  /* ══════════ 统合层 v1 · 第十段 · 重写发送 ══════════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    '#ms .m.me{align-items:stretch!important}'
+   +'#ms .m.me .in{display:block!important;width:100%!important;'
+   +'max-width:100%!important;min-width:0!important;'
+   +'text-align:right!important;overflow:visible!important}'
+   +'#ms .m.me .bd{display:inline-block!important;width:auto!important;'
+   +'max-width:80%!important;min-width:0!important;margin:0!important;'
+   +'text-align:left!important;vertical-align:top;'
+   +'white-space:pre-wrap!important;word-break:normal!important;'
+   +'overflow-wrap:break-word!important;-webkit-hyphens:none;hyphens:none;'
+   +'box-sizing:border-box}'
+   +'#ms .m.me .bd *{text-align:left}'
+   +'#ms .m.me .eo{justify-content:flex-end}';
+  document.head.appendChild(s);
+})();
+
+go=function(m,after,q,sid,forHi){
+  if(STOPPED){
+    if(m){m.st=0;m.wst=0;
+      if(!(m.t&&m.t.trim())&&!(m.parts&&m.parts.length))m.err='停下了。';}
+    BUSY=false;CURSAID='';ROUNDHINT='';PENDQ=[];
+    try{if(CV==='chat'){paint();btn();}else btn();}catch(e){}
+    return;
+  }
+  var an=D.fmt!=='openai',mt=Math.max(256,Math.min(8192,D.maxTok||2048));
+  var ac=null;
+  function boom(e,tag){
+    try{keepErr(tag||'请求',e);}catch(x){}
+    if(m){m.st=0;m.wst=0;
+      if(!(m.t&&m.t.trim())&&!(m.parts&&m.parts.length))
+        m.err=String(e&&e.message||e).slice(0,90);}
+    BUSY=false;CURSAID='';ROUNDHINT='';PENDQ=[];
+    if(ABORT===ac)ABORT=null;
+    try{saveS(sid||S().id);}catch(x){}
+    try{if(CV==='chat'){paint();btn();}else btn();}catch(x){}
+  }
+  needPics(ctxList()).then(function(pics){
+    var body;
+    if(an){
+      body={model:D.model,max_tokens:mt,stream:true,
+        system:sysBlocks(q),messages:buildMsgs(1,forHi,pics)};
+      if(D.think)body.thinking={type:'enabled',
+        budget_tokens:Math.max(1024,Math.min(mt-512,2048))};
+      else body.temperature=Math.max(0,Math.min(1,D.temp==null?1:D.temp));
+    }else{
+      body={model:D.model,stream:true,max_tokens:mt,
+        temperature:Math.max(0,Math.min(2,D.temp==null?1:D.temp)),
+        messages:[{role:'system',content:sysText(q)}]
+          .concat(buildMsgs(0,forHi,pics))};
+    }
+    WEBTXT='';HINT='';
+    ac=window.AbortController?new AbortController():null;
+    ABORT=ac;
+    return fetch(D.apiUrl,{method:'POST',
+      signal:ac?ac.signal:undefined,
+      headers:an
+        ?{'Content-Type':'application/json','x-api-key':D.apiKey,
+          'anthropic-version':'2023-06-01'}
+        :{'Content-Type':'application/json',
+          'Authorization':'Bearer '+D.apiKey},
+      body:JSON.stringify(body)})
+    .then(function(res){
+      if(!res.ok)return res.text().then(function(t){
+        throw new Error('接口返回 '+res.status+'：'+t.slice(0,140));});
+      if(!res.body)return res.text().then(function(t){m.t=plain(t,an);});
+      return pump(res,m,an,sid);
+    })
+    .then(function(){done(m,after,0,ac,q,sid);})
+    .catch(function(e){
+      if(e&&e.name==='AbortError'){
+        try{done(m,after,1,ac,q,sid);}catch(x){boom(x,'收尾');}
+        return;}
+      var g=String(e&&e.message||e);
+      if(/Failed to fetch|NetworkError|Load failed/i.test(g))
+        g='连不上接口。可能地址写错，或这家中转不允许网页直连。';
+      m.err=g;
+      try{done(m,after,0,ac,q,sid);}catch(x){boom(x,'收尾');}
+    });
+  },function(e){
+    m.err='读图片出错了';
+    try{done(m,after,0,null,q,sid);}catch(x){boom(x,'收尾');}
+  }).catch(function(e){boom(e,'请求');});
+};
+
+if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 </script>
 </body>
 </html>
