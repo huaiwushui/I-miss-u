@@ -5174,6 +5174,92 @@ setInterval(function(){
   if(!BUSY&&idle>2500){unstick(m,'断了，再说一次吧。');return;}
   if(BUSY&&idle>75000)unstick(m,'等太久了，没收到回应。');
 },1500);
+  /* ══════════ 统合层 v1 · 第八段 · 抓错 ══════════ */
+/* ── 气泡：靠父级对齐，不用 fit-content ── */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    '#ms .m.me .in{display:flex;flex-direction:column;align-items:flex-end}'
+   +'#ms .m.me .bd{width:auto!important;max-width:min(80%,560px)!important;'
+   +'margin-left:0!important;box-sizing:border-box;'
+   +'word-break:normal!important;overflow-wrap:break-word!important;'
+   +'white-space:pre-wrap;text-align:left}'
+   +'#ms .m.me .bd *{text-align:left}';
+  document.head.appendChild(s);
+})();
+
+/* ── 报错直接喊出来 ── */
+var LASTERR='';
+function shoutErr(tag,e){
+  var m='';
+  try{
+    m=(e&&(e.message||e.reason&&(e.reason.message||e.reason)||e.error
+      &&e.error.message))||String(e&&e.type||e||'');
+    if(e&&e.filename&&e.lineno)m+=' @'+e.lineno+':'+(e.colno||0);
+  }catch(x){m='?';}
+  m=String(m).slice(0,160);
+  if(!m)return;
+  LASTERR=tag+'｜'+m;
+  try{toast(LASTERR);}catch(x){alert(LASTERR);}
+}
+window.addEventListener('error',function(e){shoutErr('出错',e);});
+window.addEventListener('unhandledrejection',function(e){shoutErr('异步',e);});
+function showErr(){alert(LASTERR||'目前没记到报错');}
+
+/* ── 发送这条路上每一步都兜住 ── */
+var _askS=ask;
+ask=function(after){
+  try{return _askS(after);}
+  catch(e){
+    shoutErr('发送',e);
+    BUSY=false;
+    try{
+      var a=ms(),m=a[a.length-1];
+      if(!m||m.r!=='ai'){
+        m={id:uid(),r:'ai',t:'',k:'',ts:Date.now()};
+        a.push(m);}
+      m.st=0;m.err='没发出去：'+String(e&&e.message||e).slice(0,80);
+      saveS(S().id);
+    }catch(x){}
+    try{paint();btn();}catch(x){}
+  }};
+var _go2=go;
+go=function(m,after,q,sid,forHi){
+  try{return _go2(m,after,q,sid,forHi);}
+  catch(e){
+    shoutErr('请求',e);
+    if(m){m.st=0;m.wst=0;
+      m.err='没发出去：'+String(e&&e.message||e).slice(0,80);}
+    BUSY=false;
+    try{saveS(sid||S().id);paint();btn();}catch(x){}
+  }};
+var _done2=done;
+done=function(m,after,ab,ac,q,sid){
+  try{return _done2(m,after,ab,ac,q,sid);}
+  catch(e){
+    shoutErr('收尾',e);
+    if(m){m.st=0;m.wst=0;
+      if(!(m.t&&m.t.trim())&&!(m.parts&&m.parts.length))
+        m.err='收尾出错了。';}
+    BUSY=false;CURSAID='';PENDQ=[];
+    try{saveS(sid||S().id);paint();btn();}catch(x){}
+  }};
+
+/* ── 提示词自检：哪一段坏了直接说 ── */
+function selfTest(){
+  var r=[];
+  function t(n,f){try{var v=f();r.push(n+' 好（'+String(v).length+'字）');}
+    catch(e){r.push('★ '+n+' 坏了：'+String(e&&e.message||e).slice(0,90));}}
+  t('staticPart',function(){return staticPart();});
+  t('usPart',function(){return usPart('测试');});
+  t('buildMsgs',function(){return JSON.stringify(buildMsgs(1,0,{}));});
+  t('memCodes',function(){return JSON.stringify(memCodes());});
+  t('tombText',function(){return tombText();});
+  alert(r.join('\n\n'));}
+setTimeout(function(){
+  try{staticPart();usPart('');}
+  catch(e){shoutErr('提示词',e);}
+},1200);
 </script>
 </body>
 </html>
