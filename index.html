@@ -5113,6 +5113,67 @@ window.addEventListener('orientationchange',function(){
   setTimeout(bgReSample,650);});
 setTimeout(bgReSample,300);
 if(CV==='chat')paint(1);
+  /* ══════════ 统合层 v1 · 第七段 · 止血 ══════════ */
+var HVT2=0,LASTHV=0;
+function safeHeavy(){
+  HVT2=0;LASTHV=Date.now();
+  try{heavyPass();}catch(e){}
+}
+paint=function(keep){
+  var b=msBox(),st=b?b.scrollTop:0,pin=SC.pin;
+  try{_pBase(keep);}catch(e){}
+  var c=msBox();if(!c)return;
+  try{
+    if(BUSY){
+      drawParts();tightBubs();
+      if(!c.dataset.dn){
+        c.dataset.dn='1';
+        c.addEventListener('scroll',dnSync,{passive:true});}
+      scBind();msGuard();
+      if(pin){SC.pin=1;SC.el=null;toEnd(c);}
+      else c.scrollTop=Math.min(st,scMax(c));
+      dnSync();
+      if(!HVT2&&Date.now()-LASTHV>700)HVT2=setTimeout(safeHeavy,600);
+      return;}
+    if(HVT2){clearTimeout(HVT2);HVT2=0;}
+    safeHeavy();
+    if(pin){SC.pin=1;SC.el=null;toEnd(c);}
+    else{c.scrollTop=Math.min(st,scMax(c));scAnchor();}
+    scAfter();
+  }catch(e){
+    try{
+      if(pin)toEnd(c);
+      btnSync();
+    }catch(e2){}
+  }
+};
+
+/* ── 看门狗：卡住了自己解开 ── */
+var WD={t:0,len:-1,id:''};
+function stuckOne(){
+  var a=ms(),i;
+  for(i=a.length-1;i>=0;i--)if(a[i].st||a[i].wst)return a[i];
+  return null;}
+function unstick(m,why){
+  if(!m)return;
+  m.st=0;m.wst=0;delete m._ks;delete m.forced;
+  BUSY=false;CURSAID='';ROUNDHINT='';PENDQ=[];
+  if(ABORT){try{ABORT.abort();}catch(e){}ABORT=null;}
+  if(TMR){clearInterval(TMR);TMR=null;}
+  if(!(m.t&&m.t.trim())&&!(m.parts&&m.parts.length))m.err=why;
+  try{saveS(S().id);}catch(e){}
+  if(CV==='chat'){paint();btn();}else btn();}
+setInterval(function(){
+  var m=stuckOne();
+  if(!m){WD.id='';WD.len=-1;WD.t=0;return;}
+  var now=Date.now();
+  var len=((m.t||'').length)+((m.parts||[]).length*7)+(m.wst?1:0);
+  if(m.id!==WD.id){WD.id=m.id;WD.len=len;WD.t=now;return;}
+  if(len!==WD.len){WD.len=len;WD.t=now;return;}
+  var idle=now-WD.t;
+  if(!BUSY&&idle>2500){unstick(m,'断了，再说一次吧。');return;}
+  if(BUSY&&idle>75000)unstick(m,'等太久了，没收到回应。');
+},1500);
 </script>
 </body>
 </html>
