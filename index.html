@@ -5260,6 +5260,165 @@ setTimeout(function(){
   try{staticPart();usPart('');}
   catch(e){shoutErr('提示词',e);}
 },1200);
+  /* ══════════ 统合层 v1 · 第九段 · 重接 ══════════ */
+/* ── 气泡：深浅一致，宽度跟着字走 ── */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    '#ms .m.me .in{display:block!important;text-align:right}'
+   +'#ms .m.me .bd{display:inline-block!important;width:auto!important;'
+   +'min-width:0!important;max-width:80%!important;'
+   +'margin:0!important;text-align:left;vertical-align:top;'
+   +'word-break:normal!important;overflow-wrap:break-word!important;'
+   +'white-space:pre-wrap!important;box-sizing:border-box}'
+   +'#ms .m.me .bd *{text-align:left}'
+   +'#ms .m.me .ib,#ms .m.me .act{text-align:right}';
+  document.head.appendChild(s);
+})();
+
+/* ── 只建一次，重复贴不会叠 ── */
+if(typeof G9==='undefined')var G9={};
+if(!G9.on){
+  G9.on=1;
+  G9.rawGo=(typeof _go0==='function')?_go0:go;
+  G9.rawPaint=(typeof _pBase==='function')?_pBase:paint;
+}
+
+/* ── 报错留底，能抄走 ── */
+var ERRTXT='';
+function keepErr(tag,e){
+  var m='',st='';
+  try{
+    var o=(e&&e.reason)?e.reason:e;
+    m=(o&&(o.message||o.error&&o.error.message))||String(o&&o.type||o||'');
+    st=(o&&o.stack)?String(o.stack):'';
+    if(e&&e.filename)m+='　@'+(e.lineno||0)+':'+(e.colno||0);
+  }catch(x){}
+  if(!m)return;
+  ERRTXT=tag+'｜'+String(m).slice(0,200)
+    +(st?('\n\n'+st.split('\n').slice(0,14).join('\n')):'');
+  errBar(tag+'｜'+String(m).slice(0,60));
+}
+function errBar(txt){
+  var o=document.getElementById('ebar');if(o)o.remove();
+  var d=document.createElement('div');
+  d.id='ebar';
+  d.style.cssText='position:fixed;left:12px;right:12px;'
+   +'bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:99999;'
+   +'background:rgba(28,28,30,.94);color:#fff;border-radius:16px;'
+   +'padding:12px 14px;font-size:13px;line-height:1.5;'
+   +'display:flex;gap:10px;align-items:center;'
+   +'box-shadow:0 8px 28px rgba(0,0,0,.3)';
+  d.innerHTML='<span style="flex:1;word-break:break-all">'+txt+'</span>';
+  var b=document.createElement('button');
+  b.textContent='抄给我';
+  b.style.cssText='flex:0 0 auto;background:#fff;color:#111;border:0;'
+   +'border-radius:11px;padding:7px 12px;font-size:13px;font-weight:600';
+  b.onclick=function(){
+    try{clip(ERRTXT,function(){b.textContent='好了';});}
+    catch(x){alert(ERRTXT);}};
+  var c=document.createElement('button');
+  c.textContent='×';
+  c.style.cssText='flex:0 0 auto;background:none;border:0;color:#999;'
+   +'font-size:19px;padding:0 2px';
+  c.onclick=function(){d.remove();};
+  d.appendChild(b);d.appendChild(c);
+  document.body.appendChild(d);
+}
+window.addEventListener('error',function(e){keepErr('出错',e);});
+window.addEventListener('unhandledrejection',function(e){keepErr('异步',e);});
+
+/* ── 重画：从最原始那份接 ── */
+var HVD=0,HVLAST=0;
+paint=function(keep){
+  var b=msBox(),st=b?b.scrollTop:0,pin=SC.pin;
+  try{G9.rawPaint(keep);}catch(e){keepErr('重画',e);}
+  var c=msBox();if(!c)return;
+  try{
+    if(BUSY){
+      drawParts();tightBubs();scBind();msGuard();
+      if(!c.dataset.dn){
+        c.dataset.dn='1';
+        c.addEventListener('scroll',dnSync,{passive:true});}
+      if(pin){SC.pin=1;SC.el=null;toEnd(c);}
+      else c.scrollTop=Math.min(st,scMax(c));
+      dnSync();
+      if(!HVD&&Date.now()-HVLAST>700)HVD=setTimeout(function(){
+        HVD=0;HVLAST=Date.now();
+        try{heavyPass();}catch(e){keepErr('收尾画',e);}},600);
+      return;}
+    if(HVD){clearTimeout(HVD);HVD=0;}
+    HVLAST=Date.now();
+    try{heavyPass();}catch(e){keepErr('收尾画',e);}
+    if(pin){SC.pin=1;SC.el=null;toEnd(c);}
+    else{c.scrollTop=Math.min(st,scMax(c));scAnchor();}
+    scAfter();
+  }catch(e){keepErr('重画后',e);try{btnSync();}catch(x){}}
+};
+
+/* ── 发请求：绕开所有旧包装 ── */
+function fail(m,e,tag){
+  keepErr(tag,e);
+  BUSY=false;CURSAID='';ROUNDHINT='';PENDQ=[];
+  if(m){m.st=0;m.wst=0;
+    if(!(m.t&&m.t.trim())&&!(m.parts&&m.parts.length))
+      m.err='没发出去：'+String(e&&e.message||e).slice(0,70);}
+  try{saveS(S().id);}catch(x){}
+  try{paint();btn();}catch(x){}
+}
+go=function(m,after,q,sid,forHi){
+  if(STOPPED){
+    if(m){m.st=0;m.wst=0;
+      if(!(m.t&&m.t.trim())&&!(m.parts&&m.parts.length))m.err='停下了。';}
+    BUSY=false;
+    try{if(CV==='chat'){paint();btn();}}catch(x){}
+    return;}
+  try{return G9.rawGo(m,after,q,sid,forHi);}
+  catch(e){fail(m,e,'请求');}
+};
+done=function(m,after,ab,ac,q,sid){
+  try{
+    m.st=0;m.wst=0;delete m._ks;BUSY=false;
+    if(!ac||ABORT===ac)ABORT=null;
+    try{dedupePara(m);}catch(e){keepErr('去重',e);}
+    var again=0;
+    try{again=runActs(m,after,q,sid);}catch(e){keepErr('动作',e);again=0;}
+    if(again)return;
+    CURSAID='';ROUNDHINT='';PENDQ=[];
+    var has=(m.t&&m.t.trim())||(m.parts&&m.parts.length);
+    if(!has&&!m.err)m.err=ab?'停下了。':'没有收到内容。';
+    if(after)after(m);
+    var s=sessById(sid)||S();
+    if(s)s.at=Date.now();
+    D.seen=Date.now();saveD();saveS(sid||(s&&s.id));
+    if(CV==='chat'){paint();btn();}
+  }catch(e){fail(m,e,'收尾');}
+};
+ask=function(after){
+  try{
+    STOPPED=0;BUMPED=0;lookReset();stickHard();
+    var sid=S().id;BUSY=true;
+    var q=lastQ();
+    HINT='';
+    if(!D.apiUrl||!D.apiKey){WEBTXT='';fake(after);return;}
+    var m={id:uid(),r:'ai',t:'',k:'',st:1,ts:Date.now()};
+    ms().push(m);
+    if(D.web&&D.jkey&&q){
+      m.wst=1;paint();btn();
+      jinaSearch(q).then(function(r){
+        m.wst=0;
+        if(r&&r.txt){m.web=r.links;WEBTXT=r.txt;}else{m.webNo=1;WEBTXT='';}
+        paint();go(m,after,q,sid);
+      },function(){m.wst=0;m.webNo=1;WEBTXT='';paint();go(m,after,q,sid);});
+    }else{WEBTXT='';paint();btn();go(m,after,q,sid);}
+  }catch(e){
+    var a=ms(),mm=a.length?a[a.length-1]:null;
+    if(!mm||mm.r!=='ai'){
+      mm={id:uid(),r:'ai',t:'',k:'',ts:Date.now()};
+      try{ms().push(mm);}catch(x){}}
+    fail(mm,e,'发送');}
+};
+if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 </script>
 </body>
 </html>
