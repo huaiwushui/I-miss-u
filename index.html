@@ -3402,17 +3402,22 @@ paint=function(keep){
     box.addEventListener('scroll',dnSync,{passive:true});}
   dnBox();dnSync();};
 if(CV==='chat')paint(1);
-/* ══════════ 手感层 v2 · 第一段 ══════════ */
+/* ══════════ 手感层 v3 · 第一段 ══════════ */
 (function(){
   var s=document.createElement('style');
-  s.textContent='#ms{overflow-anchor:none}'
-   +'#ms>.m{content-visibility:auto;contain-intrinsic-size:auto 170px;'
+  s.textContent='#ms{overflow-anchor:none;padding-bottom:16px}'
+   +'html.kbon #ms{padding-bottom:12px}'
+   +'#ms>.m{content-visibility:visible;contain-intrinsic-size:auto;'
    +'animation:none!important}'
+   +'#ms.cv>.m{content-visibility:auto;contain-intrinsic-size:auto 170px}'
    +'#ms>.m.nu{content-visibility:visible;animation:up .3s ease both!important}'
+   +'#ms>.m:last-child{margin-bottom:10px}'
+   +'.ib{padding-top:4px}'
    +'#ms .more{color:var(--dim);font-weight:500}'
    +'#ms .act{margin-top:9px}'
    +'#ms .act .ai2{color:var(--dim);font-weight:500}'
-   +'#ms .act .at{display:none}';
+   +'#ms .act .at{display:none}'
+   +'#ms .m.me .bd.tight{padding:9px 15px;line-height:1.5;border-radius:19px}';
   document.head.appendChild(s);})();
 
 /* ── 键盘缺口：全高基准，不信 innerHeight 瞬时值 ── */
@@ -3468,7 +3473,12 @@ function scBind(){
     SC.st=1;
     requestAnimationFrame(function(){SC.st=0;scSync();});},{passive:true});}
 
-/* ── 手势：只有真的滑过才算你要自己看 ── */
+/* ── 消息区自己接管手势，不让全局拦截器掐掉 ── */
+function msGuard(){
+  var b=msBox();if(!b||b.dataset.tg)return;
+  b.dataset.tg='1';
+  b.addEventListener('touchmove',function(e){
+    SC.hold=1;scSync();e.stopPropagation();},{passive:true});}
 document.addEventListener('touchstart',function(e){
   var t=e.target;
   SC.in=(t&&t.closest&&t.closest('#ms'))?1:0;
@@ -3513,6 +3523,16 @@ function markNew(first){
     SEEN[id]=1;
     if(!first)el.classList.add('nu');});}
 
+/* ── 短句子的气泡收紧，末尾空行剪掉 ── */
+function tightBubs(){
+  var b=msBox();if(!b)return;
+  [].forEach.call(b.querySelectorAll('.m.me .bd'),function(e){
+    if(e.dataset.tb)return;
+    e.dataset.tb='1';
+    var t=e.textContent||'',tr=t.replace(/[\s\u3000]+$/,'');
+    if(tr!==t&&!e.children.length){e.textContent=tr;t=tr;}
+    if(t.indexOf('\n')<0&&t.trim().length<=14)e.classList.add('tight');});}
+
 /* ── 记了什么不摊开，只说一声 ── */
 function slimActs(){
   var b=msBox();if(!b)return;
@@ -3534,7 +3554,7 @@ function slimActs(){
     if(dp)p.push('这条记过了');
     as[0].innerHTML='<span class="ai2">'+p.join('　·　')+'</span>';});}
 
-/* ── 删图前先看还有没有人在用 ── */
+/* ── 删图前先看全站还有没有人在用 ── */
 var TOK={};
 function picRefs(){
   var used={__bg:1};
@@ -3553,9 +3573,22 @@ function dropPics(list){
         seen[p]=1;
         dbDel('pic',p);dbDel('pic',p+'~t');
         delete PICQ[p];delete TOK[p];});
-      if(m.eb)m.eb.forEach(function(b){walk(b.tail);});});})(list);}
+      if(m.eb)m.eb.forEach(function(b){walk(b.tail);});})(list);}
 
-/* ── 先摘消息，再删图，顺序反了会漏 ── */
+/* ── 顶部计数跟着重画一起刷 ── */
+var BTNQ=0;
+function btnSync(){
+  if(BTNQ)return;
+  BTNQ=1;
+  requestAnimationFrame(function(){
+    BTNQ=0;try{btn();}catch(e){}});}
+
+/* ── 先摘消息再删图，顺序反了会漏 ── */
+function delMsg(id){
+  var s=S(),i=idxOf(id);if(i<0)return;
+  var gone=ms().splice(i,1);
+  dropPics(gone);
+  saveS(s.id);closeSheet(1);paint(1);}
 function delSel(){
   if(!SEL||!SEL.length){toast('还没选');return;}
   var n=SEL.length,s=S(),sel=SEL.slice();
@@ -3589,29 +3622,31 @@ function delSessAt(i){
   if(D.cur<0)D.cur=0;
   dropPics(gone);
   saveD();saveS();renderList();
-  if(CV==='chat'){paint();btn();}}
-/* ══════════ 手感层 v2 · 第二段 ══════════ */
-/* ── 键盘：只写 transform，滚动交给权威 ── */
-var _bgy2,_kh2,_kot2;
+  if(CV==='chat')paint();}
+/* ══════════ 手感层 v3 · 第二段 ══════════ */
+/* ── 键盘：只改高度，位移一律为零 ── */
+var _kh3,_kop;
+function kSet(h,ot){
+  var sh=document.getElementById('sh'),dw=document.getElementById('dw');
+  [root,sh,dw].forEach(function(el){
+    if(!el)return;
+    el.style.removeProperty('transform');
+    if(h>240)el.style.setProperty('height',h+'px','important');
+    else el.style.removeProperty('height');});}
 function kpaint(){
   if(!vv)return;
   if(window.scrollY)window.scrollTo(0,0);
-  var gap=kbGap(),ot=Math.round(vv.offsetTop||0),h=Math.round(vv.height);
-  var by=ot+Math.round(window.scrollY||0);
-  if(by!==_bgy2){
-    _bgy2=by;
-    var t=by?'translate3d(0,'+by+'px,0)':'';
-    if(BGL)BGL.style.transform=t;
-    if(BGV)BGV.style.transform=t;}
-  var dh=(h!==_kh2);
-  if(!dh&&ot===_kot2)return;
-  _kh2=h;_kot2=ot;KLAST=h;KOT=ot;
-  var open=gap>60;
+  if(BGL&&BGL.style.transform)BGL.style.transform='';
+  if(BGV&&BGV.style.transform)BGV.style.transform='';
+  var gap=kbGap(),h=Math.round(vv.height),open=gap>60;
   if(open&&gap!==kbH){kbH=gap;
     try{localStorage.setItem('us.kbH',gap);}catch(e){}}
+  var ch=(h!==_kh3||open!==_kop);
+  _kh3=h;_kop=open;KLAST=h;KOT=0;
   de.classList.toggle('kbon',open);
-  kSet(open?h:0,ot);
-  if(dh)scAfter();}
+  kSet(open?h:0,0);
+  if(ch)scAfter();}
+function kwake(){_kh3=void 0;_kop=void 0;KLAST=-1;KOT=-1;}
 function ktrack(t){
   KEND=performance.now()+(t||520);
   if(KT)return;
@@ -3619,11 +3654,12 @@ function ktrack(t){
   (function loop(){
     kpaint();
     if(performance.now()<KEND)requestAnimationFrame(loop);
-    else{KT=0;_kh2=void 0;kpaint();
+    else{KT=0;kwake();kpaint();
       if(window.scrollY)window.scrollTo(0,0);
       scAfter();}})();}
 document.addEventListener('focusin',function(e){
   if(!e.isTrusted)return;
+  kwake();
   var t=e.target;
   if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
   var b=msBox();
@@ -3632,6 +3668,21 @@ document.addEventListener('focusin',function(e){
     else if(SC.pre>=0)b.scrollTop=Math.min(SC.pre,scMax(b));
     clampSc(b);}
   scAfter();},true);
+document.addEventListener('focusout',function(e){
+  if(e.isTrusted){kwake();ktrack(700);}},true);
+
+/* ── 看门狗：键盘收了还卡着的，自己复位 ── */
+setInterval(function(){
+  if(!vv)return;
+  var a=document.activeElement;
+  if((a&&/^(INPUT|TEXTAREA)$/.test(a.tagName))||kbGap()>60)return;
+  if(!de.classList.contains('kbon')&&!root.style.height
+    &&!root.style.transform)return;
+  kwake();
+  de.classList.remove('kbon');
+  kSet(0,0);
+  if(window.scrollY)window.scrollTo(0,0);
+  clampSc(msBox());},600);
 
 /* ── 标记：认和剥用同一套判断 ── */
 var MKRE=/\[{1,2}\s*(查|展开|记住|锁住)\s*[:：]\s*([^\[\]\n]{1,120}?)\s*\]{1,2}/g;
@@ -3749,7 +3800,47 @@ dbAll=function(store){
       if(String(k).slice(-2)!=='~t')r[k]=o[k];});
     return r;});};
 
-/* ── 展开前后多少条我自己定 ── */
+/* ── 翻查：按全文进索引，只有图的补邻句 ── */
+function hay(m){return(fullT(m)||'')+' '+picWord(m);}
+function nearTxt(arr,i){
+  var j,t;
+  for(j=i-1;j>=0&&j>=i-3;j--){
+    if(!arr[j]||!alive(arr[j]))continue;
+    t=String(fullT(arr[j])||'').replace(/\s+/g,' ').trim();
+    if(t)return{d:'前',t:t};}
+  for(j=i+1;j<arr.length&&j<=i+3;j++){
+    if(!arr[j]||!alive(arr[j]))continue;
+    t=String(fullT(arr[j])||'').replace(/\s+/g,' ').trim();
+    if(t)return{d:'后',t:t};}
+  return null;}
+function lookAdd(q){
+  var sp=splitQ(q),hits=[];
+  SS.forEach(function(s){
+    (MSG[s.id]||[]).forEach(function(mm,ix){
+      if(!alive(mm)||mm.st||mm.err)return;
+      if(sp.dr&&!(mm.ts>=sp.dr.a&&mm.ts<sp.dr.b))return;
+      var sc=score(hay(mm),sp.kw);
+      if(sc<=0)return;
+      hits.push({sid:s.id,i:ix,sc:sc,ts:mm.ts,m:mm,s:s});});});
+  if(sp.kw.length)hits.sort(function(a,b){return b.sc-a.sc||b.ts-a.ts;});
+  else hits.sort(function(a,b){return b.ts-a.ts;});
+  hits=hits.slice(0,10);
+  var lines=hits.map(function(h){
+    LOOKNO++;LOOKMAP[LOOKNO]={sid:h.sid,i:h.i};
+    var t=String(fullT(h.m)||'').replace(/\s+/g,' ').slice(0,120);
+    var ln='['+LOOKNO+'] '+dtl(h.m.ts)+'｜'+(h.s.ti||'对话')+'　'
+      +(h.m.r==='me'?D.me:D.you)+'：'+t+picWord(h.m);
+    if(!t&&((h.m.pics&&h.m.pics.length)||h.m.imgLost)){
+      var nb=nearTxt(MSG[h.sid]||[],h.i);
+      ln+=nb?('（这条只有图。'+nb.d+'一句是「'+nb.t.slice(0,60)+'」）')
+            :'（这条只有图，前后也没有字。）';}
+    return ln;});
+  LOOKS.push({q:q,n:hits.length,
+    txt:hits.length?lines.join('\n')
+      :'（没有找到。这件事可能真的没聊过——直接问她，别编。）'});
+  LOOKSEEN[q.replace(/\s+/g,' ').toLowerCase()]=1;
+  lookBuild();
+  return{n:hits.length};}
 function openAdd(n){
   var p=LOOKMAP[n],w=OPENW;
   var lab='展开第 '+n+' 条'+(w!==5?'（前后 '+w+'）':'');
@@ -3794,25 +3885,25 @@ function lookSheet(q){
     (MSG[s.id]||[]).forEach(function(mm){
       if(!alive(mm)||mm.st||mm.err)return;
       if(sp.dr&&!(mm.ts>=sp.dr.a&&mm.ts<sp.dr.b))return;
+      if(score(hay(mm),sp.kw)<=0)return;
       var t=fullT(mm)||'';
-      if(score(t+' '+picWord(mm),sp.kw)<=0)return;
       hits.push({s:s,m:mm,t:t,sc:score(t,sp.kw)});});});
   if(sp.kw.length)hits.sort(function(a,b){return b.sc-a.sc||b.m.ts-a.m.ts;});
   else hits.sort(function(a,b){return b.m.ts-a.m.ts;});
   hits=hits.slice(0,12);
   var h='<div class="nt" style="padding:0 var(--inset) 12px">'
-   +'我当时翻的是「'+esc(q)+'」。</div>';
+   +'当时翻的是「'+esc(q)+'」。你删过的话这里也翻不到。</div>';
   if(!hits.length)h+='<div class="empty">现在翻不到了。</div>';
   hits.forEach(function(x){
     h+='<div class="res"><div class="rh"><span class="rt">'
      +esc(x.s.ti||'对话')+' · '+dtl(x.m.ts)+'</span><span class="who">'
      +(x.m.r==='me'?esc(D.me):esc(D.you))+'</span></div>'
-     +'<div class="rb">'+hi(cut(x.t,sp.kw),sp.kw)+'</div>'
+     +'<div class="rb">'+hi(cut(x.t||picWord(x.m),sp.kw),sp.kw)+'</div>'
      +'<div class="ra"><button onclick="closeSheet(1);jump(\''
      +x.s.id+'\',\''+x.m.id+'\')">跳过去看</button></div></div>';});
   sheet({full:1,title:'翻到的',body:h});}
 
-/* ── 消息菜单：去掉记忆入口，加上删掉这个版本 ── */
+/* ── 消息菜单：你的消息也能删版本 ── */
 function msgMenu(id){
   var m=find(id);if(!m)return;
   var ver=(m.r==='ai'&&m.br&&m.br.length>1)
@@ -3828,22 +3919,70 @@ function msgMenu(id){
     +(ver.i+1)+' / '+ver.n+'）</span>'+I.chevD+'</div>':'')
   +'<div class="rw pz" onclick="delMsg(\''+id+'\')">'
   +'<span class="l" style="color:var(--red)">删掉这条</span>'+I.chevD+'</div></div>'
-  +'<div class="nt">删掉是永久的，拿不回来。'
-  +(ver?'<br>删掉这个版本只清掉当前这一版和它后面的话，另一版还在；'
-    +'剩一版的时候箭头会消失。':'')+'</div>'});}
+  +'<div class="nt">删掉就真没了，我这边也不留底。'
+  +(ver?'<br>只删这一版的话，另一版还在；剩一版的时候箭头自己收起来。':'')
+  +'</div>'});}
 function delEb(id){
   if(BUSY)return;
   var s=S(),i=idxOf(id),a=ms();if(i<0)return;
   var m=a[i];if(!m.eb||m.eb.length<2)return;
-  var ei=m.ei||0,live=a.slice(i+1);
+  var ei=m.ei||0,tail=a.slice(i+1);
   var dead=m.eb.splice(ei,1)[0];
   var ni=Math.min(ei,m.eb.length-1);
   m.ei=ni;m.t=m.eb[ni].oc;
   MSG[s.id]=a.slice(0,i+1).concat(deep(m.eb[ni].tail||[]));
   if(m.eb.length<2){delete m.eb;delete m.ei;}
-  dropPics(live);
-  if(dead)dropPics([{pics:[],eb:[{tail:dead.tail||[]}]}]);
+  dropPics(tail.concat((dead&&dead.tail)||[]));
   saveS(s.id);closeSheet(1);paint(1);toast('删了这个版本');}
+function editMsg(id){
+  var m=find(id);if(!m||BUSY)return;
+  sheet({title:'改一下',ok:'重新发送',
+    body:'<div class="fd"><textarea id="ed">'+esc(m.t)+'</textarea></div>'
+    +'<div class="nt">要改自己说过的话了啊。<br>'
+    +'一字不改直接发也行——下面我说的会重来一遍。</div>',
+    onOk:function(){
+      var el=document.getElementById('ed');if(!el)return false;
+      var v=el.value.trim();
+      if(!v){toast('不能是空的');return false;}
+      var s=S(),i=idxOf(id),a=ms();
+      if(i<0){closeSheet();return'done';}
+      if(!m.eb){m.eb=[{oc:m.t,tail:deep(a.slice(i+1)),ts:m.ts}];m.ei=0;}
+      else m.eb[m.ei]={oc:m.t,tail:deep(a.slice(i+1)),ts:Date.now()};
+      m.eb.push({oc:v,tail:[],ts:Date.now()});m.ei=m.eb.length-1;m.t=v;
+      MSG[s.id]=a.slice(0,i+1);
+      saveS(s.id);closeSheet();paint();ask();return'done';}});}
+
+/* ── 没带上来的图，说清楚是哪一天的 ── */
+function toC(x,an,pics){
+  if(x.r==='quote')return'【我们以前说过的 · '+(x.from||'')+'】\n'+x.t;
+  var p=[],np=(x.pics||[]).length,tx=(x.r==='ai')?fullT(x):(x.t||'');
+  if(np&&pics&&pics.__skip&&pics.__skip[x.id]){
+    var tag='［'+dtl(x.ts)+' 她在这里发过 '+np+' 张图片，这一轮没带上来。'
+      +'图片本身翻不回来，想知道是什么就直接问她。］';
+    return tx?(tag+'\n'+tx):tag;}
+  if(np&&pics)x.pics.forEach(function(pid){
+    var u=pics[pid];if(!u)return;
+    if(an){var mt=(u.match(/^data:([^;]+);/)||[])[1]||'image/jpeg';
+      p.push({type:'image',source:{type:'base64',media_type:mt,
+        data:u.split(',')[1]||''}});}
+    else p.push({type:'image_url',image_url:{url:u}});});
+  if(tx)p.push({type:'text',text:tx});
+  if(!p.length)p.push({type:'text',text:'…'});
+  return(p.length===1&&p[0].type==='text')?tx:p;}
+
+/* ── 两处小字说人话 ── */
+function shVoice(){sheet({title:'表达风格',ok:'保存',
+  body:'<div class="fd"><textarea id="v-c" style="min-height:250px" '
+  +'placeholder="想我怎么表达。句子长短、节奏、习惯用的词、什么时候该沉默。&#10;'
+  +'不用写我是谁——写你想听到的声音。">'+esc(D.voice)+'</textarea></div>'
+  +'<div class="nt">每次都发给我，位置靠前。具体比多有用。</div>',
+  onOk:function(){D.voice=val('v-c');saveD();}});}
+function shFree(){sheet({title:'放开一些',ok:'保存',
+  body:'<div class="fd"><textarea id="f-c" style="min-height:250px" '
+  +'placeholder="给我松绑的话。比如：不用每句都反问你；不同意就直接说；'
+  +'不用替你圆场；该重的时候可以重。">'+esc(D.free)+'</textarea></div>'
+  +'<div class="nt">放在最后，权重最高。你写在这儿的我最当真。</div>',
+  onOk:function(){D.free=val('f-c');saveD();}});}
 
 /* ── 记忆：分类不再限死五个 ── */
 function catFree(){
@@ -3877,8 +4016,8 @@ function editMem(id,pre,from){
     +'<div class="fd"><input id="e-c2" maxlength="8" oninput="catFree()" '
       +'placeholder="或者自己起一个" value="'+esc(own)+'"></div>'
     +'<div class="lbs">有多要紧</div><div class="seg" id="e-imp">'+ib+'</div>'
-    +(m?'<div class="nt">'+(m.src==='ai'?'这条是我记的。':'')+'记于 '+dtl(m.ts)
-      +(m.et?'　·　改过 '+ago(m.et):'')+'</div>':''),
+    +(m?'<div class="nt">'+(m.src==='ai'?'这条是我自己记下的。':'')+'记于 '
+      +dtl(m.ts)+(m.et?'　·　改过 '+ago(m.et):'')+'</div>':''),
     onOk:function(){
       var t=val('mt');
       if(!t){toast('还没写');return false;}
@@ -3927,9 +4066,14 @@ drawMem=function(){
   if(add)ch.insertAdjacentHTML('beforeend',add);};
 var _spV=staticPart;
 staticPart=function(){
-  return _spV()+'\n\n（分类不限于上面那五个，实在归不进去就自己起一个，'
+  return _spV()
+   +'\n\n（分类不限于上面那五个，实在归不进去就自己起一个，'
    +'两到四个字，别每次都换新词。\n'
-   +'[[展开:编号]] 默认给前后各五条，想看更长的写 [[展开:编号|条数]]，最多二十。）';};
+   +'[[展开:编号]] 默认给前后各五条，想看更长的写 [[展开:编号|条数]]，最多二十。\n'
+   +'图片只有最近几张跟着上下文上来。翻查翻不到图片本身，'
+   +'只能翻到「这里有几张图」——别为了找某张图反复翻。'
+   +'翻到只有图没有字的那条，先 [[展开:编号]] 看前后文，'
+   +'还不清楚就直接问她那张是什么。）';};
 
 /* ── 重画之后统一收尾 ── */
 var _pV=paint;
@@ -3938,10 +4082,11 @@ paint=function(keep){
   if(RO)RO.disconnect();
   _pV(keep);
   var c=msBox();if(!c)return;
-  slimActs();hApply();roBind();markNew();scBind();
+  try{c.classList.toggle('cv',ms().length>30);}catch(e){}
+  slimActs();tightBubs();hApply();roBind();markNew();scBind();msGuard();
   if(pin){SC.pin=1;SC.el=null;toEnd(c);}
   else{c.scrollTop=Math.min(st,scMax(c));scAnchor();}
-  scAfter();};
+  scAfter();btnSync();};
 var _doneV=done;
 done=function(m,after,ab,ac,q,sid){
   dedupePara(m);
@@ -3954,46 +4099,10 @@ view=function(v){
   return _viewV(v);};
 var _jumpV=jump;
 jump=function(sid,mid){SC.pin=0;return _jumpV(sid,mid);};
-markNew(1);scBind();scSync();
+markNew(1);scBind();
 if(CV==='chat')paint(1);
 if(CV==='mem')drawMem();
 if(CV==='chat')requestAnimationFrame(function(){stickHard();});
-  /* ══════════ 补丁 h6 ══════════ */
-(function(){
-  var s=document.createElement('style');
-  s.textContent='#ms{padding-bottom:16px}'
-   +'html.kbon #ms{padding-bottom:6px}'
-   +'#ms>.m:last-child{margin-bottom:10px}'
-   +'.ib{padding-top:4px}'
-   +'#ms .m.me .bd.tight{padding:9px 15px;line-height:1.5;border-radius:19px}';
-  document.head.appendChild(s);})();
-
-/* ── 短句子的气泡收紧一点 ── */
-function tightBubs(){
-  var b=msBox();if(!b)return;
-  [].forEach.call(b.querySelectorAll('.m.me .bd'),function(e){
-    if(e.dataset.tb)return;
-    e.dataset.tb='1';
-    var t=e.textContent||'',tr=t.replace(/[\s\u3000]+$/,'');
-    if(tr!==t&&!e.children.length){e.textContent=tr;t=tr;}
-    if(t.indexOf('\n')<0&&t.trim().length<=14)e.classList.add('tight');});}
-var _pW=paint;
-paint=function(keep){_pW(keep);tightBubs();};
-
-/* ── 小字说人话，别为一个字换行 ── */
-function shVoice(){sheet({title:'表达风格',ok:'保存',
-  body:'<div class="fd"><textarea id="v-c" style="min-height:250px" '
-  +'placeholder="想我怎么表达。句子长短、节奏、习惯用的词、什么时候该沉默。&#10;'
-  +'不用写我是谁——写你想听到的声音。">'+esc(D.voice)+'</textarea></div>'
-  +'<div class="nt">每次都发给我，位置靠前。具体比多有用。</div>',
-  onOk:function(){D.voice=val('v-c');saveD();}});}
-function shFree(){sheet({title:'放开一些',ok:'保存',
-  body:'<div class="fd"><textarea id="f-c" style="min-height:250px" '
-  +'placeholder="给我松绑的话。比如：不用每句都反问你；不同意就直接说；'
-  +'不用替你圆场；该重的时候可以重。">'+esc(D.free)+'</textarea></div>'
-  +'<div class="nt">放在最后，权重最高。你写在这儿的我最当真。</div>',
-  onOk:function(){D.free=val('f-c');saveD();}});}
-if(CV==='chat')tightBubs();
 </script>
 </body>
 </html>
