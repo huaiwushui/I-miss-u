@@ -4924,6 +4924,88 @@ function usPart(q){
   if(HINT)s+='\n\n【这一轮】\n'+HINT;
   return s;
 }
+  /* ══════════ 统合层 v1 · 第六段 · 配色收尾 ══════════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    ':root{--sel:rgba(112,124,138,.085);--sel2:rgba(112,124,138,.13);'
+   +'--ln2:rgba(112,124,138,.20)}'
+   +'html.dark{--sel:rgba(226,232,240,.075);--sel2:rgba(226,232,240,.12);'
+   +'--ln2:rgba(226,232,240,.16)}'
+   /* 抽屉选中 + 会话项 */
+   +'#dw .nv a.on{background:var(--sel)}'
+   +'#sls .it.on{background:var(--sel)}'
+   +'#sls.edit .it{background:var(--sel)}'
+   +'#sls .it.dg{background:var(--card)}'
+   /* 输入栏那几个圆按钮 */
+   +'.mini{background:var(--sel2)}'
+   +'.mchip{background:var(--sel2)}'
+   +'.mini.on{background:var(--tag4t)}'
+   +'.mini.on2{background:var(--tag3t)}'
+   /* 代码底、附图底、思考页关闭键 */
+   +'.bd code{background:var(--sel2)}'
+   +'.att .a{background:var(--sel2)}'
+   +'.pic{background:var(--sel2)}'
+   +'#sh.think .hb .cx{background:var(--sel2)}'
+   /* 面板里的框：纯白 + 冷灰细线 */
+   +'#sh .fd input,#sh .fd textarea{background:var(--card);'
+   +'border-color:var(--ln2)}'
+   +'#sh .fd input:focus,#sh .fd textarea:focus{border-color:var(--rose)}'
+   +'#sh .sbox .w{background:var(--card);border-color:var(--ln2)}'
+   +'#sh .seg button,#sh .segw button{background:var(--card);'
+   +'border-color:var(--ln2)}'
+   +'#sh .seg button.on,#sh .segw button.on{background:var(--ink);'
+   +'border-color:var(--ink)}'
+   +'#sh .cd{border-color:var(--ln2)}'
+   /* 锁屏数字键 */
+   +'#pad button{background:var(--card)}'
+   +'#pad button:active{background:var(--sel2)}'
+   +'#pad button.f{background:none}'
+   /* 搜索页和记忆库的框也跟上 */
+   +'.sbox .w{background:var(--card);border-color:var(--ln2)}'
+   +'.chips button{background:var(--card);border-color:var(--ln2)}'
+   +'.chips button.on{background:var(--ink);border-color:var(--ink)}';
+  document.head.appendChild(s);
+})();
+
+/* ── 底边取色：只看屏幕上真的看得见的那块 ── */
+function bgSample(u,cb){
+  var im=new Image();
+  im.onerror=function(){cb(null);};
+  im.onload=function(){
+    try{
+      var vw=Math.max(1,window.innerWidth||360);
+      var vh=Math.max(1,window.innerHeight||640);
+      var ar=vw/vh,iw=im.width,ih=im.height;
+      if(!iw||!ih){cb(null);return;}
+      var iar=iw/ih,sx,sy,sw,sh;
+      if(iar>ar){sh=ih;sw=ih*ar;sx=(iw-sw)/2;sy=0;}
+      else{sw=iw;sh=iw/ar;sx=0;sy=(ih-sh)/2;}
+      var W=48,H=Math.max(6,Math.round(W/ar));
+      var cv=document.createElement('canvas');
+      cv.width=W;cv.height=H;
+      var x=cv.getContext('2d');
+      x.drawImage(im,sx,sy,sw,sh,0,0,W,H);
+      var rows=Math.max(2,Math.round(H*0.05));
+      var d=x.getImageData(0,H-rows,W,rows).data;
+      var r=0,g=0,b=0,n=0;
+      for(var i=0;i<d.length;i+=4){
+        if(d[i+3]<8)continue;
+        r+=d[i];g+=d[i+1];b+=d[i+2];n++;}
+      cb(n?[Math.round(r/n),Math.round(g/n),Math.round(b/n)]:null);
+    }catch(e){cb(null);}};
+  im.src=u;}
+function bgReSample(){
+  if(!D.bgOn||!BGDATA)return;
+  bgSample(BGDATA,function(c){
+    if(!c)return;
+    var o=D.bgc;
+    if(o&&o.length===3&&Math.abs(o[0]-c[0])<3
+      &&Math.abs(o[1]-c[1])<3&&Math.abs(o[2]-c[2])<3)return;
+    D.bgc=c;saveD();bgPaint();});}
+window.addEventListener('orientationchange',function(){
+  setTimeout(bgReSample,650);});
+setTimeout(bgReSample,300);
 </script>
 </body>
 </html>
