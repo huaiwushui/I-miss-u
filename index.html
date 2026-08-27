@@ -3603,6 +3603,295 @@ var _jumpH=jump;
 jump=function(sid,mid){SC.pin=0;return _jumpH(sid,mid);};
 markNew(1);hApply();roBind();scBind();scSync();
 if(CV==='chat')requestAnimationFrame(function(){stickHard();});
+  /* ══════════ 补丁 h4 ══════════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent='#ms .more{color:var(--dim);font-weight:500}'
+   +'#ms .act{margin-top:9px}'
+   +'#ms .act .ai2{color:var(--dim);font-weight:500}'
+   +'#ms .act .at{display:none}';
+  document.head.appendChild(s);})();
+
+/* ── 记了什么不摊开，只说一声 ── */
+function slimActs(){
+  var b=msBox();if(!b)return;
+  [].forEach.call(b.querySelectorAll('.m'),function(w){
+    if(w.dataset.ac)return;
+    var as=w.querySelectorAll('.act');
+    if(!as.length)return;
+    w.dataset.ac='1';
+    var mem=0,lk=0,dp=0;
+    [].forEach.call(as,function(a,i){
+      var e=a.querySelector('.ai2'),s=e?e.textContent:'';
+      if(s.indexOf('锁')>=0)lk++;
+      else if(s.indexOf('已经')>=0)dp++;
+      else mem++;
+      if(i)a.remove();});
+    var p=[];
+    if(mem)p.push('记下了'+(mem>1?' '+mem+' 条':''));
+    if(lk)p.push('锁住了'+(lk>1?' '+lk+' 条':''));
+    if(dp)p.push('这条记过了');
+    as[0].innerHTML='<span class="ai2">'+p.join('　·　')+'</span>';});}
+var _pA=paint;
+paint=function(keep){_pA(keep);slimActs();};
+
+/* ── 分类不再限死五个 ── */
+function splitCat(v){
+  var i=Math.max(v.lastIndexOf('|'),v.lastIndexOf('｜'));
+  if(i>0){
+    var c=v.slice(i+1).trim();
+    if(c&&c.length<=8&&!/["'\\<>]/.test(c))return{t:v.slice(0,i).trim(),c:c};}
+  return{t:v,c:''};}
+var _spA=staticPart;
+staticPart=function(){
+  return _spA()+'\n\n（分类不限于上面那五个。'
+   +'实在归不进去就自己起一个，两到四个字，别每次都换新词。）';};
+var _dmA=drawMem;
+drawMem=function(){
+  _dmA();
+  var ch=document.getElementById('mch');if(!ch||!ch.innerHTML)return;
+  var ls=live(),seen={},add='';
+  ls.forEach(function(m){
+    var c=m.cat;
+    if(!c||seen[c]||CATS.indexOf(c)>=0||/["'\\<>]/.test(c))return;
+    seen[c]=1;
+    var n=0;ls.forEach(function(x){if(x.cat===c)n++;});
+    add+='<button class="pz'+(MCAT===c?' on':'')+'" onclick="mcat(\''
+      +esc(c)+'\')">'+esc(c)+' '+n+'</button>';});
+  if(add)ch.insertAdjacentHTML('beforeend',add);};
+
+/* ── 记忆编辑：多一个自己填的框 ── */
+function catFree(){
+  if(!val('e-c2'))return;
+  EDCAT='';
+  var w=document.getElementById('e-cat');
+  if(w)[].forEach.call(w.children,function(b){b.className='pz';});}
+var _pkA=pkCat;
+pkCat=function(i){
+  _pkA(i);
+  var e=document.getElementById('e-c2');if(e)e.value='';};
+function editMem(id,pre,from){
+  var m=id?memById(id):null;
+  EDCAT=m?(m.cat||''):'';
+  var own=(EDCAT&&CATS.indexOf(EDCAT)<0)?EDCAT:'';
+  if(own)EDCAT='';
+  EDIMP=m?(m.imp||2):2;
+  var cb='<button class="pz'+((EDCAT===''&&!own)?' on':'')
+    +'" onclick="pkCat(-1)">没分类</button>';
+  CATS.forEach(function(c,i){
+    cb+='<button class="pz'+(EDCAT===c?' on':'')+'" onclick="pkCat('+i+')">'
+      +c+'</button>';});
+  var ib='';
+  IMPS.forEach(function(x,i){
+    ib+='<button class="pz'+(EDIMP===i+1?' on':'')+'" onclick="pkImp('
+      +(i+1)+')">'+x+'</button>';});
+  sheet({title:m?'改一条':'记住一件事',ok:'保存',
+    body:'<div class="fd"><textarea id="mt" style="min-height:130px" '
+      +'placeholder="想让我一直记着的事">'+esc(m?m.t:(pre||''))+'</textarea></div>'
+    +'<div class="lbs">归到哪儿</div><div class="segw" id="e-cat">'+cb+'</div>'
+    +'<div class="fd"><input id="e-c2" maxlength="8" oninput="catFree()" '
+      +'placeholder="或者自己起一个" value="'+esc(own)+'"></div>'
+    +'<div class="lbs">有多要紧</div><div class="seg" id="e-imp">'+ib+'</div>'
+    +(m?'<div class="nt">'+(m.src==='ai'?'这条是我记的。':'')+'记于 '+dtl(m.ts)
+      +(m.et?'　·　改过 '+ago(m.et):'')+'</div>':''),
+    onOk:function(){
+      var t=val('mt');
+      if(!t){toast('还没写');return false;}
+      var c=(val('e-c2')||EDCAT).slice(0,8);
+      if(/["'\\<>]/.test(c))c='';
+      if(m){
+        m.t=t;m.cat=c;m.imp=EDIMP;m.et=Date.now();
+        saveD();closeSheet(1);
+        if(CV==='mem')drawMem();else view('mem');
+        return'done';}
+      var dp=dupOf(t);
+      if(dp){
+        PEND={t:t,cat:c,imp:EDIMP,from:from||null};
+        closeSheet(1);
+        sheet({title:'这条好像记过了',
+          body:'<div class="lbs">已经记着的</div>'
+        +'<div class="mcd"><div class="t">'+esc(dp.m.t)+'</div>'
+        +'<div class="f"><div class="ts">'+dtl(dp.m.ts)+'</div></div></div>'
+        +'<div class="lbs" style="margin-top:14px">你要记的</div>'
+        +'<div class="mcd"><div class="t">'+esc(t)+'</div></div>'
+        +'<div class="cd cd0" style="margin-top:14px">'
+        +'<div class="rw pz" onclick="memReplace(\''+dp.m.id+'\')">'
+        +'<span class="l">用新的换掉旧的</span>'+I.chevD+'</div>'
+        +'<div class="rw pz" onclick="memAdd()">'
+        +'<span class="l">两条都留着</span>'+I.chevD+'</div>'
+        +'<div class="rw pz" onclick="closeSheet()">'
+        +'<span class="l" style="color:var(--dim)">算了，不记</span>'
+        +I.chevD+'</div></div>'});
+        return'done';}
+      addMem(t,c,EDIMP,'me',from);
+      closeSheet(1);
+      if(CV==='mem')drawMem();else view('mem');
+      return'done';}});}
+if(CV==='chat')slimActs();
+if(CV==='mem')drawMem();
+  /* ══════════ 补丁 h5 ══════════ */
+/* ── 缩略图：列表只加载小图，点开才读原图 ── */
+var TOK={};
+function thumbOf(u,cb){
+  var im=new Image();
+  im.onerror=function(){cb(null);};
+  im.onload=function(){
+    try{
+      var M=200,w=im.width,h=im.height;
+      if(w>M||h>M){var s=M/Math.max(w,h);w=Math.round(w*s);h=Math.round(h*s);}
+      var c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(im,0,0,w,h);
+      cb(c.toDataURL('image/jpeg',0.72));
+    }catch(e){cb(null);}};
+  im.src=u;}
+function setPic(mid,pid,u){
+  var e=document.getElementById('p-'+mid+'-'+pid);
+  if(e){e.src=u;e.dataset.on='1';}}
+function showPics(m){
+  if(!m.pics||!m.pics.length)return;
+  var ks=Object.keys(PICQ);
+  if(ks.length>240)ks.slice(0,ks.length-160).forEach(function(k){
+    if(PICQ[k]!=='no'){delete PICQ[k];delete TOK[k];}});
+  m.pics.forEach(function(pid){
+    if(PICQ[pid]==='no')return;
+    var el=document.getElementById('p-'+m.id+'-'+pid);
+    if(!el||el.dataset.on)return;
+    var cd=PICQ[pid];
+    if(cd){el.src=cd;el.dataset.on='1';if(TOK[pid])return;}
+    dbGet('pic',pid+'~t').then(function(v){
+      if(v&&v.d){TOK[pid]=1;PICQ[pid]=v.d;if(!cd)setPic(m.id,pid,v.d);return;}
+      return dbGet('pic',pid).then(function(f){
+        if(!f||!f.d){if(!cd)PICQ[pid]='no';return;}
+        thumbOf(f.d,function(th){
+          if(!th){TOK[pid]=1;PICQ[pid]=f.d;if(!cd)setPic(m.id,pid,f.d);return;}
+          TOK[pid]=1;PICQ[pid]=th;
+          if(!cd)setPic(m.id,pid,th);
+          dbPut('pic',pid+'~t',{d:th,ts:f.ts||Date.now()});});});
+    },function(){});});}
+function picView(src){
+  var o=document.getElementById('pv');if(o)o.remove();
+  var d=document.createElement('div');d.id='pv';
+  d.innerHTML='<img src="'+src+'">';
+  d.onclick=function(){d.remove();};
+  document.body.appendChild(d);
+  var pid='',k;
+  for(k in PICQ){if(PICQ[k]===src){pid=k;break;}}
+  if(!pid)return;
+  dbGet('pic',pid).then(function(v){
+    if(!v||!v.d||!d.parentNode)return;
+    var im=d.querySelector('img');
+    if(im&&im.src!==v.d)im.src=v.d;},function(){});}
+
+/* ── 缩略图跟着正主走，别被当垃圾扫掉 ── */
+function sweepPics(){
+  var tot=0;SS.forEach(function(s){tot+=(MSG[s.id]||[]).length;});
+  if(!SS.length||!tot)return;
+  var used={__bg:1};
+  function scan(list){
+    (list||[]).forEach(function(m){
+      if(m.pics)m.pics.forEach(function(p){used[p]=1;used[p+'~t']=1;});
+      if(m.eb)m.eb.forEach(function(b){scan(b.tail);});});}
+  SS.forEach(function(s){scan(MSG[s.id]);});
+  dbKeys('pic').then(function(ks){
+    ks.filter(function(k){return!used[k];}).slice(0,60)
+      .forEach(function(k){dbDel('pic',k);delete PICQ[k];delete TOK[k];});});}
+function dbSize(store){
+  return tx(store,'readonly').then(function(s){
+    return new Promise(function(ok){
+      var n=0,b=0,c=s.openCursor();
+      c.onsuccess=function(e){
+        var cur=e.target.result;
+        if(!cur)return ok({n:n,b:b});
+        var v=cur.value;
+        b+=(v&&v.d)?v.d.length:(typeof v==='string'?v.length:0);
+        if(String(cur.key).slice(-2)!=='~t')n++;
+        cur.continue();};
+      c.onerror=function(){ok({n:n,b:b});};});});}
+var _dbAllA=dbAll;
+dbAll=function(store){
+  return _dbAllA(store).then(function(o){
+    if(store!=='pic')return o;
+    var r={};
+    Object.keys(o).forEach(function(k){
+      if(String(k).slice(-2)!=='~t')r[k]=o[k];});
+    return r;});};
+
+/* ── 展开前后多少条我自己定 ── */
+var OPENW=5;
+var _fmA=findMarks;
+findMarks=function(t){
+  var o=_fmA(t);
+  o.forEach(function(x){
+    if(x.k==='展开'){
+      var g=String(x.v).match(/[|｜]\s*(\d{1,2})/);
+      OPENW=g?Math.max(1,Math.min(20,parseInt(g[1],10)||5)):5;}});
+  return o;};
+function openAdd(n){
+  var p=LOOKMAP[n],w=OPENW;
+  var lab='展开第 '+n+' 条'+(w!==5?'（前后 '+w+'）':'');
+  function bad(t){LOOKS.push({q:lab,n:0,txt:t});lookBuild();return{n:0};}
+  if(!p)return bad('（没有这个编号。）');
+  var arr=MSG[p.sid]||[],s=sessById(p.sid);
+  if(!arr.length||!arr[p.i])return bad('（那段对话已经不在了。）');
+  var a=Math.max(0,p.i-w),b=Math.min(arr.length-1,p.i+w),ls=[];
+  for(var j=a;j<=b;j++){
+    var mm=arr[j];if(!alive(mm))continue;
+    ls.push((j===p.i?'▸ ':'  ')
+      +(mm.r==='quote'?'（引用）':(mm.r==='me'?D.me:D.you))+'：'
+      +String(fullT(mm)||'').replace(/\s+/g,' ').slice(0,300)+picWord(mm));}
+  LOOKS.push({q:lab,n:ls.length,
+    txt:'—— '+(s?(s.ti||'对话'):'对话')+'｜'+dtl(arr[p.i].ts)+'\n'+ls.join('\n')
+      +'\n（▸ 是第 '+n+' 条那一句。）'});
+  lookBuild();
+  return{n:ls.length};}
+var _spB=staticPart;
+staticPart=function(){
+  return _spB()+'\n\n（[[展开:编号]] 默认给前后各五条。'
+   +'想看更长的一段写 [[展开:编号|条数]]，最多二十。）';};
+
+/* ── 翻查卡片点得动，能跳到原话 ── */
+function drawParts(){
+  ms().forEach(function(m){
+    if(!m.parts||!m.parts.length)return;
+    var w=document.getElementById('m-'+m.id);if(!w)return;
+    var bd=w.querySelector('.bd');if(!bd||bd.dataset.pt)return;
+    bd.dataset.pt='1';
+    var h='';
+    m.parts.forEach(function(p){
+      if(p.ty==='t'&&p.t){h+='<div class="sg">'+md(p.t)+'</div>';return;}
+      if(p.ty!=='look')return;
+      var q=String(p.q||''),op=(q.indexOf('展开')!==0&&!p.dup&&p.n);
+      h+='<div class="wbx lk'+(op?' pz':'')+'"'
+       +(op?' onclick="lookSheet(\''+esc(q)+'\')"':'')
+       +'><div class="wh">'+I.look+'<span>'
+       +(p.dup?'这个词翻过了 「':'翻了翻以前 「')+esc(q)+'」'
+       +(p.dup?'':' · '+(p.n?p.n+' 条':'没找到'))+'</span>'
+       +(op?I.chev:'')+'</div></div>';});
+    if(h)bd.insertAdjacentHTML('beforebegin',h);});}
+function lookSheet(q){
+  var sp=splitQ(q),hits=[];
+  SS.forEach(function(s){
+    (MSG[s.id]||[]).forEach(function(mm){
+      if(!alive(mm)||mm.st||mm.err)return;
+      if(sp.dr&&!(mm.ts>=sp.dr.a&&mm.ts<sp.dr.b))return;
+      var t=fullT(mm)||'';
+      if(score(t+' '+picWord(mm),sp.kw)<=0)return;
+      hits.push({s:s,m:mm,t:t,sc:score(t,sp.kw)});});});
+  if(sp.kw.length)hits.sort(function(a,b){return b.sc-a.sc||b.m.ts-a.m.ts;});
+  else hits.sort(function(a,b){return b.m.ts-a.m.ts;});
+  hits=hits.slice(0,12);
+  var h='<div class="nt" style="padding:0 var(--inset) 12px">'
+   +'我当时翻的是「'+esc(q)+'」。</div>';
+  if(!hits.length)h+='<div class="empty">现在翻不到了。</div>';
+  hits.forEach(function(x){
+    h+='<div class="res"><div class="rh"><span class="rt">'
+     +esc(x.s.ti||'对话')+' · '+dtl(x.m.ts)+'</span><span class="who">'
+     +(x.m.r==='me'?esc(D.me):esc(D.you))+'</span></div>'
+     +'<div class="rb">'+hi(cut(x.t,sp.kw),sp.kw)+'</div>'
+     +'<div class="ra"><button onclick="closeSheet(1);jump(\''
+     +x.s.id+'\',\''+x.m.id+'\')">跳过去看</button></div></div>';});
+  sheet({full:1,title:'翻到的',body:h});}
+if(CV==='chat')paint(1);
 </script>
 </body>
 </html>
