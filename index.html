@@ -5587,6 +5587,105 @@ if(!G11.on){
     try{trimNotes(o&&o.title);}catch(e){}
   };
 }
+  /* ══════════ 统合层 v1 · 第十二段 ══════════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    '#ms .m.me .bd{padding:10px 15px!important;'
+   +'line-height:1.62!important;border-radius:20px!important}'
+   +'#ms .m.me .bd.tight{padding:8px 14px!important;'
+   +'line-height:1.5!important;border-radius:18px!important}'
+   +'#ms .m.ai .bd{line-height:1.72}';
+  document.head.appendChild(s);
+})();
+
+/* ── 标记：允许换行，放宽到 600 字 ── */
+MKRE=new RegExp(
+  '\\[{1,2}\\s*(查|展开|记住|锁住|改|忘掉)\\s*[:：]\\s*'
+ +'((?:(?!\\]\\])[\\s\\S]){1,600}?)\\s*\\]{1,2}','g');
+function findMarks(t){
+  var o=[],m;MKRE.lastIndex=0;
+  while((m=MKRE.exec(String(t||'')))){
+    var v=(m[2]||'').trim();
+    if(!v)continue;
+    if(m[1]==='展开'){
+      var g=v.match(/[|｜]\s*(\d{1,2})/);
+      OPENW=g?Math.max(1,Math.min(20,parseInt(g[1],10)||5)):5;}
+    o.push({k:m[1],v:v});}
+  return o;}
+function stripMarks(t){
+  var s=String(t||'');
+  MKRE.lastIndex=0;
+  s=s.replace(MKRE,'');
+  s=s.replace(/\[{1,2}\s*(查|展开|记住|锁住|改|忘掉)\s*[:：]?[\s\S]*$/,'');
+  return s.replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();}
+
+/* ── 改：编号后面可以直接跟长内容 ── */
+function runActs(m,after,q,sid){
+  var raw=m.t||'';
+  m.t=stripMarks(raw);
+  if(!D.acts||m.err)return 0;
+  var mk=findMarks(raw),acts=[],touched=0;
+  mk.forEach(function(x){
+    if(x.k==='查'){
+      var key=x.v.replace(/\s+/g,' ').toLowerCase();
+      if(LOOKSEEN[key])return;
+      var dup=0;
+      PENDQ.forEach(function(p){
+        if(p.k==='查'&&p.v.replace(/\s+/g,' ').toLowerCase()===key)dup=1;});
+      if(!dup)PENDQ.push({k:'查',v:x.v});
+      return;}
+    if(x.k==='展开'){
+      var n=parseInt(x.v,10);
+      if(n>0)PENDQ.push({k:'展开',v:n});
+      return;}
+    if(x.k==='忘掉'){
+      var tgt=memByCode(x.v);
+      if(!tgt){acts.push({s:'miss',t:x.v});return;}
+      if(tgt.lock){acts.push({s:'locked',t:tgt.t});return;}
+      tombAdd('del',tgt.t);
+      D.mems=D.mems.filter(function(y){return y.id!==tgt.id;});
+      acts.push({s:'forget',t:tgt.t});touched=1;
+      return;}
+    if(x.k==='改'){
+      var mm=String(x.v).match(/^\s*[#]?([A-Za-z0-9]{2,12})\s*[|｜:：]\s*([\s\S]+)$/);
+      if(!mm){acts.push({s:'miss',t:x.v.slice(0,20)});return;}
+      var t2=memByCode(mm[1]);
+      if(!t2){acts.push({s:'miss',t:mm[1]});return;}
+      if(t2.lock){acts.push({s:'locked',t:t2.t});return;}
+      var nv=splitCat(String(mm[2]).trim());
+      if(!nv.t){acts.push({s:'miss',t:mm[1]});return;}
+      tombAdd('edit',nv.t,t2.t);
+      acts.push({s:'edit',t:nv.t,old:t2.t});
+      t2.t=nv.t;if(nv.c)t2.cat=nv.c;t2.et=Date.now();
+      touched=1;
+      return;}
+    var sc=splitCat(x.v);
+    if(!sc.t)return;
+    if(dupOf(sc.t)){acts.push({s:'dup',t:sc.t});return;}
+    addMem(sc.t,sc.c,x.k==='锁住'?3:2,'ai',
+      {sid:sid||S().id,mid:m.id,ts:Date.now()},x.k==='锁住');
+    acts.push({s:x.k==='锁住'?'lock':'mem',t:sc.t});touched=1;});
+  if(acts.length)m.acts=(m.acts||[]).concat(acts);
+  if(touched)saveD();
+  if(!PENDQ.length)return 0;
+  if((m.lkn||0)>=TURNMAX){
+    PENDQ=[];
+    if(m.t&&m.t.trim())return 0;
+    if(m.forced)return 0;
+    m.forced=1;
+    return nextRound(m,after,q,sid,
+      '翻得够多了，就用手里有的回她。真的不够就直接问她。');}
+  var job=PENDQ.shift(),r={n:0},lab='';
+  if(job.k==='查'){lab=job.v;r=lookAdd(job.v);}
+  else{lab='展开第 '+job.v+' 条';r=openAdd(job.v);}
+  m.lkn=(m.lkn||0)+1;
+  m.parts=m.parts||[];
+  if(m.t&&m.t.trim())m.parts.push({ty:'t',t:m.t});
+  m.parts.push({ty:'look',q:lab,n:r.n});
+  return nextRound(m,after,q,sid,'');}
+
+if(CV==='chat'){try{paint(1);}catch(e){}}
 </script>
 </body>
 </html>
