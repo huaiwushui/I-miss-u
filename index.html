@@ -5507,6 +5507,86 @@ go=function(m,after,q,sid,forHi){
 };
 
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
+  /* ══════════ 统合层 v1 · 第十一段 · 灰字收拾 ══════════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    '#sh .nt,.nt{font-size:12px;line-height:1.6;color:var(--dim2);'
+   +'text-wrap:balance;-webkit-hyphens:none;hyphens:none}'
+   +'#sh .bdy>.nt{padding-top:10px}'
+   +'#sh .lbs{text-wrap:balance}';
+  document.head.appendChild(s);
+})();
+
+/* ── 没内容的报错不弹 ── */
+function keepErr(tag,e){
+  var m='',st='';
+  try{
+    var o=(e&&e.reason)?e.reason:e;
+    m=(o&&(o.message||o.error&&o.error.message))||String(o&&o.type||o||'');
+    st=(o&&o.stack)?String(o.stack):'';
+  }catch(x){}
+  m=String(m||'').trim();
+  if(!m)return;
+  if(/^script error\.?$/i.test(m))return;
+  if(e&&e.filename==null&&!st&&m.length<16)return;
+  try{if(e&&e.filename)m+='　@'+(e.lineno||0)+':'+(e.colno||0);}catch(x){}
+  ERRTXT=tag+'｜'+m.slice(0,200)
+    +(st?('\n\n'+st.split('\n').slice(0,14).join('\n')):'');
+  try{errBar(tag+'｜'+m.slice(0,60));}catch(x){}
+}
+function shoutErr(tag,e){keepErr(tag,e);}
+
+/* ── 灰字：一句话说完 ── */
+var NOTE={
+'表达风格':'每次都发我，位置靠前。写具体的比写多的有用。',
+'放开一些':'放在最后，权重最高。',
+'温度和长度':'「偷偷想的」在输入框那个脑子图标上。',
+'自己动手':'记忆库交给我，记改删我自己判断。关掉我就只说话。',
+'先开口':'隔太久没说话，我先开口。会花一次调用。',
+'联网查资料':'聊私事记得关——开着等于把你的话发给 Jina。',
+'干杂活的模型':'挑记忆不用很聪明，用便宜的就行。',
+'深浅':'跟着天色：晚七点转深，早七点转回来。',
+'背景':'图铺满，盖一层同色的纱。跟着完整备份走。',
+'中转设置':'地址要写全，写到 /v1 就停会报 404。',
+'锁屏密码':'只存这台手机，不跟备份走。',
+'导出备份':'完整的能原样恢复，只要文字的那份小得多。',
+'恢复':'会覆盖现在的全部内容。',
+'模型':'报 404 就照中转的文档改写法。',
+'清掉聊天图片':'文字一句不动，背景图留着。删了拿不回来。',
+'改一下':'一字不改直接发也行，下面会重来一遍。',
+'这段对话':'整理摘要在记忆库那边。',
+'带多少给我':'图片按整条消息算，最多 6 张。翻以前不花钱。',
+'我们':'','写在墙上':'','纪念日':'','翻到的':'',
+'记住一件事':'','改一条':'','这条好像记过了':'','粘贴恢复':''
+};
+function trimNotes(title){
+  var bd=document.querySelector('#sh .bdy');if(!bd)return;
+  var ns=bd.querySelectorAll('.nt');if(!ns.length)return;
+  var key=String(title||'');
+  if(key==='这段对话'&&document.getElementById('c-n'))key='带多少给我';
+  var v=NOTE[key];
+  var i;
+  for(i=1;i<ns.length;i++)ns[i].remove();
+  var el=ns[0];
+  if(v===''){el.remove();return;}
+  if(v){el.textContent=v;return;}
+  var t=(el.textContent||'').replace(/\s+/g,' ').trim();
+  if(!t){el.remove();return;}
+  if(t.length>44){
+    var p=t.indexOf('。');
+    el.textContent=(p>0&&p<42)?t.slice(0,p+1):(t.slice(0,42).replace(/[，、]$/,'')+'…');
+  }else el.textContent=t;
+}
+if(typeof G11==='undefined')var G11={};
+if(!G11.on){
+  G11.on=1;
+  G11.sheet=sheet;
+  sheet=function(o){
+    G11.sheet(o);
+    try{trimNotes(o&&o.title);}catch(e){}
+  };
+}
 </script>
 </body>
 </html>
