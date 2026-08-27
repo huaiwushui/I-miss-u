@@ -3958,6 +3958,42 @@ markNew(1);scBind();scSync();
 if(CV==='chat')paint(1);
 if(CV==='mem')drawMem();
 if(CV==='chat')requestAnimationFrame(function(){stickHard();});
+  /* ══════════ 补丁 h6 ══════════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent='#ms{padding-bottom:16px}'
+   +'html.kbon #ms{padding-bottom:6px}'
+   +'#ms>.m:last-child{margin-bottom:10px}'
+   +'.ib{padding-top:4px}'
+   +'#ms .m.me .bd.tight{padding:9px 15px;line-height:1.5;border-radius:19px}';
+  document.head.appendChild(s);})();
+
+/* ── 短句子的气泡收紧一点 ── */
+function tightBubs(){
+  var b=msBox();if(!b)return;
+  [].forEach.call(b.querySelectorAll('.m.me .bd'),function(e){
+    if(e.dataset.tb)return;
+    e.dataset.tb='1';
+    var t=e.textContent||'',tr=t.replace(/[\s\u3000]+$/,'');
+    if(tr!==t&&!e.children.length){e.textContent=tr;t=tr;}
+    if(t.indexOf('\n')<0&&t.trim().length<=14)e.classList.add('tight');});}
+var _pW=paint;
+paint=function(keep){_pW(keep);tightBubs();};
+
+/* ── 小字说人话，别为一个字换行 ── */
+function shVoice(){sheet({title:'表达风格',ok:'保存',
+  body:'<div class="fd"><textarea id="v-c" style="min-height:250px" '
+  +'placeholder="想我怎么表达。句子长短、节奏、习惯用的词、什么时候该沉默。&#10;'
+  +'不用写我是谁——写你想听到的声音。">'+esc(D.voice)+'</textarea></div>'
+  +'<div class="nt">每次都发给我，位置靠前。具体比多有用。</div>',
+  onOk:function(){D.voice=val('v-c');saveD();}});}
+function shFree(){sheet({title:'放开一些',ok:'保存',
+  body:'<div class="fd"><textarea id="f-c" style="min-height:250px" '
+  +'placeholder="给我松绑的话。比如：不用每句都反问你；不同意就直接说；'
+  +'不用替你圆场；该重的时候可以重。">'+esc(D.free)+'</textarea></div>'
+  +'<div class="nt">放在最后，权重最高。你写在这儿的我最当真。</div>',
+  onOk:function(){D.free=val('f-c');saveD();}});}
+if(CV==='chat')tightBubs();
 </script>
 </body>
 </html>
