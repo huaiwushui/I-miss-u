@@ -4512,6 +4512,57 @@ staticPart=function(){
    +'· 只是想显得自己记性好\n\n'
    +'翻不到就直说没找到，然后问她。问她不丢人，编才丢人。';
 };
+  /* ── 修：两种调用方式都认 ── */
+function shrink(src,a,b,c){
+  var M,q,cb;
+  if(typeof a==='function'){M=1600;q=0.85;cb=a;}
+  else{M=a||1600;q=(b==null?0.85:b);cb=c;}
+  if(typeof cb!=='function')cb=function(){};
+  function work(u,soft){
+    if(typeof u!=='string'||u.indexOf('data:image')!==0){cb(u);return;}
+    var im=new Image();
+    im.onerror=function(){cb(soft?u:null);};
+    im.onload=function(){
+      try{
+        var w=im.width,h=im.height;
+        if(!w||!h){cb(soft?u:null);return;}
+        if(soft&&w<=M&&h<=M&&u.length<600000){cb(u);return;}
+        if(w>M||h>M){
+          var s=M/Math.max(w,h);
+          w=Math.round(w*s);h=Math.round(h*s);
+        }
+        var cv=document.createElement('canvas');
+        cv.width=w;cv.height=h;
+        cv.getContext('2d').drawImage(im,0,0,w,h);
+        var o=cv.toDataURL('image/jpeg',q);
+        if(!o){cb(soft?u:null);return;}
+        cb((soft&&o.length>=u.length)?u:o);
+      }catch(e){cb(soft?u:null);}
+    };
+    im.src=u;
+  }
+  if(src&&typeof src!=='string'&&typeof Blob!=='undefined'
+    &&src instanceof Blob){
+    var r=new FileReader();
+    r.onerror=function(){cb(null);};
+    r.onload=function(){work(String(r.result||''),0);};
+    r.readAsDataURL(src);
+    return;
+  }
+  work(src,1);
+}
+dbPut=function(store,key,val){
+  var k=String(key);
+  if(store!=='pic'||k==='__bg'||k.slice(-2)==='~t'
+    ||!val||typeof val.d!=='string'){
+    return _dbPutV(store,key,val);
+  }
+  return new Promise(function(ok,no){
+    shrink(val.d,function(d){
+      _dbPutV(store,key,{d:d||val.d,ts:val.ts||Date.now()}).then(ok,no);
+    });
+  });
+};
 if(CV==='chat')pillSync();
 if(CV==='more')view('more');
 </script>
