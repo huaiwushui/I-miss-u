@@ -4924,30 +4924,26 @@ function usPart(q){
   if(HINT)s+='\n\n【这一轮】\n'+HINT;
   return s;
 }
-  /* ══════════ 统合层 v1 · 第六段 · 配色收尾 ══════════ */
+/* ══════════ 统合层 v1 · 第六段 · 配色与性能 ══════════ */
 (function(){
   var s=document.createElement('style');
   s.textContent=
     ':root{--sel:rgba(112,124,138,.085);--sel2:rgba(112,124,138,.13);'
-   +'--ln2:rgba(112,124,138,.20)}'
+   +'--bub:rgba(112,124,138,.105);--ln2:rgba(112,124,138,.20)}'
    +'html.dark{--sel:rgba(226,232,240,.075);--sel2:rgba(226,232,240,.12);'
    +'--ln2:rgba(226,232,240,.16)}'
-   /* 抽屉选中 + 会话项 */
    +'#dw .nv a.on{background:var(--sel)}'
    +'#sls .it.on{background:var(--sel)}'
    +'#sls.edit .it{background:var(--sel)}'
    +'#sls .it.dg{background:var(--card)}'
-   /* 输入栏那几个圆按钮 */
    +'.mini{background:var(--sel2)}'
    +'.mchip{background:var(--sel2)}'
    +'.mini.on{background:var(--tag4t)}'
    +'.mini.on2{background:var(--tag3t)}'
-   /* 代码底、附图底、思考页关闭键 */
    +'.bd code{background:var(--sel2)}'
    +'.att .a{background:var(--sel2)}'
    +'.pic{background:var(--sel2)}'
    +'#sh.think .hb .cx{background:var(--sel2)}'
-   /* 面板里的框：纯白 + 冷灰细线 */
    +'#sh .fd input,#sh .fd textarea{background:var(--card);'
    +'border-color:var(--ln2)}'
    +'#sh .fd input:focus,#sh .fd textarea:focus{border-color:var(--rose)}'
@@ -4957,16 +4953,126 @@ function usPart(q){
    +'#sh .seg button.on,#sh .segw button.on{background:var(--ink);'
    +'border-color:var(--ink)}'
    +'#sh .cd{border-color:var(--ln2)}'
-   /* 锁屏数字键 */
    +'#pad button{background:var(--card)}'
    +'#pad button:active{background:var(--sel2)}'
    +'#pad button.f{background:none}'
-   /* 搜索页和记忆库的框也跟上 */
    +'.sbox .w{background:var(--card);border-color:var(--ln2)}'
-   +'.chips button{background:var(--card);border-color:var(--ln2)}'
-   +'.chips button.on{background:var(--ink);border-color:var(--ink)}';
+   /* 浅色气泡：跟侧边栏同一套冷灰 */
+   +'html:not(.dark) #ms .m.me .bd{background:var(--bub)}'
+   /* 气泡宽度跟着字走，深浅一致 */
+   +'#ms .m.me .bd{width:-webkit-fit-content!important;'
+   +'width:fit-content!important;max-width:min(80%,560px)!important;'
+   +'margin-left:auto!important;box-sizing:border-box}'
+   +'#ms .m.me .in{text-align:right}'
+   +'#ms .m.me .bd,#ms .m.me .bd *{text-align:left}'
+   /* 横滚条藏掉，右侧渐隐提示还能划 */
+   +'.chips,.cbx,#sh .bdy .cbx{scrollbar-width:none;'
+   +'-ms-overflow-style:none}'
+   +'.chips::-webkit-scrollbar,.cbx::-webkit-scrollbar{'
+   +'height:0!important;width:0!important;display:none!important;'
+   +'background:transparent!important}'
+   +'.chips{-webkit-mask-image:linear-gradient(90deg,#000 0,#000 '
+   +'calc(100% - 20px),transparent 100%);'
+   +'mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 20px),'
+   +'transparent 100%)}';
   document.head.appendChild(s);
 })();
+
+/* ── 计数不碰提示词 ── */
+function pillSync(){
+  if(CV!=='chat'||SEL)return;
+  var hd=document.querySelector('#pg .hd');if(!hd)return;
+  var a=ms(),all=0,i,m;
+  for(i=0;i<a.length;i++){
+    m=a[i];
+    if(m.r==='gap'||m.err||m.st)continue;
+    if(m.t||(m.parts&&m.parts.length)||(m.pics&&m.pics.length))all++;}
+  var old=hd.querySelector('.pill');
+  if(!all){if(old)old.remove();return;}
+  var use=Math.min(all,Math.max(2,Math.min(60,D.ctx||12)));
+  var sp=old?old.querySelector('span'):null;
+  if(!sp){
+    var box=hd.querySelector('div');if(!box)return;
+    box.insertAdjacentHTML('afterbegin',
+      '<button class="pill pz" onclick="shCtx()">'+I.stack+'<span></span></button>');
+    sp=hd.querySelector('.pill span');
+    if(!sp)return;}
+  var t=use+(all>use?' / '+all:'');
+  if(sp.textContent!==t)sp.textContent=t;}
+
+/* ── 提示词长度缓存，只给面板用 ── */
+var _spL=0,_spAt=0;
+function spLen(){
+  var n=Date.now();
+  if(!_spL||n-_spAt>8000){
+    try{_spL=staticPart().length;}catch(e){_spL=0;}
+    _spAt=n;}
+  return _spL;}
+function ctxInfo(){
+  var all=ms().filter(function(m){
+    return m.r!=='gap'&&(m.t||(m.parts&&m.parts.length)
+      ||(m.pics&&m.pics.length))&&!m.err&&!m.st;});
+  var n=Math.max(2,Math.min(60,D.ctx||12));
+  var use=all.slice(-n),ch=0;
+  use.forEach(function(m){ch+=(fullT(m)||m.t||'').length;});
+  var pl=imgPlan(use),mem=0;
+  live().slice(0,MEMCAP).forEach(function(m){mem+=(m.t||'').length+12;});
+  return{all:all.length,use:use.length,cap:n,im:pl.n,
+    tok:Math.round((ch+mem+spLen())/2.5)+pl.n*1300};}
+
+/* ── 重画：流式期间只做必要的 ── */
+var HVT=0;
+function heavyPass(){
+  HVT=0;
+  var c=msBox();if(!c)return;
+  drawParts();
+  try{c.classList.toggle('cv',ms().length>30);}catch(e){}
+  slimActs();tightBubs();hApply();
+  if(RO)RO.disconnect();
+  roBind();
+  markNew();scBind();msGuard();xBind();
+  if(!c.dataset.dn){
+    c.dataset.dn='1';
+    c.addEventListener('scroll',dnSync,{passive:true});}
+  scAfter();btnSync();pillSync();dnBox();dnSync();}
+paint=function(keep){
+  var b=msBox(),st=b?b.scrollTop:0,pin=SC.pin;
+  _pBase(keep);
+  var c=msBox();if(!c)return;
+  if(BUSY){
+    drawParts();tightBubs();
+    if(!c.dataset.dn){
+      c.dataset.dn='1';
+      c.addEventListener('scroll',dnSync,{passive:true});}
+    scBind();msGuard();
+    if(pin){SC.pin=1;SC.el=null;toEnd(c);}
+    else c.scrollTop=Math.min(st,scMax(c));
+    dnSync();
+    if(!HVT)HVT=setTimeout(heavyPass,500);
+    return;}
+  if(HVT){clearTimeout(HVT);HVT=0;}
+  heavyPass();
+  if(pin){SC.pin=1;SC.el=null;toEnd(c);}
+  else{c.scrollTop=Math.min(st,scMax(c));scAnchor();}
+  scAfter();};
+
+/* ── 暂停：把转圈的那条也停掉 ── */
+function stop(){
+  STOPPED=1;
+  if(ABORT){try{ABORT.abort();}catch(e){}ABORT=null;}
+  if(TMR){clearInterval(TMR);TMR=null;try{endFake();}catch(e){}}
+  BUSY=false;
+  CURSAID='';ROUNDHINT='';PENDQ=[];
+  var a=ms(),i,m,hit=null;
+  for(i=a.length-1;i>=0;i--){
+    m=a[i];
+    if(m.st||m.wst){hit=m;break;}}
+  if(hit){
+    hit.st=0;hit.wst=0;delete hit._ks;delete hit.forced;
+    if(!(hit.t&&hit.t.trim())&&!(hit.parts&&hit.parts.length))
+      hit.err='停下了。';
+    try{saveS(S().id);}catch(e){}}
+  if(CV==='chat'){paint();btn();}else btn();}
 
 /* ── 底边取色：只看屏幕上真的看得见的那块 ── */
 function bgSample(u,cb){
@@ -5006,6 +5112,7 @@ function bgReSample(){
 window.addEventListener('orientationchange',function(){
   setTimeout(bgReSample,650);});
 setTimeout(bgReSample,300);
+if(CV==='chat')paint(1);
 </script>
 </body>
 </html>
