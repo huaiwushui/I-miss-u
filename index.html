@@ -3402,7 +3402,7 @@ paint=function(keep){
     box.addEventListener('scroll',dnSync,{passive:true});}
   dnBox();dnSync();};
 if(CV==='chat')paint(1);
-/* ══════════ 手感层 v3 · 第一段 ══════════ */
+  /* ══════════ 手感层 v3 · 第一段 ══════════ */
 (function(){
   var s=document.createElement('style');
   s.textContent='#ms{overflow-anchor:none;padding-bottom:16px}'
@@ -3418,7 +3418,8 @@ if(CV==='chat')paint(1);
    +'#ms .act .ai2{color:var(--dim);font-weight:500}'
    +'#ms .act .at{display:none}'
    +'#ms .m.me .bd.tight{padding:9px 15px;line-height:1.5;border-radius:19px}';
-  document.head.appendChild(s);})();
+  document.head.appendChild(s);
+})();
 
 /* ── 键盘缺口：全高基准，不信 innerHeight 瞬时值 ── */
 var FULLH;
@@ -3426,7 +3427,8 @@ function kbGap(){
   if(!vv)return 0;
   if(!FULLH)FULLH=Math.max(window.innerHeight,Math.round(vv.height));
   if(vv.height>FULLH-60)FULLH=Math.max(Math.round(vv.height),window.innerHeight);
-  return Math.round(FULLH-vv.height);}
+  return Math.round(FULLH-vv.height);
+}
 
 /* ── 唯一的位置权威 ── */
 var SC={pin:1,hold:0,ht:0,raf:0,st:0,el:null,off:0,pre:-1,in:0};
@@ -3443,53 +3445,67 @@ function scAnchor(){
   for(i=0;i<ch.length;i++){
     el=ch[i];
     if(!el.id)continue;
-    if(el.offsetTop+el.offsetHeight>st){SC.el=el;SC.off=el.offsetTop-st;return;}}}
+    if(el.offsetTop+el.offsetHeight>st){SC.el=el;SC.off=el.offsetTop-st;return;}
+  }
+}
 function scSync(){
   var b=msBox();if(!b)return;
   SC.pin=scEnd(b)?1:0;
-  if(SC.pin)SC.el=null;else scAnchor();}
+  if(SC.pin)SC.el=null;else scAnchor();
+}
 function scDrift(){
   var b=msBox();if(!b||!SC.el)return;
   if(!SC.el.isConnected||SC.el.parentNode!==b){scAnchor();return;}
   var d=(SC.el.offsetTop-b.scrollTop)-SC.off;
-  if(Math.abs(d)>1&&Math.abs(d)<4000)b.scrollTop+=d;}
+  if(Math.abs(d)>1&&Math.abs(d)<4000)b.scrollTop+=d;
+}
 function scFix(){
   var b=msBox();if(!b)return;
   if(SC.hold){clampSc(b);return;}
   if(SC.pin){toEnd(b);return;}
-  scDrift();clampSc(b);}
+  scDrift();clampSc(b);
+}
 function scAfter(){
   if(SC.raf)return;
-  SC.raf=requestAnimationFrame(function(){SC.raf=0;scFix();});}
+  SC.raf=requestAnimationFrame(function(){SC.raf=0;scFix();});
+}
 function stick(){scFix();scAfter();}
 function stickHard(){
   SC.pin=1;SC.el=null;
-  toEnd(msBox());scAfter();}
+  toEnd(msBox());scAfter();
+}
 function scBind(){
   var b=msBox();if(!b||b.dataset.sc)return;
   b.dataset.sc='1';
   b.addEventListener('scroll',function(){
     if(SC.st)return;
     SC.st=1;
-    requestAnimationFrame(function(){SC.st=0;scSync();});},{passive:true});}
+    requestAnimationFrame(function(){SC.st=0;scSync();});
+  },{passive:true});
+}
 
 /* ── 消息区自己接管手势，不让全局拦截器掐掉 ── */
 function msGuard(){
   var b=msBox();if(!b||b.dataset.tg)return;
   b.dataset.tg='1';
   b.addEventListener('touchmove',function(e){
-    SC.hold=1;scSync();e.stopPropagation();},{passive:true});}
+    SC.hold=1;scSync();e.stopPropagation();
+  },{passive:true});
+}
 document.addEventListener('touchstart',function(e){
   var t=e.target;
   SC.in=(t&&t.closest&&t.closest('#ms'))?1:0;
   var b=msBox();SC.pre=b?b.scrollTop:-1;
-  clearTimeout(SC.ht);},{passive:true});
+  clearTimeout(SC.ht);
+},{passive:true});
 document.addEventListener('touchmove',function(){
   if(!SC.in)return;
-  SC.hold=1;scSync();},{passive:true});
+  SC.hold=1;scSync();
+},{passive:true});
 function scLoose(){
   clearTimeout(SC.ht);
-  SC.ht=setTimeout(function(){SC.hold=0;scSync();},280);}
+  SC.ht=setTimeout(function(){SC.hold=0;scSync();},280);
+}
 document.addEventListener('touchend',scLoose,{passive:true});
 document.addEventListener('touchcancel',scLoose,{passive:true});
 
@@ -3501,17 +3517,24 @@ function roBind(){
     RO=new ResizeObserver(function(es){
       for(var i=0;i<es.length;i++){
         var el=es[i].target,h=Math.round(el.offsetHeight),id=(el.id||'').slice(2);
-        if(h>0){el.style.containIntrinsicSize='auto '+h+'px';if(id)HC[id]=h;}}
-      scAfter();});}
+        if(h>0){el.style.containIntrinsicSize='auto '+h+'px';if(id)HC[id]=h;}
+      }
+      scAfter();
+    });
+  }
   var b=msBox();if(!b)return;
   [].forEach.call(b.querySelectorAll('.m'),function(el){
     if(el.dataset.ro)return;
-    el.dataset.ro='1';RO.observe(el);});}
+    el.dataset.ro='1';RO.observe(el);
+  });
+}
 function hApply(){
   var b=msBox();if(!b)return;
   [].forEach.call(b.querySelectorAll('.m'),function(el){
     var h=HC[(el.id||'').slice(2)];
-    if(h)el.style.containIntrinsicSize='auto '+h+'px';});}
+    if(h)el.style.containIntrinsicSize='auto '+h+'px';
+  });
+}
 
 /* ── 进场动画只给真正的新消息 ── */
 var SEEN={};
@@ -3521,7 +3544,9 @@ function markNew(first){
     var id=(el.id||'').slice(2);
     if(!id||SEEN[id])return;
     SEEN[id]=1;
-    if(!first)el.classList.add('nu');});}
+    if(!first)el.classList.add('nu');
+  });
+}
 
 /* ── 短句子的气泡收紧，末尾空行剪掉 ── */
 function tightBubs(){
@@ -3531,7 +3556,9 @@ function tightBubs(){
     e.dataset.tb='1';
     var t=e.textContent||'',tr=t.replace(/[\s\u3000]+$/,'');
     if(tr!==t&&!e.children.length){e.textContent=tr;t=tr;}
-    if(t.indexOf('\n')<0&&t.trim().length<=14)e.classList.add('tight');});}
+    if(t.indexOf('\n')<0&&t.trim().length<=14)e.classList.add('tight');
+  });
+}
 
 /* ── 记了什么不摊开，只说一声 ── */
 function slimActs(){
@@ -3547,12 +3574,15 @@ function slimActs(){
       if(s.indexOf('锁')>=0)lk++;
       else if(s.indexOf('已经')>=0)dp++;
       else mem++;
-      if(i)a.remove();});
+      if(i)a.remove();
+    });
     var p=[];
     if(mem)p.push('记下了'+(mem>1?' '+mem+' 条':''));
     if(lk)p.push('锁住了'+(lk>1?' '+lk+' 条':''));
     if(dp)p.push('这条记过了');
-    as[0].innerHTML='<span class="ai2">'+p.join('　·　')+'</span>';});}
+    as[0].innerHTML='<span class="ai2">'+p.join('　·　')+'</span>';
+  });
+}
 
 /* ── 删图前先看全站还有没有人在用 ── */
 var TOK={};
@@ -3561,19 +3591,27 @@ function picRefs(){
   function scan(list){
     (list||[]).forEach(function(m){
       if(m.pics)m.pics.forEach(function(p){used[p]=1;used[p+'~t']=1;});
-      if(m.eb)m.eb.forEach(function(b){scan(b.tail);});});}
+      if(m.eb)m.eb.forEach(function(b){scan(b.tail);});
+    });
+  }
   SS.forEach(function(s){scan(MSG[s.id]);});
-  return used;}
+  return used;
+}
 function dropPics(list){
   var used=picRefs(),seen={};
-  (function walk(l){
+  function walk(l){
     (l||[]).forEach(function(m){
       if(m.pics)m.pics.forEach(function(p){
         if(used[p]||seen[p])return;
         seen[p]=1;
         dbDel('pic',p);dbDel('pic',p+'~t');
-        delete PICQ[p];delete TOK[p];});
-      if(m.eb)m.eb.forEach(function(b){walk(b.tail);});})(list);}
+        delete PICQ[p];delete TOK[p];
+      });
+      if(m.eb)m.eb.forEach(function(b){walk(b.tail);});
+    });
+  }
+  walk(list);
+}
 
 /* ── 顶部计数跟着重画一起刷 ── */
 var BTNQ=0;
@@ -3581,48 +3619,60 @@ function btnSync(){
   if(BTNQ)return;
   BTNQ=1;
   requestAnimationFrame(function(){
-    BTNQ=0;try{btn();}catch(e){}});}
+    BTNQ=0;
+    try{btn();}catch(e){}
+  });
+}
 
 /* ── 先摘消息再删图，顺序反了会漏 ── */
 function delMsg(id){
   var s=S(),i=idxOf(id);if(i<0)return;
   var gone=ms().splice(i,1);
   dropPics(gone);
-  saveS(s.id);closeSheet(1);paint(1);}
+  saveS(s.id);closeSheet(1);paint(1);
+}
 function delSel(){
   if(!SEL||!SEL.length){toast('还没选');return;}
   var n=SEL.length,s=S(),sel=SEL.slice();
   var gone=ms().filter(function(m){return sel.indexOf(m.id)>=0;});
   MSG[s.id]=ms().filter(function(m){return sel.indexOf(m.id)<0;});
   dropPics(gone);
-  saveS(s.id);SEL=null;view('chat');toast('删了 '+n+' 条');}
+  saveS(s.id);SEL=null;view('chat');toast('删了 '+n+' 条');
+}
 function clearChat(){
   if(BUSY)stop();
   var s=S(),gone=MSG[s.id]||[];
   MSG[s.id]=[];s.ex=0;
   dropPics(gone);
-  saveS(s.id);closeSheet(1);view('chat');toast('清空了');}
+  saveS(s.id);closeSheet(1);view('chat');toast('清空了');
+}
 function delSess(){
   if(BUSY)stop();
   var s=S(),gone=s?(MSG[s.id]||[]):[];
   if(s){delete MSG[s.id];dbDel('msg',s.id);}
   SS.splice(D.cur,1);
-  if(!SS.length){var nid=uid();
-    SS=[{id:nid,ti:'新的对话',at:Date.now(),ex:0}];MSG[nid]=[];}
+  if(!SS.length){
+    var nid=uid();
+    SS=[{id:nid,ti:'新的对话',at:Date.now(),ex:0}];MSG[nid]=[];
+  }
   D.cur=0;dropPics(gone);
-  saveD();saveS();closeSheet(1);view('chat');toast('删了');}
+  saveD();saveS();closeSheet(1);view('chat');toast('删了');
+}
 function delSessAt(i){
   var s=SS[i],gone=s?(MSG[s.id]||[]):[];
   if(s){delete MSG[s.id];dbDel('msg',s.id);}
   SS.splice(i,1);
-  if(!SS.length){var nid=uid();
-    SS=[{id:nid,ti:'新的对话',at:Date.now(),ex:0}];MSG[nid]=[];}
+  if(!SS.length){
+    var nid=uid();
+    SS=[{id:nid,ti:'新的对话',at:Date.now(),ex:0}];MSG[nid]=[];
+  }
   if(i<D.cur)D.cur--;
   else if(i===D.cur)D.cur=Math.min(i,SS.length-1);
   if(D.cur<0)D.cur=0;
   dropPics(gone);
   saveD();saveS();renderList();
-  if(CV==='chat')paint();}
+  if(CV==='chat')paint();
+}
 /* ══════════ 手感层 v3 · 第二段 ══════════ */
 /* ── 键盘：只改高度，位移一律为零 ── */
 var _kh3,_kop;
