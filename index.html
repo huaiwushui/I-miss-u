@@ -4153,7 +4153,7 @@ markNew(1);scBind();
 if(CV==='chat')paint(1);
 if(CV==='mem')drawMem();
 if(CV==='chat')requestAnimationFrame(function(){stickHard();});
-  /* ══════════ 手感层 v3 · 第三段 ══════════ */
+/* ══════════ 手感层 v3 · 第三段 ══════════ */
 /* ── 存图之前先压：长边 1600，质量 0.85 ── */
 function shrink(u,cb){
   if(typeof u!=='string'||u.indexOf('data:image')!==0){cb(u);return;}
@@ -4190,7 +4190,7 @@ dbPut=function(store,key,val){
   });
 };
 
-/* ── 老图后台补压一遍，一张一张来，不抢手感 ── */
+/* ── 老图后台补压一遍 ── */
 var SHK=0;
 function shrinkOld(){
   if(SHK)return;
@@ -4228,30 +4228,241 @@ function shrinkOld(){
 }
 setTimeout(shrinkOld,4000);
 
-/* ── 那个数是 token，名字改准 ── */
-function relabel(){
-  var w=document.getElementById('sh');
-  if(!w)return;
-  [].forEach.call(w.querySelectorAll('.lbs'),function(e){
-    if(e.textContent.indexOf('一次最多说多长')>=0){
-      e.textContent='我一次最多写多少 token';
-    }
-  });
-  [].forEach.call(w.querySelectorAll('.nt'),function(e){
-    if(e.dataset.rl)return;
-    if(e.textContent.indexOf('偷偷想的')<0)return;
-    e.dataset.rl='1';
-    e.insertAdjacentHTML('afterbegin',
-      '这个数是 token 不是字数，中文大约一个字多一点。'
-      +'写超了会被硬切断，宁可给大。<br><br>');
-  });
+/* ── 顶部那颗药丸，这次改的是它本体 ── */
+function pillSync(){
+  var e=document.querySelector('#pg .hd .pill span');
+  if(!e)return;
+  try{
+    var c=ctxInfo();
+    e.textContent=c.use+(c.all>c.use?' / '+c.all:'');
+  }catch(err){}
 }
-var _shZ=sheet;
-sheet=function(o){
-  var r=_shZ(o);
-  requestAnimationFrame(relabel);
-  return r;
-};
+var _pP=paint;
+paint=function(keep){_pP(keep);pillSync();};
+
+/* ── 小字：只留「开了会怎样」和「代价是什么」 ── */
+function shGen(){
+  var t=(D.temp==null?1:D.temp);
+  sheet({title:'温度和长度',ok:'保存',
+    body:'<div class="lbs">温度 · 越高越放得开</div>'
+  +'<div class="cd"><input type="range" id="g-t" min="0" max="1" step="0.05" value="'+t
+  +'" oninput="document.getElementById(\'gt\').textContent=this.value">'
+  +'<div style="display:flex;justify-content:space-between;font-size:12px;'
+  +'color:var(--dim2)"><span>稳</span>'
+  +'<span id="gt" style="color:var(--ink2);font-weight:600">'+t+'</span>'
+  +'<span>野</span></div></div>'
+  +'<div class="lbs" style="margin-top:16px">我一次最多写多少 token</div>'
+  +'<div class="fd"><input id="g-m" type="number" inputmode="numeric" value="'
+  +(D.maxTok||2048)+'"></div>'
+  +'<div class="nt">token 不是字数，宁可给大。开着「偷偷想的」时温度不生效。</div>',
+    onOk:function(){
+      var v=parseFloat(val('g-t'));if(!isNaN(v))D.temp=v;
+      var m=parseInt(val('g-m'),10);
+      if(m)D.maxTok=Math.max(256,Math.min(8192,m));
+      saveD();}});}
+function shCtx(){
+  var c=ctxInfo(),mc=0;
+  SS.forEach(function(x){mc+=(MSG[x.id]||[]).length;});
+  sheet({title:'这段对话',ok:'保存',
+    body:'<div class="cd"><div style="display:flex;align-items:baseline;gap:8px">'
+  +'<b style="font:700 26px/1 -apple-system;letter-spacing:-.02em">'+c.use+'</b>'
+  +'<span style="font-size:13px;color:var(--dim)">条会发给我</span></div>'
+  +'<div style="margin-top:9px;font-size:12.5px;color:var(--dim2)">大约 '+c.tok
+  +' 个 token'+(c.im?('　·　'+c.im+' 张图'):'')
+  +'　·　记忆 '+Math.min(MEMCAP,live().length)+' 条</div></div>'
+  +'<div class="lbs">往前记得多少条</div>'
+  +'<div class="fd"><input id="c-n" type="number" inputmode="numeric" value="'
+  +c.cap+'"></div>'
+  +'<div class="nt">图片跟着这个数走，最多 '+IMGCAP+' 张，按整条消息算。<br>'
+  +'一共 '+mc+' 条都存着，翻不花钱。</div>',
+    onOk:function(){
+      var n=parseInt(val('c-n'),10);
+      if(n)D.ctx=Math.max(2,Math.min(60,n));
+      saveD();}});}
+function shActs(){
+  sheet({title:'自己动手',
+    body:'<div class="cd cd0"><div class="sw" onclick="tgActs(this)">'
+  +'<span class="l">开着</span><span class="k'+(D.acts?' on':'')
+  +'"><i></i></span></div></div>'
+  +'<div class="nt">开着我就能自己翻以前、自己记该记的事。<br>'
+  +'我只能新增，删和改都归你。</div>'});}
+function shHi(){
+  var opts=[0,2,4,6,12,24];
+  sheet({title:'先开口',
+    body:'<div class="lbs">隔多久我主动说第一句</div>'
+  +'<div class="segw" id="h-seg">'+opts.map(function(x){
+    return'<button class="pz'+(D.hi===x?' on':'')+'" onclick="pkHi('+x+')">'
+    +(x?x+' 小时':'不用')+'</button>';}).join('')+'</div>'
+  +'<div class="nt">你正在打字时不打扰。每次算一次调用。</div>'});}
+function shWeb(){
+  sheet({title:'联网查资料',ok:'保存',
+    body:'<div class="cd cd0"><div class="sw" onclick="tgWebSw(this)">'
+  +'<span class="l">开着</span><span class="k'+(D.web?' on':'')
+  +'"><i></i></span></div></div>'
+  +'<div class="lbs" style="margin-top:16px">Jina 的 key</div>'
+  +'<div class="fd"><input id="j-k" type="password" placeholder="jina_…" value="'
+  +esc(D.jkey)+'"></div>'
+  +'<div class="nt">开着的时候你每说一句我都先搜一下。<br>'
+  +'聊私事记得关——开着等于发给 Jina。</div>',
+    onOk:function(){
+      D.jkey=val('j-k');
+      if(D.web&&!D.jkey){D.web=0;toast('没有 key，先关掉了');}
+      saveD();}});}
+function shTheme(){
+  var opts=[['auto','跟着天色'],['light','浅色'],['dark','深色']];
+  sheet({title:'深浅',
+    body:'<div class="seg" id="t-seg">'+opts.map(function(x){
+    return'<button class="pz'+(D.dark===x[0]?' on':'')
+    +'" onclick="pkTheme(\''+x[0]+'\')">'+x[1]+'</button>';}).join('')+'</div>'
+  +'<div class="nt">晚七点转深，早七点转回来。</div>'});}
+function shBg(){
+  sheet({title:'背景',
+    body:'<div class="cd cd0">'
+  +'<div class="rw pz" onclick="bgPick()"><span class="l">'
+  +(D.bgOn?'换一张':'选一张图片')+'</span>'+I.chevD+'</div>'
+  +(D.bgOn?'<div class="rw pz" onclick="bgOff()">'
+    +'<span class="l" style="color:var(--red)">撤下来</span>'+I.chevD+'</div>':'')
+  +'</div>'
+  +(D.bgOn?'<div class="lbs" style="margin-top:16px">盖一层多厚</div>'
+    +'<div class="cd"><input type="range" min="0" max="90" step="5" value="'
+    +(D.bgv==null?45:D.bgv)+'" oninput="bgVeil(this.value)">'
+    +'<div style="display:flex;justify-content:space-between;font-size:12px;'
+    +'color:var(--dim2)"><span>清楚</span><span>安静</span></div></div>':'')
+  +'<div class="nt">纱跟着主题同色，字都看得清。图跟完整备份一起走。</div>'});}
+function shUtil(){
+  sheet({title:'干杂活的模型',ok:'保存',
+    body:'<div class="fd"><input id="u-m2" '
+  +'placeholder="空着就用现在聊天的这个" value="'+esc(D.util)+'"></div>'
+  +'<div class="nt">挑记忆不用很聪明，用便宜的就行。</div>',
+    onOk:function(){D.util=val('u-m2');saveD();}});}
+/* ══════════ 手感层 v3 · 第四段 ══════════ */
+function shModel(){
+  var ls=D.models.map(function(m){
+    return'<div class="rw"><span class="l pz" style="flex:1;font-weight:400;'
+    +'font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;'
+    +'white-space:nowrap" onclick="useModel(\''+esc(m)+'\')">'+esc(m)+'</span>'
+    +(m===D.model?'<span style="font-size:12px;color:var(--rose);flex:none">'
+      +'在用</span>':'')
+    +'<button class="pz" style="font-size:12.5px;color:var(--dim2);flex:none" '
+    +'onclick="delModel(\''+esc(m)+'\')">删</button></div>';}).join('');
+  sheet({title:'模型',ok:'用它',
+    body:'<div class="fd"><input id="m-n" placeholder="照中转的写法填" value="'
+  +esc(D.model)+'"></div>'
+  +'<button class="rw pz" style="width:100%;background:var(--card);'
+  +'border:1px solid var(--line);border-radius:15px;margin-bottom:16px" '
+  +'onclick="addModel()">'
+  +'<span class="l" style="color:var(--rose)">＋ 存进常用</span></button>'
+  +(ls?'<div class="lbs">常用</div><div class="cd cd0">'+ls+'</div>':'')
+  +'<div class="nt">报 404 就照中转的文档改写法。</div>',
+    onOk:function(){var v=val('m-n');if(v)D.model=v;saveD();}});}
+function shApi(){
+  sheet({title:'中转设置',ok:'保存',
+    body:'<div class="seg"><button id="f-a" class="'+(D.fmt!=='openai'?'on':'')
+  +'" onclick="pickFmt(\'anthropic\')">Anthropic</button>'
+  +'<button id="f-o" class="'+(D.fmt==='openai'?'on':'')
+  +'" onclick="pickFmt(\'openai\')">OpenAI 兼容</button></div>'
+  +'<div class="fd"><input id="k-u" placeholder="'
+  +(D.fmt==='openai'?'https://…/v1/chat/completions':'https://…/v1/messages')
+  +'" value="'+esc(D.apiUrl)+'"></div>'
+  +'<div class="fd"><input id="k-k" type="password" placeholder="密钥 sk-…" value="'
+  +esc(D.apiKey)+'"></div>'
+  +'<div class="nt">地址写全，写到 /v1 就停会 404。中转能看到我们的对话。</div>',
+    onOk:function(){
+      D.apiUrl=val('k-u');D.apiKey=val('k-k');saveD();
+      toast(D.apiKey?'连上了':'存好了');}});}
+function shPass(){
+  sheet({title:'锁屏密码',ok:'换掉',
+    body:'<div class="fd"><input id="p-1" type="password" inputmode="numeric" '
+  +'maxlength="6" placeholder="新的六位数字"></div>'
+  +'<div class="fd"><input id="p-2" type="password" inputmode="numeric" '
+  +'maxlength="6" placeholder="再输一次"></div>'
+  +'<div class="nt">只存在这台手机，不进备份。忘了只能清除网站数据重设，'
+  +'对话会一起没。</div>',
+    onOk:function(){
+      var a=val('p-1'),b=val('p-2');
+      if(!/^\d{6}$/.test(a)){toast('要六位数字');return false;}
+      if(a!==b){toast('两次不一样');return false;}
+      PASS=a;
+      try{localStorage.setItem('us.pass',a);}catch(e){}
+      closeSheet(1);toast('换好了');return'done';}});}
+function shExp(){
+  sheet({title:'导出备份',
+    body:'<div class="cd cd0">'
+  +'<div class="rw pz" onclick="closeSheet(1);expFile(1)">'
+  +'<span class="l">完整备份（含图片）</span>'+I.chevD+'</div>'
+  +'<div class="rw pz" onclick="closeSheet(1);expFile(0)">'
+  +'<span class="l">只要文字</span>'+I.chevD+'</div></div>'
+  +'<div class="nt">完整的能原样回来，图多会很大。导出后选「存储到文件」。</div>'});}
+function shRestore(){
+  sheet({title:'恢复',
+    body:'<div class="cd cd0">'
+  +'<div class="rw pz" onclick="impFile()"><span class="l">选一个备份文件</span>'
+  +I.chevD+'</div>'
+  +'<div class="rw pz" onclick="bkIn()"><span class="l">粘贴备份内容</span>'
+  +I.chevD+'</div></div>'
+  +'<div class="nt" style="color:var(--red2)">会覆盖现在的全部内容。</div>'});}
+function msgMenu(id){
+  var m=find(id);if(!m)return;
+  var ver=(m.r==='ai'&&m.br&&m.br.length>1)
+    ?{n:m.br.length,i:(m.bi||0),fn:'delVer'}
+    :((m.eb&&m.eb.length>1)?{n:m.eb.length,i:(m.ei||0),fn:'delEb'}:null);
+  sheet({title:dtl(m.ts),body:'<div class="cd cd0">'
+  +'<div class="rw pz" onclick="forkFrom(\''+id+'\')">'
+  +'<span class="l">从这里开一段新的</span>'+I.chevD+'</div>'
+  +'<div class="rw pz" onclick="selStart(\''+id+'\')">'
+  +'<span class="l">选着删（最多十条）</span>'+I.chevD+'</div>'
+  +(ver?'<div class="rw pz" onclick="'+ver.fn+'(\''+id+'\')">'
+    +'<span class="l" style="color:var(--red)">删掉这个版本（'
+    +(ver.i+1)+' / '+ver.n+'）</span>'+I.chevD+'</div>':'')
+  +'<div class="rw pz" onclick="delMsg(\''+id+'\')">'
+  +'<span class="l" style="color:var(--red)">删掉这条</span>'+I.chevD+'</div></div>'
+  +'<div class="nt">删掉就真没了，我这边也不留底。</div>'});}
+function purgeImgs(){
+  dbSize('pic').then(function(st){
+    var n=st.n-(D.bgOn?1:0);
+    if(n<=0){toast('本来就没有图片');return;}
+    sheet({title:'清掉聊天图片',
+      body:'<div class="cd" style="font-size:14px;line-height:1.75;'
+    +'color:var(--red2)">会删掉全部 '+n+' 张图片，文字一句不动，背景图留着。<br>'
+    +'删了拿不回来。</div>'
+    +'<div class="nt" style="padding-bottom:10px">先导出一次完整备份。</div>',
+      ok:'确认清掉',
+      onOk:function(){
+        dbKeys('pic').then(function(ks){
+          ks.forEach(function(k){if(k!=='__bg')dbDel('pic',k);});});
+        PICQ={};TOK={};
+        SS.forEach(function(s){
+          (MSG[s.id]||[]).forEach(function(m){
+            if(m.pics&&m.pics.length){
+              m.imgLost=(m.imgLost||0)+m.pics.length;m.pics=[];}});
+          SVQ[s.id]=1;});
+        flush(1);closeSheet(1);
+        view(CV==='chat'?'chat':'more');toast('清掉了 '+n+' 张');
+        return'done';}});});}
+function vMore(){
+  function row(t,fn,c){return'<div class="rw pz" onclick="'+fn+'"><span class="l"'
+    +(c?' style="color:'+c+'"':'')+'>'+t+'</span>'+I.chevD+'</div>';}
+  return'<div class="vw"><div class="hd">'
+  +'<button class="cb pz" onclick="drawer(1)">'+I.menu+'</button><span></span></div>'
+  +'<div class="sa pgw"><div class="big">更多</div>'
+  +'<div class="sc2">怎么说话</div><div class="cd cd0">'
+  +row('表达风格','shVoice()')+row('放开一些','shFree()')
+  +row('温度和长度','shGen()')+'</div>'
+  +'<div class="sc2">我能做的</div><div class="cd cd0">'
+  +row('自己动手','shActs()')+row('先开口','shHi()')
+  +row('联网查资料','shWeb()')+row('干杂活的模型','shUtil()')+'</div>'
+  +'<div class="sc2">样子</div><div class="cd cd0">'
+  +row('深浅','shTheme()')+row('背景','shBg()')+'</div>'
+  +'<div class="sc2">接口</div><div class="cd cd0">'
+  +row('中转设置','shApi()')+row('锁屏密码','shPass()')+'</div>'
+  +'<div class="sc2">存了多少</div><div id="stc"><div class="stc">'
+  +'<div class="n"><b>…</b></div><div class="pb"><i style="width:2%"></i></div>'
+  +'<div class="ln">正在数</div></div></div>'
+  +'<div class="cd cd0">'
+  +row('导出备份','shExp()')+row('恢复','shRestore()')
+  +row('清掉聊天图片','purgeImgs()','var(--red)')+'</div>'
+  +'<div class="nt">只存在这台手机里。定期导出一份放进「文件」，才算真存住。</div>'
+  +'<div style="height:12px"></div></div></div>';}
 
 /* ── 提示词：把该自己动手的时机写死 ── */
 var _spZ=staticPart;
@@ -4268,6 +4479,8 @@ staticPart=function(){
    +'· 翻到了就顺着说下去，不用汇报翻了什么。翻不到就承认没找到，然后问她。\n'
    +'· 一轮最多翻两次。同一个词别翻来翻去。';
 };
+if(CV==='chat')pillSync();
+if(CV==='more')view('more');
 </script>
 </body>
 </html>
