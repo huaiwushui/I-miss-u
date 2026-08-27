@@ -4563,6 +4563,117 @@ dbPut=function(store,key,val){
     });
   });
 };
+  /* ══════ 修补：横屏 / 恢复 / 丢掉的入口 ══════ */
+
+/* 1 · 全高基准跟着屏幕宽度一起重置 */
+var FULLW=0;
+function kbGap(){
+  if(!vv)return 0;
+  var w=Math.round(vv.width||window.innerWidth||0);
+  if(!FULLW)FULLW=w;
+  if(w&&w!==FULLW){FULLW=w;FULLH=0;}
+  if(!FULLH)FULLH=Math.max(window.innerHeight,Math.round(vv.height));
+  if(vv.height>FULLH-60)FULLH=Math.max(Math.round(vv.height),window.innerHeight);
+  return Math.round(FULLH-vv.height);
+}
+window.addEventListener('orientationchange',function(){
+  FULLH=0;FULLW=0;
+  setTimeout(function(){
+    FULLH=0;FULLW=0;kwake();
+    de.classList.remove('kbon');kSet(0,0);
+    if(window.scrollY)window.scrollTo(0,0);
+    clampSc(msBox());scAfter();
+  },500);
+});
+
+/* 2 · 恢复备份时绕开压缩，图片原样写回 */
+var RAWPUT=0,_dbPutW=dbPut;
+dbPut=function(store,key,val){
+  if(RAWPUT)return _dbPutV(store,key,val);
+  return _dbPutW(store,key,val);
+};
+var _takeInW=takeIn;
+takeIn=function(txt){
+  RAWPUT=1;
+  try{localStorage.removeItem('us.shrunk');}catch(e){}
+  setTimeout(function(){RAWPUT=0;},30000);
+  var r=_takeInW(txt);
+  if(!r)RAWPUT=0;
+  return r;
+};
+
+/* 3 · 消息菜单：把记忆入口放回第一行 */
+function memFrom(id){
+  var m=find(id);if(!m)return;
+  closeSheet(1);
+  editMem(null,fullT(m)||m.t||'',{sid:S().id,mid:m.id,ts:m.ts});
+}
+function msgMenu(id){
+  var m=find(id);if(!m)return;
+  var ver=(m.r==='ai'&&m.br&&m.br.length>1)
+    ?{n:m.br.length,i:(m.bi||0),fn:'delVer'}
+    :((m.eb&&m.eb.length>1)?{n:m.eb.length,i:(m.ei||0),fn:'delEb'}:null);
+  sheet({title:dtl(m.ts),body:'<div class="cd cd0">'
+  +'<div class="rw pz" onclick="memFrom(\''+id+'\')">'
+  +'<span class="l">记进记忆库</span>'+I.chevD+'</div>'
+  +'<div class="rw pz" onclick="forkFrom(\''+id+'\')">'
+  +'<span class="l">从这里开一段新的</span>'+I.chevD+'</div>'
+  +'<div class="rw pz" onclick="selStart(\''+id+'\')">'
+  +'<span class="l">选着删（最多十条）</span>'+I.chevD+'</div>'
+  +(ver?'<div class="rw pz" onclick="'+ver.fn+'(\''+id+'\')">'
+    +'<span class="l" style="color:var(--red)">删掉这个版本（'
+    +(ver.i+1)+' / '+ver.n+'）</span>'+I.chevD+'</div>':'')
+  +'<div class="rw pz" onclick="delMsg(\''+id+'\')">'
+  +'<span class="l" style="color:var(--red)">删掉这条</span>'+I.chevD+'</div></div>'
+  +'<div class="nt">删掉就真没了，我这边也不留底。</div>'});
+}
+
+/* 4 · 顶部计数：没有就自己长出来 */
+function pillSync(){
+  if(CV!=='chat'||SEL)return;
+  var hd=document.querySelector('#pg .hd');if(!hd)return;
+  var c;
+  try{c=ctxInfo();}catch(e){return;}
+  var sp=hd.querySelector('.pill span');
+  if(!c.all){
+    var old=hd.querySelector('.pill');
+    if(old)old.remove();
+    return;}
+  if(!sp){
+    var box=hd.querySelector('div');if(!box)return;
+    box.insertAdjacentHTML('afterbegin',
+      '<button class="pill pz" onclick="shCtx()">'+I.stack
+      +'<span></span></button>');
+    sp=hd.querySelector('.pill span');
+    if(!sp)return;}
+  sp.textContent=c.use+(c.all>c.use?' / '+c.all:'');
+}
+
+/* 5 · 翻查卡片：关键词带引号也点得开 */
+function lookOpenQ(e){
+  try{lookSheet(decodeURIComponent(e));}catch(err){lookSheet(e);}
+}
+function drawParts(){
+  ms().forEach(function(m){
+    if(!m.parts||!m.parts.length)return;
+    var w=document.getElementById('m-'+m.id);if(!w)return;
+    var bd=w.querySelector('.bd');if(!bd||bd.dataset.pt)return;
+    bd.dataset.pt='1';
+    var h='';
+    m.parts.forEach(function(p){
+      if(p.ty==='t'&&p.t){h+='<div class="sg">'+md(p.t)+'</div>';return;}
+      if(p.ty!=='look')return;
+      var q=String(p.q||''),op=(q.indexOf('展开')!==0&&!p.dup&&p.n);
+      h+='<div class="wbx lk'+(op?' pz':'')+'"'
+       +(op?' onclick="lookOpenQ(&#39;'+encodeURIComponent(q)+'&#39;)"':'')
+       +'><div class="wh">'+I.look+'<span>'
+       +(p.dup?'这个词翻过了 「':'翻了翻以前 「')+esc(q)+'」'
+       +(p.dup?'':' · '+(p.n?p.n+' 条':'没找到'))+'</span>'
+       +(op?I.chev:'')+'</div></div>';});
+    if(h)bd.insertAdjacentHTML('beforebegin',h);});}
+
+/* 6 · 代码里的上限跟提示词说的对齐 */
+TURNMAX=3;
 if(CV==='chat')pillSync();
 if(CV==='more')view('more');
 </script>
