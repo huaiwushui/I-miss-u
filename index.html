@@ -4751,9 +4751,10 @@ if(!G3.sheet)G3.sheet=sheet;
    +'.cb,.pill,.ibx,.selbar,.gl2';
   s.textContent=
     ':root{--sel:rgba(112,124,138,.085);--sel2:rgba(112,124,138,.13);'
-   +'--bub:rgba(112,124,138,.105);--ln2:rgba(112,124,138,.18)}'
+   +'--bub:rgba(112,124,138,.105);--ln2:rgba(112,124,138,.18);'
+   +'--fl2:rgba(203,176,140,.26)}'
    +'html.dark{--sel:rgba(226,232,240,.075);--sel2:rgba(226,232,240,.12);'
-   +'--ln2:rgba(226,232,240,.14)}'
+   +'--ln2:rgba(226,232,240,.14);--fl2:rgba(203,176,140,.17)}'
     /* 有壁纸时字压深一档 */
    +'html.hasbg{--ink2:#211D18;--dim:#7E7970;--dim2:#9C978D}'
    +'html.dark.hasbg{--ink2:#E6E0D4;--dim:#989286;--dim2:#7A756C}'
@@ -4762,39 +4763,43 @@ if(!G3.sheet)G3.sheet=sheet;
    +'background-size:cover;height:calc(100% + 96px)}'
    +'html.hasbg body{background:transparent!important;height:100%}'
    +'html.hasbg #bgl,html.hasbg #bgv{display:none!important}'
-    /* 聊天区垫一层极淡的底 */
-   +'html.hasbg #ms{background:linear-gradient(180deg,'
-   +'rgba(248,246,242,.22),rgba(248,246,242,.34))}'
-   +'html.dark.hasbg #ms{background:linear-gradient(180deg,'
-   +'rgba(18,16,12,.24),rgba(18,16,12,.36))}'
-    /* 卡片 */
+    /* 整页一层淡底，不再只盖消息区 */
+   +'html.hasbg #root{background:linear-gradient(180deg,'
+   +'rgba(248,246,242,.26),rgba(248,246,242,.34))!important}'
+   +'html.dark.hasbg #root{background:linear-gradient(180deg,'
+   +'rgba(18,16,12,.28),rgba(18,16,12,.38))!important}'
+   +'html.hasbg #pg,html.hasbg #ms{background:transparent!important}'
+    /* 卡片：半透明，不上模糊，所以不闪 */
    +CARD+'{background:var(--card)!important;'
    +'border:1px solid var(--ln2)!important;'
    +'box-shadow:0 1px 2px var(--sd),0 14px 34px -24px var(--sd2)!important;'
-   +'transform:translateZ(0)}'
+   +'backdrop-filter:none!important;'
+   +'-webkit-backdrop-filter:none!important}'
    +'html.hasbg '+CARD.split(',').join(',html.hasbg ')
-   +'{background:rgba(252,251,249,.62)!important;'
-   +'border-color:rgba(255,255,255,.7)!important;'
-   +'backdrop-filter:blur(20px) saturate(1.15);'
-   +'-webkit-backdrop-filter:blur(20px) saturate(1.15)}'
+   +'{background:rgba(253,252,250,.56)!important;'
+   +'border-color:rgba(255,255,255,.66)!important}'
    +'html.dark.hasbg '+CARD.split(',').join(',html.dark.hasbg ')
-   +'{background:rgba(28,25,20,.6)!important;'
+   +'{background:rgba(30,27,22,.56)!important;'
    +'border-color:rgba(255,255,255,.1)!important}'
    +'.selbar{border-top:0!important}'
    +'#pg .rw+.rw{border-top-color:var(--ln2)!important}'
    +'#pg .chips button{background:var(--card)!important;'
    +'border:1px solid var(--ln2)!important}'
-   +'html.hasbg #pg .chips button{background:rgba(252,251,249,.5)!important;'
-   +'border-color:rgba(255,255,255,.6)!important}'
+   +'html.hasbg #pg .chips button{background:rgba(253,252,250,.46)!important;'
+   +'border-color:rgba(255,255,255,.58)!important}'
    +'html.dark.hasbg #pg .chips button{'
-   +'background:rgba(28,25,20,.5)!important;'
+   +'background:rgba(30,27,22,.5)!important;'
    +'border-color:rgba(255,255,255,.09)!important}'
    +'#pg .chips button.on{background:var(--ink2)!important;'
    +'border-color:transparent!important;color:var(--onink)!important}'
    +'.mini,.mchip{background:var(--sel2)}'
    +'.mini.on{background:var(--tag4t)}.mini.on2{background:var(--tag3t)}'
    +'.bd code,.att .a,.pic{background:var(--sel2)}'
-    /* 面板与抽屉：实底，不模糊，不闪 */
+    /* 跳过去看：暖沙色，不是粉 */
+   +'@keyframes fl2{0%{background:var(--fl2)}100%{background:transparent}}'
+   +'.m.flash .bd{animation:fl2 2.1s ease!important}'
+   +'mark{background:var(--fl2);border-radius:3px;padding:0 1px}'
+    /* 面板与抽屉：实底 */
    +'#sh .pn,#dw .pn{background:#F7F5F1!important;'
    +'backdrop-filter:none!important;'
    +'-webkit-backdrop-filter:none!important}'
@@ -4818,23 +4823,24 @@ if(!G3.sheet)G3.sheet=sheet;
    +'background:var(--ink2)!important;border-color:transparent!important}'
    +'#dw .nv a.on,#sls .it.on,#sls.edit .it{background:var(--sel)!important}'
    +'#dw .bt .nw{background:var(--ink2)!important}'
-    /* 灰字贴紧上面那块 */
+    /* 灰字：全站统一这一组间隔 */
    +'#sh .nt,.nt{font-size:12px;line-height:1.6;color:var(--dim2);'
    +'text-wrap:balance}'
-   +'#sh .fd{margin-bottom:5px!important}'
-   +'#sh .bdy>.nt{padding-top:3px!important;padding-bottom:0!important}'
+   +'#sh .fd{margin-bottom:6px!important}'
+   +'#sh .bdy>.nt{padding-top:7px!important;padding-bottom:0!important}'
    +'#sh .bdy>.nt:first-child{padding-top:0!important;'
-   +'padding-bottom:11px!important}'
-   +'#sh .cd+.nt,#sh .cd0+.nt{padding-top:9px!important}'
-   +'#sh .bdy{padding-bottom:max(12px,calc(var(--sb) - 10px))!important}'
-   +'html.kbon #sh .bdy{padding-bottom:10px!important}'
+   +'padding-bottom:12px!important}'
+   +'#sh .bdy{padding-bottom:max(14px,calc(var(--sb) - 8px))!important}'
+   +'html.kbon #sh .bdy{padding-bottom:12px!important}'
+   +'#sh .lbs{padding-bottom:6px!important}'
    +'#sh .xx{flex:none;width:30px;height:30px;display:flex;'
    +'align-items:center;justify-content:center;background:none!important;'
    +'border:0!important;opacity:.45}'
-    /* 翻到的 / 摘要 / 思维链：去壳 */
+    /* 翻到的 / 梗概 / 思维链：去壳 */
    +'#sh.lk2 .pn,#sh.sum .pn{height:72%;max-height:none}'
    +'#sh.lk2 .bdy,#sh.sum .bdy{padding-left:calc(22px + var(--sl))!important;'
    +'padding-right:calc(22px + var(--sr))!important}'
+   +'#sh.lk2 .st,#sh.sum .st{align-items:center}'
    +'#sh.lk2 .st .tt,#sh.sum .st .tt{font-family:'+MIN+';font-weight:400;'
    +'font-size:16.5px;letter-spacing:.06em}'
    +'#sh.lk2 .res{background:none!important;border:0!important;'
@@ -4842,11 +4848,12 @@ if(!G3.sheet)G3.sheet=sheet;
    +'border-radius:0!important;padding:15px 0 14px!important;'
    +'margin:0!important;position:relative}'
    +'#sh.lk2 .res:last-child{border-bottom:0!important}'
-   +'#sh.lk2 .res .rh{margin-bottom:7px!important}'
+   +'#sh.lk2 .res .rh{margin-bottom:7px!important;'
+   +'justify-content:flex-start!important;gap:9px!important}'
    +'#sh.lk2 .res .rt{font-size:10.5px!important;font-weight:400!important;'
-   +'letter-spacing:.05em}'
-   +'#sh.lk2 .res .who{font-size:10.5px!important;font-weight:400!important;'
-   +'color:var(--dim2)!important}'
+   +'letter-spacing:.05em;order:2}'
+   +'#sh.lk2 .res .who{font-size:10.5px!important;font-weight:500!important;'
+   +'color:var(--dim)!important;order:1;flex:none}'
    +'#sh.lk2 .res .rb{font-size:13.5px!important;line-height:1.72!important;'
    +'padding-right:16px}'
    +'#sh.lk2 .res .ra{display:none!important}'
@@ -4895,8 +4902,8 @@ if(!G3.sheet)G3.sheet=sheet;
    +'padding:6px 2px!important;font-size:13px!important}'
    +'#pg .res .ra{gap:20px!important;margin-top:11px!important}'
    +'#pg .res .ra button{font-size:12.5px!important}'
-   +'#pg .res .ra button:nth-child(2){color:var(--dim2)!important;'
-   +'font-weight:400!important}'
+   +'#pg .res .ra button:nth-child(2){color:var(--dim)!important;'
+   +'font-weight:500!important}'
    +'#pg .res .rc{border-left-color:var(--dl)!important;opacity:.9}'
     /* 气泡 */
    +'html:not(.dark) #ms .m.me .bd{background:var(--bub)}'
@@ -4952,6 +4959,17 @@ if(!G3.sheet)G3.sheet=sheet;
    +'.chips{-webkit-mask-image:linear-gradient(90deg,#000 0,#000 '
    +'calc(100% - 20px),transparent);'
    +'mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 20px),transparent)}'
+    /* 侧边栏：跟小窝同一套字 */
+   +'#dw .hh .n{font-family:'+MIN+'!important;font-weight:400!important}'
+   +'#dw .nv a{font-family:'+MIN+'!important;font-weight:400!important;'
+   +'font-size:15.5px!important;letter-spacing:.04em}'
+   +'#dw .lb span{font-family:'+MIN+'!important;font-weight:400!important;'
+   +'letter-spacing:.16em!important;font-size:10.5px!important}'
+   +'#sls .it{font-family:'+MIN+'!important;font-size:14.5px!important;'
+   +'letter-spacing:.03em}'
+   +'#sls .it.on{font-weight:400!important}'
+   +'#dw .bt .ct{font-family:'+MIN+'!important}'
+   +'#dw .bt .nw{font-family:'+MIN+'!important;font-weight:400!important}'
     /* 小窝 */
    +'.vt{writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;'
    +'text-orientation:upright;-webkit-text-orientation:upright;'
@@ -5008,18 +5026,25 @@ if(!G3.sheet)G3.sheet=sheet;
    +'#pad{grid-template-columns:repeat(3,84px)!important;'
    +'gap:19px 22px!important}'
    +'#pad button{height:84px!important;font-size:30px!important;'
-   +'background:var(--card)}'
-   +'html.hasbg #pad button{background:rgba(252,251,249,.5)!important;'
-   +'border:1px solid rgba(255,255,255,.6);'
-   +'backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}'
-   +'html.dark.hasbg #pad button{background:rgba(30,27,22,.5)!important;'
+   +'background:var(--card);backdrop-filter:none!important;'
+   +'-webkit-backdrop-filter:none!important}'
+   +'html.hasbg #pad button{background:rgba(253,252,250,.46)!important;'
+   +'border:1px solid rgba(255,255,255,.58)}'
+   +'html.dark.hasbg #pad button{background:rgba(30,27,22,.52)!important;'
    +'border-color:rgba(255,255,255,.1)}'
    +'#pad button:active{transform:scale(.93)}'
    +'html.hasbg #pad button.f{background:none!important;border:0!important;'
-   +'box-shadow:none!important;backdrop-filter:none!important;'
-   +'-webkit-backdrop-filter:none!important}';
+   +'box-shadow:none!important}';
   document.head.appendChild(s);
 })();
+
+/* ── 日期一律带年份，除了今天昨天前天 ── */
+function dlab(ts){
+  var df=Math.round((d0(Date.now())-d0(ts))/MS),d=new Date(ts);
+  if(df===0)return'今天';
+  if(df===1)return'昨天';
+  if(df===2)return'前天';
+  return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';}
 
 /* ── 壁纸铺满 ── */
 function bgPaint(){
@@ -5072,7 +5097,7 @@ window.addEventListener('orientationchange',function(){
 try{bgPaint();}catch(e){}
 setTimeout(bgReSample,300);
 
-/* ── 摘要面板加个记号 ── */
+/* ── 梗概面板加个记号 ── */
 sheet=function(o){
   G3.sheet(o);
   try{
@@ -5081,7 +5106,7 @@ sheet=function(o){
       if(d)d.classList.add('sum');}
   }catch(e){}};
 
-/* ── 翻到的：整条可点 ── */
+/* ── 翻到的：名字在前，整条可点 ── */
 function lookSheet(q){
   var sp=splitQ(q),hits=[];
   SOFTQ=0;
@@ -5106,32 +5131,35 @@ function lookSheet(q){
   hits.forEach(function(x){
     h+='<div class="res pz" onclick="closeSheet(1);jump(\''
      +x.s.id+'\',\''+x.m.id+'\')">'
-     +'<div class="rh"><span class="rt">'+dtl(x.m.ts)+'</span>'
-     +'<span class="who">'+(x.m.r==='me'?esc(D.me):esc(D.you))+'</span></div>'
+     +'<div class="rh">'
+     +'<span class="who">'+(x.m.r==='me'?esc(D.me):esc(D.you))+'</span>'
+     +'<span class="rt">'+dtl(x.m.ts)+'</span></div>'
      +'<div class="rb">'+hi(cut(x.t||picWord(x.m),sp.kw),sp.kw)+'</div></div>';});
   sheet({lk2:1,title:'「'+q+'」',body:h});}
 
-/* ── 摘要面板：一页信纸 ── */
+/* ── 梗概面板：一页信纸 ── */
 function sumSheet(){
   var s=sessById(EXSID),n=s?exCount(s):0;
   sheet({sum:1,title:'「'+(s?(s.ti||'对话'):'对话')+'」聊了什么',
-    ok:'记进记忆库',
+    ok:'留下这段',
     body:'<div class="fd"><textarea id="sm">'+esc(SUMT)+'</textarea></div>'
   +'<div class="cd cd0"><div class="rw pz" onclick="exSkip()">'
   +'<span class="l" style="color:var(--dim)">不留了，只标记看过</span>'
   +I.chevD+'</div></div>'
-  +'<div class="nt">读了 '+n+' 句。归到〈聊过什么〉，想一直带着就去点「锁」。</div>',
+  +'<div class="nt">梗概只让我知道聊过什么，细节我自己翻。'
+  +'不占记忆库那 '+MEMCAP+' 格，只带最近 '+SUMKEEP+' 段给我。</div>',
     onOk:function(){
       var t=val('sm');
       if(!t){toast('是空的');return false;}
       var s2=sessById(EXSID);
       if(!s2){toast('那段对话不在了');closeSheet(1);return'done';}
-      addMem(t.slice(0,400),'聊过什么',1,'ai',
+      var nm=addMem(t.slice(0,400),SUMCAT,1,'ai',
         {sid:s2.id,mid:'',ts:Date.now()});
-      s2.ex=Date.now();SUMT='';
+      if(nm)nm.sum=1;
+      s2.ex=SUMUPTO||Date.now();SUMT='';
       saveD();saveS();closeSheet(1);
       if(CV==='mem')drawMem();else view('mem');
-      toast('存好了');
+      toast('留下了');
       return'done';}});}
 
 /* ── 编号：像编号就精确认，像句子才猜 ── */
