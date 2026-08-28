@@ -2816,20 +2816,23 @@ boot();
     ':root{--kb:0px;--ksl:0px}'
    +'#ms{overflow-anchor:none;'
    +'padding-bottom:calc(16px + var(--kb))!important}'
-   +'#ms.slide{transform:translate3d(0,calc(-1 * var(--ksl)),0);'
-   +'transition:transform .22s '+EZ+';will-change:transform}'
+   +'#ms.slide{transform:translate3d(0,var(--ksl),0);'
+   +'transition:transform .25s '+EZ+';will-change:transform}'
+   +'#ms.nosl{transition:none!important}'
+   +'#ms.nocv>.m{content-visibility:visible!important;'
+   +'contain-intrinsic-size:auto!important}'
    +'#ta{overflow-y:hidden}'
    +'.mw{overflow:hidden}'
    +'.hd{position:relative;z-index:8}'
    +'.ib,.selbar{position:relative;z-index:8;'
    +'transform:translate3d(0,calc(-1 * var(--kb)),0);'
-   +'transition:transform .22s '+EZ+';will-change:transform}'
+   +'transition:transform .25s '+EZ+';will-change:transform}'
    +'#dn{position:absolute;right:calc(18px + var(--sr));'
    +'bottom:calc(18px + var(--kb));'
    +'width:36px;height:36px;border-radius:50%;background:var(--card);z-index:9;'
    +'box-shadow:0 0 0 1px var(--sd),0 4px 14px -4px var(--sd2);'
    +'display:flex;align-items:center;justify-content:center;opacity:0;'
-   +'pointer-events:none;transition:opacity .22s ease,bottom .22s '+EZ+'}'
+   +'pointer-events:none;transition:opacity .22s ease,bottom .25s '+EZ+'}'
    +'#dn.on{opacity:.82;pointer-events:auto}'
    +'#dn:active{opacity:1}'
    +'#ms>.m{content-visibility:visible;contain-intrinsic-size:auto;'
@@ -3043,42 +3046,36 @@ function xBind(){
   });
 }
 
-/* ── 键盘：输入框跟着走，消息区滑过去不跳 ── */
-var KBCUR=0,KGUESS=0,KZERO=0,KRAF=0,KSL=0,KSLT=0;
+/* ── 键盘：先瞬移回原位，再滑到零 ── */
+var KBCUR=0,KGUESS=0,KZERO=0,KRAF=0,KSLT=0,KTOK=0;
 function slideOff(){
-  clearTimeout(KSLT);
+  clearTimeout(KSLT);KTOK++;
   var b=msBox();
-  if(!b)return;
-  if(!KSL){b.classList.remove('slide');return;}
-  KSL=0;
-  b.classList.remove('slide');
+  if(b)b.classList.remove('slide','nosl','nocv');
   de.style.setProperty('--ksl','0px');}
-function slideTo(px){
+function slideRun(shift){
   var b=msBox();
-  if(!b){KSL=0;return;}
-  clearTimeout(KSLT);
-  if(px<=0){
-    if(!KSL)return;
-    KSL=0;
-    de.style.setProperty('--ksl','0px');
-    KSLT=setTimeout(function(){
-      var c=msBox();if(c)c.classList.remove('slide');},260);
-    return;}
-  KSL=px;
+  if(!b||!shift){slideOff();return;}
+  clearTimeout(KSLT);KTOK++;
+  var tok=KTOK;
+  b.classList.add('nocv');
+  b.classList.add('nosl');
   b.classList.add('slide');
-  de.style.setProperty('--ksl',px+'px');
+  de.style.setProperty('--ksl',shift+'px');
+  void b.offsetHeight;
+  b.classList.remove('nosl');
+  de.style.setProperty('--ksl','0px');
   KSLT=setTimeout(function(){
-    var c=msBox();
-    if(!c||KSL!==px)return;
-    KSL=0;
+    if(KTOK!==tok)return;
+    var c=msBox();if(!c)return;
     c.classList.remove('slide');
-    de.style.setProperty('--ksl','0px');
-  },240);}
+    c.classList.remove('nocv');
+  },330);}
 function kbApply(gap){
   gap=Math.max(0,Math.round(gap||0));
   if(gap===KBCUR)return;
   var b=msBox(),pin=b?(scEnd(b)||SC.pin):1,st=b?b.scrollTop:0;
-  var was=KBCUR,pre=b?scMax(b):0;
+  var was=KBCUR;
   KBCUR=gap;
   de.style.setProperty('--kb',gap+'px');
   de.classList.toggle('kbon',gap>60);
@@ -3090,16 +3087,12 @@ function kbApply(gap){
       if(gap>60&&vh>240)el.style.setProperty('height',vh+'px','important');
       else el.style.removeProperty('height');});
   if(!b){scAfter();return;}
-  var post=scMax(b),shift;
-  if(pin){
-    SC.pin=1;SC.el=null;
-    shift=post-st;
-    toEnd(b);
-  }else{
-    var want=Math.max(0,Math.min(st+(gap-was),post));
-    shift=want-st;
-    b.scrollTop=want;}
-  if(Math.abs(shift)>8&&Math.abs(gap-was)>60)slideTo(shift>0?shift:0);
+  var post=scMax(b),want;
+  if(pin){SC.pin=1;SC.el=null;want=post;}
+  else want=Math.max(0,Math.min(st+(gap-was),post));
+  b.scrollTop=want;
+  var shift=want-st;
+  if(Math.abs(gap-was)>60&&Math.abs(shift)>8)slideRun(shift);
   else slideOff();
   scAfter();}
 function kSet(h){
@@ -4919,27 +4912,51 @@ if(!G3.sheet)G3.sheet=sheet;
    +'#sh .bdy{padding-bottom:max(14px,calc(var(--sb) - 8px))!important}'
    +'html.kbon #sh .bdy{padding-bottom:12px!important}'
    +'#sh .lbs{padding-bottom:6px!important}'
-   +'#sh .xx{flex:none;width:30px;height:30px;display:flex;'
-   +'align-items:center;justify-content:center;background:none!important;'
-   +'border:0!important;opacity:.45}'
     /* 标题一律明朝体 */
    +'#pg .big,#pg .hdt,#pg .sc2{font-family:'+MIN+'!important;'
    +'font-weight:400!important}'
    +'#pg .big{letter-spacing:.03em!important}'
    +'#pg .hdt{font-size:16px!important;letter-spacing:.1em!important}'
-   +'#sh .st .tt,#sh.think .hb .tt{font-family:'+MIN+'!important;'
+   +'#sh .st .tt{font-family:'+MIN+'!important;'
    +'font-weight:400!important;letter-spacing:.06em}'
-    /* 翻到的 / 梗概 / 思维链：去壳 */
-   +'#sh.lk2 .pn,#sh.sum .pn{height:72%;max-height:none}'
-   +'#sh.lk2 .bdy,#sh.sum .bdy{padding-left:calc(22px + var(--sl))!important;'
-   +'padding-right:calc(22px + var(--sr))!important}'
-   +'#sh.lk2 .st,#sh.sum .st{align-items:center}'
+
+    /* ── 三块读的面板：一套长相 ── */
+   +'#sh.think .pn,#sh.lk2 .pn,#sh.sum .pn{height:auto!important;'
+   +'max-height:82%!important;padding-top:0!important}'
+   +'#sh.think .gb,#sh.lk2 .gb,#sh.sum .gb{display:none!important}'
+   +'#sh.think .hb,#sh.lk2 .st,#sh.sum .st{display:flex!important;'
+   +'align-items:center!important;gap:10px!important;position:static!important;'
+   +'padding:17px calc(18px + var(--sr)) 13px calc(22px + var(--sl))!important;'
+   +'border-bottom:1px solid var(--ln2)}'
+   +'#sh.think .hb .tt,#sh.lk2 .st .tt,#sh.sum .st .tt{'
+   +'order:1;flex:1;min-width:0;text-align:left!important;'
+   +'font-family:'+MIN+'!important;font-weight:400!important;'
+   +'font-size:14.5px!important;letter-spacing:.12em!important;'
+   +'color:var(--dim)!important;overflow:hidden;'
+   +'text-overflow:ellipsis;white-space:nowrap}'
+   +'#sh.think .hb .cx,#sh.lk2 .st .xx{order:2;flex:none;'
+   +'position:static!important;width:30px!important;height:30px!important;'
+   +'margin:0!important;padding:0!important;'
+   +'background:none!important;border:0!important;border-radius:0!important;'
+   +'display:flex;align-items:center;justify-content:center;opacity:.38}'
+   +'#sh.think .hb .cx svg,#sh.lk2 .st .xx svg{width:17px;height:17px}'
+   +'#sh.sum .st .ok{order:2;flex:none}'
+   +'#sh.think .bdy,#sh.lk2 .bdy,#sh.sum .bdy{'
+   +'padding:15px calc(22px + var(--sr)) '
+   +'max(18px,calc(var(--sb) + 2px)) calc(22px + var(--sl))!important}'
+   +'html.kbon #sh.think .bdy,html.kbon #sh.lk2 .bdy,'
+   +'html.kbon #sh.sum .bdy{padding-bottom:14px!important}'
+    /* 偷偷想的：一页纸 */
+   +'.kb{font-size:14.5px!important;line-height:1.9!important;'
+   +'letter-spacing:.01em;color:var(--dim)!important;'
+   +'padding:0 0 8px!important;white-space:pre-wrap}'
+    /* 翻到的：一行一条 */
    +'#sh.lk2 .res{background:none!important;border:0!important;'
    +'border-bottom:1px solid var(--ln2)!important;box-shadow:none!important;'
-   +'border-radius:0!important;padding:15px 0 14px!important;'
+   +'border-radius:0!important;padding:14px 0 13px!important;'
    +'margin:0!important;position:relative}'
    +'#sh.lk2 .res:last-child{border-bottom:0!important}'
-   +'#sh.lk2 .res .rh{margin-bottom:7px!important;'
+   +'#sh.lk2 .res .rh{margin-bottom:6px!important;'
    +'justify-content:flex-start!important;gap:9px!important}'
    +'#sh.lk2 .res .rt{font-size:10.5px!important;font-weight:400!important;'
    +'letter-spacing:.05em;order:2}'
@@ -4952,21 +4969,20 @@ if(!G3.sheet)G3.sheet=sheet;
    +'width:6px;height:6px;border-right:1.4px solid var(--i3);'
    +'border-bottom:1.4px solid var(--i3);'
    +'transform:translateY(-50%) rotate(-45deg)}'
+   +'#sh.lk2 .empty{padding:8vh 0!important}'
+    /* 聊了什么：一页信纸 */
+   +'#sh.sum .fd{margin-bottom:0!important}'
    +'#sh.sum .fd textarea{background:none!important;border:0!important;'
-   +'padding:2px 0 12px!important;font-family:'+MIN+';'
-   +'font-size:15.5px!important;line-height:2.05!important;'
-   +'letter-spacing:.03em;min-height:250px!important}'
+   +'padding:2px 0 14px!important;font-family:'+MIN+';'
+   +'font-size:15.5px!important;line-height:2.02!important;'
+   +'letter-spacing:.03em;min-height:170px!important}'
    +'#sh.sum .cd{background:none!important;border:0!important;'
    +'box-shadow:none!important;border-top:1px solid var(--ln2)!important;'
    +'border-radius:0!important;margin:0!important}'
-   +'#sh.sum .rw{padding:14px 0!important}'
+   +'#sh.sum .rw{padding:13px 0!important}'
    +'#sh.sum .rw .l{font-size:13.5px;font-weight:400}'
    +'#sh.sum .bdy>.nt{padding-left:0!important;padding-right:0!important}'
-   +'#sh.think .bdy{padding-left:calc(22px + var(--sl))!important;'
-   +'padding-right:calc(22px + var(--sr))!important}'
-   +'#sh.think .hb .cx{background:var(--sel2)!important}'
-   +'.kb{font-size:14.5px!important;line-height:2!important;'
-   +'letter-spacing:.02em;color:var(--dim)!important;padding:0 0 16px!important}'
+
     /* 标签与记忆卡 */
    +'#pg .tag{background:none!important;border:1px solid var(--dl);'
    +'font-weight:500!important;padding:2px 7px!important}'
@@ -5186,13 +5202,20 @@ window.addEventListener('orientationchange',function(){
 try{bgPaint();}catch(e){}
 setTimeout(bgReSample,300);
 
-/* ── 梗概面板加个记号 ── */
+/* ── 三块读的面板：都带一个右上角的叉 ── */
 sheet=function(o){
   G3.sheet(o);
   try{
-    if(o&&o.sum){
-      var d=document.getElementById('sh');
-      if(d)d.classList.add('sum');}
+    var d=document.getElementById('sh');
+    if(!d)return;
+    if(o&&o.sum)d.classList.add('sum');
+    if(o&&(o.sum||o.lk2)){
+      var st=d.querySelector('.st');
+      if(st&&!st.querySelector('.xx')&&!st.querySelector('.ok')){
+        var b=document.createElement('button');
+        b.className='xx pz';b.innerHTML=I.xb;
+        b.onclick=function(){closeSheet();};
+        st.appendChild(b);}}
   }catch(e){}};
 
 /* ── 翻到的：名字在前，整条可点 ── */
@@ -5224,12 +5247,12 @@ function lookSheet(q){
      +'<span class="who">'+(x.m.r==='me'?esc(D.me):esc(D.you))+'</span>'
      +'<span class="rt">'+dtl(x.m.ts)+'</span></div>'
      +'<div class="rb">'+hi(cut(x.t||picWord(x.m),sp.kw),sp.kw)+'</div></div>';});
-  sheet({lk2:1,title:'「'+q+'」',body:h});}
+  sheet({lk2:1,title:'翻到的 · 「'+q+'」',body:h});}
 
 /* ── 梗概面板：一页信纸 ── */
 function sumSheet(){
-  var s=sessById(EXSID),n=s?exCount(s):0;
-  sheet({sum:1,title:'「'+(s?(s.ti||'对话'):'对话')+'」聊了什么',
+  var s=sessById(EXSID);
+  sheet({sum:1,title:'聊了什么 · '+(s?(s.ti||'对话'):'对话'),
     ok:'留下这段',
     body:'<div class="fd"><textarea id="sm">'+esc(SUMT)+'</textarea></div>'
   +'<div class="cd cd0"><div class="rw pz" onclick="exSkip()">'
