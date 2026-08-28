@@ -2811,32 +2811,29 @@ boot();
 /* ══════════ I MISS U · 第一段 · 骨架 ══════════ */
 (function(){
   var s=document.createElement('style');
-  var EASE='cubic-bezier(.17,.59,.4,1)';
+  var EZ='cubic-bezier(.32,.72,0,1)';
   s.textContent=
     ':root{--kb:0px}'
    +'#ms{overflow-anchor:none;'
    +'padding-bottom:calc(16px + var(--kb))!important}'
    +'#ta{overflow-y:hidden}'
-   +'.ib{transform:translate3d(0,calc(-1 * var(--kb)),0);'
-   +'transition:transform .26s '+EASE+';will-change:transform}'
-   +'.selbar{transform:translate3d(0,calc(-1 * var(--kb)),0);'
-   +'transition:transform .26s '+EASE+'}'
-   +'#dn{bottom:calc(18px + var(--kb))!important;'
-   +'transition:opacity .22s ease,transform .22s ease,bottom .26s '+EASE+'}'
+   +'.ib,.selbar{transform:translate3d(0,calc(-1 * var(--kb)),0);'
+   +'transition:transform .22s '+EZ+';will-change:transform}'
+   +'#dn{position:absolute;right:calc(18px + var(--sr));'
+   +'bottom:calc(18px + var(--kb));'
+   +'width:36px;height:36px;border-radius:50%;background:var(--card);z-index:6;'
+   +'box-shadow:0 0 0 1px var(--sd),0 4px 14px -4px var(--sd2);'
+   +'display:flex;align-items:center;justify-content:center;opacity:0;'
+   +'pointer-events:none;transition:opacity .22s ease,bottom .22s '+EZ+'}'
+   +'#dn.on{opacity:.82;pointer-events:auto}'
+   +'#dn:active{opacity:1}'
    +'#ms>.m{content-visibility:visible;contain-intrinsic-size:auto;'
    +'animation:none!important}'
    +'#ms.cv>.m{content-visibility:auto;contain-intrinsic-size:auto 170px}'
    +'#ms>.m.nu{content-visibility:visible;animation:up .3s ease both!important}'
    +'.sg{font-size:16px;line-height:1.78;letter-spacing:-.008em;'
    +'word-break:break-word;white-space:pre-wrap;color:var(--ink2);'
-   +'margin-bottom:13px}'
-   +'#dn{position:absolute;right:calc(18px + var(--sr));'
-   +'width:36px;height:36px;border-radius:50%;background:var(--card);z-index:6;'
-   +'box-shadow:0 0 0 1px var(--sd),0 4px 14px -4px var(--sd2);'
-   +'display:flex;align-items:center;justify-content:center;opacity:0;'
-   +'pointer-events:none}'
-   +'#dn.on{opacity:.82;pointer-events:auto}'
-   +'#dn:active{opacity:1}';
+   +'margin-bottom:13px}';
   document.head.appendChild(s);
 })();
 
@@ -2946,7 +2943,7 @@ function selfTest(){
   t('memCodes',function(){return JSON.stringify(memCodes());});
   alert(r.join('\n\n'));}
 
-/* ── 键盘缺口：全高基准 ── */
+/* ── 全高基准 ── */
 var FULLH=0,FULLW=0;
 function kbGap(){
   if(!vv)return 0;
@@ -3041,10 +3038,11 @@ function xBind(){
   });
 }
 
-/* ── 键盘：root 不动，输入框用位移跟着走 ── */
-var KBCUR=0,KDB=0;
-function kSet(gap){
+/* ── 键盘：开关只认焦点，测量只用来校准 ── */
+var KBON=0,KBCUR=0,KCAL=0;
+function kbApply(gap){
   gap=Math.max(0,Math.round(gap||0));
+  if(gap===KBCUR)return;
   var b=msBox(),pin=b?(scEnd(b)||SC.pin):1,st=b?b.scrollTop:0;
   var d=gap-KBCUR;
   KBCUR=gap;
@@ -3059,63 +3057,70 @@ function kSet(gap){
       else el.style.removeProperty('height');});
   if(b){
     if(pin){SC.pin=1;SC.el=null;toEnd(b);}
-    else if(d)b.scrollTop=Math.max(0,Math.min(st+d,scMax(b)));
-    else clampSc(b);}
+    else b.scrollTop=Math.max(0,Math.min(st+d,scMax(b)));}
   scAfter();}
-function kOk(){
-  if(!vv)return 0;
-  if(Math.round(vv.offsetTop||0)>1)return 0;
-  var gap=kbGap();
-  if(gap>0&&gap<=60)return 0;
-  if(FULLH&&gap>FULLH*0.72)return 0;
-  return 1;}
-function kApply(){
-  if(!vv)return;
-  if(window.scrollY)window.scrollTo(0,0);
-  var gap=kbGap();
-  if(gap>60&&gap!==kbH){kbH=gap;
-    try{localStorage.setItem('us.kbH',gap);}catch(e){}}
-  if(gap!==KBCUR)kSet(gap>60?gap:0);}
-function kSettle(t){
-  clearTimeout(KDB);
-  KDB=setTimeout(function(){
-    if(!kOk()){kSettle(120);return;}
-    kApply();
-  },t||280);}
+function kSet(h){
+  if(!h){KBON=0;clearTimeout(KCAL);kbApply(0);return;}
+  var g=(FULLH?FULLH:Math.max(window.innerHeight,
+    vv?Math.round(vv.height):0))-Math.round(h);
+  kbApply(g>60?g:0);}
+function kCal(){
+  clearTimeout(KCAL);
+  KCAL=setTimeout(function(){
+    if(!KBON)return;
+    if(!vv)return;
+    if(Math.round(vv.offsetTop||0)>1){kCal();return;}
+    var g=kbGap();
+    if(g<=60){kCal();return;}
+    if(FULLH&&g>FULLH*0.72){kCal();return;}
+    if(g!==kbH){kbH=g;
+      try{localStorage.setItem('us.kbH',g);}catch(e){}}
+    if(Math.abs(g-KBCUR)>6)kbApply(g);
+  },300);}
+function kbOpen(){
+  KBON=1;
+  var g=kbH>60?kbH:Math.round((FULLH||window.innerHeight)*0.42);
+  kbApply(g);
+  kCal();}
+function kbShut(){
+  KBON=0;clearTimeout(KCAL);
+  kbApply(0);}
 function kwake(){}
-function kpaint(){if(kOk())kApply();else kSettle(140);}
-function ktrack(t){kSettle(Math.min(320,t||280));}
+function kpaint(){if(KBON)kCal();else if(kbGap()<=60)kbApply(0);}
+function ktrack(){kpaint();}
 document.addEventListener('focusin',function(e){
   if(!e.isTrusted)return;
   var t=e.target;
   if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
-  var b=msBox(),wasEnd=b?scEnd(b):1;
-  if(wasEnd){SC.pin=1;SC.el=null;}
-  if(kbH>60&&kbGap()<=60)kSet(kbH);
-  kSettle(360);},true);
+  var b=msBox();
+  if(b&&scEnd(b)){SC.pin=1;SC.el=null;}
+  kbOpen();},true);
 document.addEventListener('focusout',function(e){
   if(!e.isTrusted)return;
-  clearTimeout(KDB);
   var rt=e.relatedTarget;
   if(rt&&/^(INPUT|TEXTAREA)$/.test(rt.tagName))return;
-  kSet(0);
-  kSettle(320);},true);
+  setTimeout(function(){
+    var a=document.activeElement;
+    if(a&&/^(INPUT|TEXTAREA)$/.test(a.tagName))return;
+    kbShut();
+  },0);},true);
 window.addEventListener('scroll',function(){
   if(window.scrollY)window.scrollTo(0,0);},{passive:true});
 window.addEventListener('orientationchange',function(){
-  clearTimeout(KDB);FULLH=0;FULLW=0;
+  clearTimeout(KCAL);FULLH=0;FULLW=0;KBON=0;
   setTimeout(function(){
-    FULLH=0;FULLW=0;kSet(0);
+    FULLH=0;FULLW=0;kbApply(0);
     if(window.scrollY)window.scrollTo(0,0);
     clampSc(msBox());scAfter();
   },500);
 });
 setInterval(function(){
   if(!vv)return;
-  var a=document.activeElement;
-  if((a&&/^(INPUT|TEXTAREA)$/.test(a.tagName))||kbGap()>60)return;
+  var a=document.activeElement,inp=(a&&/^(INPUT|TEXTAREA)$/.test(a.tagName));
+  if(inp)return;
   if(!KBCUR&&!de.classList.contains('kbon'))return;
-  kSet(0);
+  if(kbGap()>60)return;
+  KBON=0;kbApply(0);
   if(window.scrollY)window.scrollTo(0,0);
   clampSc(msBox());},700);
 
@@ -3124,8 +3129,8 @@ function fitTa(el){
   if(!el)return;
   var b=msBox(),wasEnd=b?(scEnd(b)||SC.pin):1;
   var st=b?b.scrollTop:0;
-  var base=(vv?vv.height:window.innerHeight)||640;
-  var cap=Math.round((base+KBCUR)*0.30);
+  var base=(FULLH||window.innerHeight||640);
+  var cap=Math.round(base*0.30);
   el.style.height='auto';
   var need=el.scrollHeight+2;
   var h=Math.max(26,Math.min(need,cap));
@@ -5283,6 +5288,135 @@ function vHome(){
   +'<div style="height:10px"></div></div></div>';}
 
 if(CV){try{view(CV);}catch(e){}}
+  /* ══════════ I MISS U · 头像小组件 ══════════ */
+if(typeof G4==='undefined')var G4={};
+(function(){
+  var s=document.createElement('style');
+  var MIN='"Hiragino Mincho ProN","Yu Mincho","Songti SC",serif';
+  s.textContent=
+    '.avw{display:flex;align-items:flex-start;gap:11px;margin-bottom:16px}'
+   +'.avi{flex:1;min-width:0}'
+   +'.avb{position:relative;width:100%;padding-top:100%;border-radius:15px;'
+   +'overflow:hidden;border:1px solid rgba(255,255,255,.72);'
+   +'box-shadow:0 1px 2px var(--sd),0 12px 30px -22px var(--sd2);'
+   +'background:rgba(253,252,250,.5)}'
+   +'html.dark .avb{border-color:rgba(255,255,255,.11);'
+   +'background:rgba(34,30,25,.5)}'
+   +'.avb img{position:absolute;inset:0;width:100%;height:100%;'
+   +'object-fit:cover;display:block;'
+   +'filter:saturate(.84) contrast(.97) brightness(1.04)}'
+   +'html.dark .avb img{filter:saturate(.78) contrast(.95) brightness(.94)}'
+   +'.avb:after{content:"";position:absolute;inset:0;pointer-events:none;'
+   +'background:linear-gradient(160deg,rgba(255,255,255,.16),'
+   +'rgba(250,248,244,.10) 46%,rgba(250,248,244,.16))}'
+   +'html.dark .avb:after{background:linear-gradient(160deg,'
+   +'rgba(255,255,255,.05),rgba(18,16,12,.16) 46%,rgba(18,16,12,.24))}'
+   +'.avb.e{border-style:dashed;border-color:var(--dl)}'
+   +'.avb.e:after{display:none}'
+   +'.avb .p{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);'
+   +'font:300 26px/1 -apple-system;color:var(--dim2)}'
+   +'.avn{margin-top:8px;text-align:center;font-family:'+MIN+';'
+   +'font-size:11px;letter-spacing:.16em;color:var(--dim2)}'
+   +'.avt{flex:none;align-self:center;margin-top:-19px;font-family:'+MIN+';'
+   +'font-size:13px;letter-spacing:.06em;color:var(--dim2)}';
+  document.head.appendChild(s);
+})();
+
+var AVD={a:null,b:null};
+function avKey(w){return w==='a'?'__av1':'__av2';}
+function avLoad(){
+  return Promise.all(['a','b'].map(function(w){
+    return dbGet('pic',avKey(w)).then(function(r){
+      AVD[w]=(r&&r.d)?r.d:null;},function(){AVD[w]=null;});
+  }));}
+function avCell(w,name){
+  var u=AVD[w];
+  return'<div class="avi"><div class="avb'+(u?'':' e')+' pz" '
+   +'onclick="avTap(\''+w+'\')">'
+   +(u?('<img src="'+u+'" alt="">'):'<span class="p">＋</span>')
+   +'</div><div class="avn">'+esc(name)+'</div></div>';}
+function avMount(){
+  var wrap=document.querySelector('#pg .pgw');if(!wrap)return;
+  var old=document.getElementById('avw');
+  var h='<div class="avw" id="avw">'
+   +avCell('a',D.you)+'<div class="avt">と</div>'+avCell('b',D.me)+'</div>';
+  if(old){old.outerHTML=h;return;}
+  var hero=wrap.querySelector('.hero2');
+  if(hero&&hero.nextSibling)
+    hero.parentNode.insertBefore(
+      document.createRange().createContextualFragment(h),hero.nextSibling);
+  else wrap.insertAdjacentHTML('beforeend',h);}
+function avTap(w){
+  if(!AVD[w]){avPick(w);return;}
+  sheet({title:(w==='a'?esc(D.you):esc(D.me))+' 的头像',
+    body:'<div class="cd cd0">'
+  +'<div class="rw pz" onclick="avPick(\''+w+'\')">'
+  +'<span class="l">换一张</span>'+I.chevD+'</div>'
+  +'<div class="rw pz" onclick="avOff(\''+w+'\')">'
+  +'<span class="l" style="color:var(--red)">撤下来</span>'+I.chevD+'</div></div>'
+  +'<div class="nt">只在小窝里挂着，不进对话。跟着完整备份走。</div>'});}
+function avPick(w){
+  var f=document.createElement('input');
+  f.type='file';f.accept='image/*';
+  f.onchange=function(){
+    var fl=f.files&&f.files[0];if(!fl)return;
+    toast('正在处理…');
+    shrink(fl,640,0.88,function(u){
+      if(!u){toast('这张读不出来');return;}
+      dbPut('pic',avKey(w),{d:u,ts:Date.now()}).then(function(){
+        AVD[w]=u;closeSheet(1);
+        if(CV==='home')avMount();
+        toast('挂上了');
+      },function(){toast('存不下这张');});});};
+  f.click();}
+function avOff(w){
+  AVD[w]=null;dbDel('pic',avKey(w));
+  closeSheet(1);
+  if(CV==='home')avMount();
+  toast('撤下来了');}
+
+/* ── 别让清理把头像当孤儿删了 ── */
+if(!G4.picRefs){
+  G4.picRefs=picRefs;
+  picRefs=function(){
+    var u=G4.picRefs();
+    u.__av1=1;u.__av2=1;
+    return u;};
+}
+function purgeImgs(){
+  dbSize('pic').then(function(st){
+    var keep=(D.bgOn?1:0)+(AVD.a?1:0)+(AVD.b?1:0);
+    var n=st.n-keep;
+    if(n<=0){toast('本来就没有图片');return;}
+    sheet({title:'清掉聊天图片',
+      body:'<div class="cd" style="font-size:14px;line-height:1.75;'
+    +'color:var(--red2)">会删掉聊天里全部 '+n+' 张图片，文字一句不动，'
+    +'背景和头像都留着。<br>删了拿不回来。</div>',
+      ok:'确认清掉',
+      onOk:function(){
+        dbKeys('pic').then(function(ks){
+          ks.forEach(function(k){
+            if(k!=='__bg'&&k!=='__av1'&&k!=='__av2')dbDel('pic',k);});});
+        PICQ={};
+        SS.forEach(function(s){
+          (MSG[s.id]||[]).forEach(function(m){
+            if(m.pics&&m.pics.length){
+              m.imgLost=(m.imgLost||0)+m.pics.length;m.pics=[];}});
+          SVQ[s.id]=1;});
+        flush(1);closeSheet(1);
+        view(CV==='chat'?'chat':'more');toast('清掉了 '+n+' 张');
+        return'done';}});});}
+
+if(!G4.view){
+  G4.view=view;
+  view=function(v){
+    G4.view(v);
+    if(v==='home'){try{avMount();}catch(e){}}
+  };
+}
+avLoad().then(function(){
+  if(CV==='home'){try{avMount();}catch(e){}}
+});
 </script>
 </body>
 </html>
