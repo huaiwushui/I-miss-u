@@ -2811,11 +2811,18 @@ boot();
 /* ══════════ I MISS U · 第一段 · 骨架 ══════════ */
 (function(){
   var s=document.createElement('style');
+  var EASE='cubic-bezier(.17,.59,.4,1)';
   s.textContent=
-    '#ms{overflow-anchor:none;padding-bottom:16px}'
-   +'html.kbon #ms{padding-bottom:12px}'
-   +'html.hasbg{height:100%!important}'
+    ':root{--kb:0px}'
+   +'#ms{overflow-anchor:none;'
+   +'padding-bottom:calc(16px + var(--kb))!important}'
    +'#ta{overflow-y:hidden}'
+   +'.ib{transform:translate3d(0,calc(-1 * var(--kb)),0);'
+   +'transition:transform .26s '+EASE+';will-change:transform}'
+   +'.selbar{transform:translate3d(0,calc(-1 * var(--kb)),0);'
+   +'transition:transform .26s '+EASE+'}'
+   +'#dn{bottom:calc(18px + var(--kb))!important;'
+   +'transition:opacity .22s ease,transform .22s ease,bottom .26s '+EASE+'}'
    +'#ms>.m{content-visibility:visible;contain-intrinsic-size:auto;'
    +'animation:none!important}'
    +'#ms.cv>.m{content-visibility:auto;contain-intrinsic-size:auto 170px}'
@@ -2823,14 +2830,13 @@ boot();
    +'.sg{font-size:16px;line-height:1.78;letter-spacing:-.008em;'
    +'word-break:break-word;white-space:pre-wrap;color:var(--ink2);'
    +'margin-bottom:13px}'
-   +'#dn{position:absolute;right:calc(18px + var(--sr));bottom:18px;'
+   +'#dn{position:absolute;right:calc(18px + var(--sr));'
    +'width:36px;height:36px;border-radius:50%;background:var(--card);z-index:6;'
    +'box-shadow:0 0 0 1px var(--sd),0 4px 14px -4px var(--sd2);'
    +'display:flex;align-items:center;justify-content:center;opacity:0;'
-   +'pointer-events:none;transform:translateY(8px) scale(.9);'
-   +'transition:opacity .22s ease,transform .22s ease}'
-   +'#dn.on{opacity:.82;pointer-events:auto;transform:none}'
-   +'#dn:active{opacity:1;transform:scale(.9)}';
+   +'pointer-events:none}'
+   +'#dn.on{opacity:.82;pointer-events:auto}'
+   +'#dn:active{opacity:1}';
   document.head.appendChild(s);
 })();
 
@@ -2940,7 +2946,7 @@ function selfTest(){
   t('memCodes',function(){return JSON.stringify(memCodes());});
   alert(r.join('\n\n'));}
 
-/* ── 键盘缺口：全高基准，横竖屏各自记 ── */
+/* ── 键盘缺口：全高基准 ── */
 var FULLH=0,FULLW=0;
 function kbGap(){
   if(!vv)return 0;
@@ -3035,15 +3041,27 @@ function xBind(){
   });
 }
 
-/* ── 键盘：开一次、合一次，中间不逐帧跟 ── */
-var KDB=0,_kh3,_kop;
-function kSet(h){
-  var sh=document.getElementById('sh'),dw=document.getElementById('dw');
-  [root,sh,dw].forEach(function(el){
-    if(!el)return;
-    el.style.removeProperty('transform');
-    if(h>240)el.style.setProperty('height',h+'px','important');
-    else el.style.removeProperty('height');});}
+/* ── 键盘：root 不动，输入框用位移跟着走 ── */
+var KBCUR=0,KDB=0;
+function kSet(gap){
+  gap=Math.max(0,Math.round(gap||0));
+  var b=msBox(),pin=b?(scEnd(b)||SC.pin):1,st=b?b.scrollTop:0;
+  var d=gap-KBCUR;
+  KBCUR=gap;
+  de.style.setProperty('--kb',gap+'px');
+  de.classList.toggle('kbon',gap>60);
+  var vh=vv?Math.round(vv.height):0;
+  [document.getElementById('sh'),document.getElementById('dw')]
+    .forEach(function(el){
+      if(!el)return;
+      el.style.removeProperty('transform');
+      if(gap>60&&vh>240)el.style.setProperty('height',vh+'px','important');
+      else el.style.removeProperty('height');});
+  if(b){
+    if(pin){SC.pin=1;SC.el=null;toEnd(b);}
+    else if(d)b.scrollTop=Math.max(0,Math.min(st+d,scMax(b)));
+    else clampSc(b);}
+  scAfter();}
 function kOk(){
   if(!vv)return 0;
   if(Math.round(vv.offsetTop||0)>1)return 0;
@@ -3054,66 +3072,40 @@ function kOk(){
 function kApply(){
   if(!vv)return;
   if(window.scrollY)window.scrollTo(0,0);
-  var gap=kbGap(),h=Math.round(vv.height),open=gap>60;
-  if(open&&gap!==kbH){kbH=gap;
+  var gap=kbGap();
+  if(gap>60&&gap!==kbH){kbH=gap;
     try{localStorage.setItem('us.kbH',gap);}catch(e){}}
-  var ch=(h!==_kh3||open!==_kop);
-  _kh3=h;_kop=open;KLAST=h;KOT=0;
-  de.classList.toggle('kbon',open);
-  kSet(open?h:0);
-  if(ch){
-    var b=msBox();
-    if(b){if(SC.pin){SC.el=null;toEnd(b);}else clampSc(b);}
-    scAfter();}}
+  if(gap!==KBCUR)kSet(gap>60?gap:0);}
 function kSettle(t){
   clearTimeout(KDB);
   KDB=setTimeout(function(){
     if(!kOk()){kSettle(120);return;}
     kApply();
-  },t||260);}
-function kwake(){_kh3=void 0;_kop=void 0;KLAST=-1;KOT=-1;}
+  },t||280);}
+function kwake(){}
 function kpaint(){if(kOk())kApply();else kSettle(140);}
-function ktrack(t){kSettle(Math.min(300,t||260));}
-function kGuess(){
-  if(!vv||!(kbH>60))return 0;
-  if(kbGap()>60)return 0;
-  var full=Math.max(window.innerHeight,Math.round(vv.height));
-  if(full-kbH<=240)return 0;
-  kwake();
-  de.classList.add('kbon');
-  kSet(full-kbH);
-  return 1;}
+function ktrack(t){kSettle(Math.min(320,t||280));}
 document.addEventListener('focusin',function(e){
   if(!e.isTrusted)return;
   var t=e.target;
   if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
   var b=msBox(),wasEnd=b?scEnd(b):1;
-  kGuess();
-  if(b){
-    if(wasEnd){SC.pin=1;SC.el=null;toEnd(b);}
-    else if(SC.pre>=0)b.scrollTop=Math.min(SC.pre,scMax(b));
-    clampSc(b);}
-  scAfter();
-  kSettle(340);},true);
+  if(wasEnd){SC.pin=1;SC.el=null;}
+  if(kbH>60&&kbGap()<=60)kSet(kbH);
+  kSettle(360);},true);
 document.addEventListener('focusout',function(e){
   if(!e.isTrusted)return;
   clearTimeout(KDB);
-  setTimeout(function(){
-    var a=document.activeElement;
-    if(a&&/^(INPUT|TEXTAREA)$/.test(a.tagName))return;
-    kwake();
-    de.classList.remove('kbon');
-    kSet(0);
-    if(window.scrollY)window.scrollTo(0,0);
-    clampSc(msBox());scAfter();
-  },70);},true);
+  var rt=e.relatedTarget;
+  if(rt&&/^(INPUT|TEXTAREA)$/.test(rt.tagName))return;
+  kSet(0);
+  kSettle(320);},true);
 window.addEventListener('scroll',function(){
   if(window.scrollY)window.scrollTo(0,0);},{passive:true});
 window.addEventListener('orientationchange',function(){
   clearTimeout(KDB);FULLH=0;FULLW=0;
   setTimeout(function(){
-    FULLH=0;FULLW=0;kwake();
-    de.classList.remove('kbon');kSet(0);
+    FULLH=0;FULLW=0;kSet(0);
     if(window.scrollY)window.scrollTo(0,0);
     clampSc(msBox());scAfter();
   },500);
@@ -3122,10 +3114,7 @@ setInterval(function(){
   if(!vv)return;
   var a=document.activeElement;
   if((a&&/^(INPUT|TEXTAREA)$/.test(a.tagName))||kbGap()>60)return;
-  if(!de.classList.contains('kbon')&&!root.style.height
-    &&!root.style.transform)return;
-  kwake();
-  de.classList.remove('kbon');
+  if(!KBCUR&&!de.classList.contains('kbon'))return;
   kSet(0);
   if(window.scrollY)window.scrollTo(0,0);
   clampSc(msBox());},700);
@@ -3135,7 +3124,8 @@ function fitTa(el){
   if(!el)return;
   var b=msBox(),wasEnd=b?(scEnd(b)||SC.pin):1;
   var st=b?b.scrollTop:0;
-  var cap=Math.round(((vv?vv.height:window.innerHeight)||640)*0.34);
+  var base=(vv?vv.height:window.innerHeight)||640;
+  var cap=Math.round((base+KBCUR)*0.30);
   el.style.height='auto';
   var need=el.scrollHeight+2;
   var h=Math.max(26,Math.min(need,cap));
