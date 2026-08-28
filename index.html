@@ -5917,6 +5917,28 @@ function vHome(){
   +'<div style="height:10px"></div></div></div>';
 }
 if(CV==='home'){try{view('home');}catch(e){}}
+  /* ══════════ 统合层 v1 · 第十七段 ══════════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent='#fres>.lbs:first-child:empty{display:none}';
+  document.head.appendChild(s);
+})();
+if(typeof G17==='undefined')var G17={};
+if(!G17.on){
+  G17.on=1;
+  G17.rf=runFind;
+  runFind=function(){
+    G17.rf();
+    try{
+      var b=document.getElementById('fres');
+      if(!b)return;
+      var f=b.firstElementChild;
+      if(f&&f.className==='lbs'&&/^最近说过的$/.test(
+        (f.textContent||'').trim()))f.remove();
+    }catch(e){}
+  };
+}
+if(CV==='find'){try{runFind();}catch(e){}}
 </script>
 </body>
 </html>
