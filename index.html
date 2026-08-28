@@ -6050,20 +6050,20 @@ if(!G17.on){
   };
 }
 if(CV==='find'){try{runFind();}catch(e){}}
-  /* ══════════ 统合层 v1 · 第十八段 · 时间与痕迹 ══════════ */
+/* ══════════ 统合层 v1 · 第十八段 · 时间与痕迹 ══════════ */
 (function(){
   var s=document.createElement('style');
   s.textContent=
-    /* 隔了多久：细线 + 钟点 */
+    /* 隔了多久 */
     '#ms .gsep{margin:4px 0 26px!important;gap:12px!important}'
-   +'#ms .gsep i{background:var(--dl)!important;opacity:.45}'
-   +'#ms .gsep span{display:inline-flex;align-items:baseline;gap:10px}'
-   +'#ms .gsep span b{font-weight:500;font-size:12px;letter-spacing:.16em;'
-   +'color:var(--dim);font-variant-numeric:tabular-nums;'
-   +'font-family:"Hiragino Mincho ProN","Songti SC",serif}'
-   +'#ms .gsep span s{text-decoration:none;font-size:10.5px;'
-   +'letter-spacing:.06em;color:var(--dim2)}'
-    /* 翻查痕迹：收细 */
+   +'#ms .gsep i{background:var(--dl)!important;opacity:.4}'
+   +'#ms .gsep span{display:inline-flex;align-items:baseline;gap:8px;'
+   +'font-size:10.5px!important;color:var(--dim2)!important;'
+   +'letter-spacing:.04em}'
+   +'#ms .gsep span b{font-weight:400;font-size:10.5px;letter-spacing:.1em;'
+   +'font-variant-numeric:tabular-nums;color:var(--dim2)}'
+   +'#ms .gsep span s{text-decoration:none;font-size:10.5px}'
+    /* 翻查痕迹 */
    +'#ms .wbx{border-left-width:1px!important;'
    +'border-left-color:var(--dl)!important;padding-left:12px!important;'
    +'margin-bottom:13px!important}'
@@ -6133,9 +6133,9 @@ function gsepTime(){
   if(!b)return;
   var gs=b.querySelectorAll('.gsep');
   if(!gs.length)return;
-  var arr=[],i;
+  var arr=[];
   ms().forEach(function(m){if(m.r==='gap')arr.push(m);});
-  for(i=0;i<gs.length&&i<arr.length;i++){
+  for(var i=0;i<gs.length&&i<arr.length;i++){
     var sp=gs[i].querySelector('span');
     if(!sp||sp.dataset.tm)continue;
     sp.dataset.tm='1';
