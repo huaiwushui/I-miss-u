@@ -5292,67 +5292,6 @@ function vHome(){
   +'<div style="height:10px"></div></div></div>';}
 
 if(CV){try{view(CV);}catch(e){}}
-/* ══════════ 键盘与背景 · 退回旧版 ══════════ */
-
-/* ── 背景：回到 html 上，铺满 ── */
-function bgPaint(){
-  de.style.setProperty('--edge',edgeColor());
-  if(!D.bgOn||!BGDATA){
-    de.classList.remove('hasbg');
-    de.style.backgroundImage='';
-    de.style.backgroundColor='';
-    if(BGL){BGL.style.backgroundImage='';BGL.style.transform='';}
-    if(BGV){BGV.style.background='';BGV.style.transform='';}
-    return;}
-  var a=(D.bgv==null?45:D.bgv)/100;
-  var c=isDark()?'22,20,15':'245,243,238';
-  var v='rgba('+c+','+a+')';
-  de.style.backgroundColor=edgeColor();
-  de.style.backgroundImage=
-    'linear-gradient('+v+','+v+'),url("'+BGDATA+'")';
-  de.classList.add('hasbg');}
-
-/* ── 键盘：只改高度，位移一律为零 ── */
-var _kh3,_kop;
-function kPre(){}
-function kFree(){}
-function kSet(h,ot){
-  var sh=document.getElementById('sh'),dw=document.getElementById('dw');
-  [root,sh,dw].forEach(function(el){
-    if(!el)return;
-    el.style.removeProperty('transform');
-    if(h>240)el.style.setProperty('height',h+'px','important');
-    else el.style.removeProperty('height');});}
-function kpaint(){
-  if(!vv)return;
-  if(window.scrollY)window.scrollTo(0,0);
-  if(BGL&&BGL.style.transform)BGL.style.transform='';
-  if(BGV&&BGV.style.transform)BGV.style.transform='';
-  var gap=kbGap(),h=Math.round(vv.height),open=gap>60;
-  if(open&&gap!==kbH){kbH=gap;
-    try{localStorage.setItem('us.kbH',gap);}catch(e){}}
-  var ch=(h!==_kh3||open!==_kop);
-  _kh3=h;_kop=open;KLAST=h;KOT=0;
-  de.classList.toggle('kbon',open);
-  kSet(open?h:0,0);
-  if(ch)scAfter();}
-function kwake(){_kh3=void 0;_kop=void 0;KLAST=-1;KOT=-1;}
-function ktrack(t){
-  KEND=performance.now()+(t||520);
-  if(KT)return;
-  KT=1;
-  (function loop(){
-    kpaint();
-    if(performance.now()<KEND)requestAnimationFrame(loop);
-    else{KT=0;kwake();kpaint();
-      if(window.scrollY)window.scrollTo(0,0);
-      scAfter();}})();}
-if(vv){
-  vv.addEventListener('resize',function(){kwake();ktrack();});
-  vv.addEventListener('scroll',function(){ktrack(320);});}
-
-try{bgPaint();}catch(e){}
-try{kwake();kpaint();}catch(e){}
 </script>
 </body>
 </html>
