@@ -3480,6 +3480,8 @@ if(!G2.runFind)G2.runFind=runFind;
 if(!G2.pkCat)G2.pkCat=pkCat;
 if(!G2.sheet)G2.sheet=sheet;
 
+var SUMCAT='聊过什么',SUMKEEP=3;
+
 /* ── 搜索：先严后宽 ── */
 var SOFTQ=0;
 function score(t,kw){
@@ -3531,7 +3533,8 @@ function ctxInfo(){
   var use=all.slice(-n),ch=0;
   use.forEach(function(m){ch+=(fullT(m)||m.t||'').length;});
   var pl=imgPlan(use),mem=0;
-  live().slice(0,MEMCAP).forEach(function(m){mem+=(m.t||'').length+12;});
+  pickMems('').forEach(function(m){mem+=(m.t||'').length+14;});
+  sumPick().forEach(function(m){mem+=(m.t||'').length+14;});
   return{all:all.length,use:use.length,cap:n,im:pl.n,
     tok:Math.round((ch+mem+spLen())/2.5)+pl.n*1300};}
 function cpy(id,b){var m=find(id);if(m)clip(fullT(m)||m.t||'',function(){tick(b);});}
@@ -3599,7 +3602,13 @@ function delEb(id){
   dropPics(tail.concat((dead&&dead.tail)||[]));
   saveS(s.id);closeSheet(1);paint(1);toast('删了这个版本');}
 
-/* ── 记忆编号 ── */
+/* ── 记忆：梗概单独算，不占那 40 格 ── */
+function isSum(m){return!!(m&&(m.sum||m.cat===SUMCAT));}
+function coreMems(){
+  return D.mems.filter(function(m){return!isSum(m);});}
+function sumPick(){
+  return D.mems.filter(isSum)
+    .sort(function(a,b){return b.ts-a.ts;}).slice(0,SUMKEEP);}
 function memCodes(){
   var map={},rev={};
   live().forEach(function(m){
@@ -3640,14 +3649,15 @@ function bump(ls){
   var now=Date.now();
   ls.forEach(function(m){m.hits=(m.hits||0)+1;m.used=now;});}
 function pickMems(q){
-  var ls=live();
+  var ls=coreMems();
   if(ls.length<=MEMCAP)return ls;
   var lk=[],rest=[],now=Date.now(),sc={};
   ls.forEach(function(m){(m.lock?lk:rest).push(m);});
   rest.forEach(function(m){
     var rel=q?ovl(m.t,q):0;
     var age=Math.max(0,1-(now-m.ts)/(120*MS));
-    sc[m.id]=rel*5+(m.imp||2)*4+Math.min(8,(m.hits||0))+age*6;});
+    var warm=m.used?Math.max(0,1-(now-m.used)/(14*MS)):0;
+    sc[m.id]=rel*6+(m.imp||2)*4+warm*3+age*5;});
   rest.sort(function(a,b){return sc[b.id]-sc[a.id];});
   return lk.concat(rest.slice(0,Math.max(0,MEMCAP-lk.length)));}
 
@@ -3695,7 +3705,7 @@ function dedupePara(m){
 
 /* ── 翻查内核 ── */
 var LOOKS=[],LOOKSEEN={},LOOKMAP={},LOOKNO=0;
-var ROUNDHINT='',CURSAID='',PENDQ=[],TURNMAX=6;
+var ROUNDHINT='',CURSAID='',PENDQ=[],TURNMAX=4;
 function lookReset(){
   LOOKS=[];LOOKSEEN={};LOOKMAP={};LOOKNO=0;
   LOOKTXT='';ROUNDHINT='';CURSAID='';PENDQ=[];}
@@ -3837,14 +3847,17 @@ function staticPart(){
    +'翻查在同一条消息里进行：你已经说出口的话她当场看得见，你翻了什么她也看得见。'
    +'翻完是接着往下说，不是重新开始。');
 
-  if(D.acts)p.push('【什么值得记】\n'
+  if(D.acts)p.push('【记忆库只有 '+MEMCAP+' 格】\n'
+   +'这是硬上限，全站共用，每次说话都要整份发给你——所以格子很贵。\n'
    +'判断标准：换到一段全新的对话，不知道这件事，你会不会就不像她认识的那个你了。\n'
    +'记以后还成立的——她是什么样的人、她身边的人和她提起时的语气、'
    +'你们定下的约定和称呼、她长期扛着的事、她认真划下的界限。\n'
    +'不记只属于今天的——今天吃了什么、此刻的情绪起伏、临时安排、随口的玩笑、'
-   +'这个页面怎么改、你自己的猜测。\n'
+   +'这个页面怎么改、你自己的猜测。这些翻得到，不用占格子。\n'
    +'情绪分天气和气候。「她今天很难过」是天气，别记；'
-   +'「她一提到某个人就不说话」是气候，记。');
+   +'「她一提到某个人就不说话」是气候，记。\n'
+   +'满了以后新记一条就等于挤掉一条。写之前想清楚：'
+   +'它值不值得顶掉现在最弱的那一条。');
 
   if(D.acts)p.push('【一条该写成什么样】\n'
    +'一件事一条，写完整。别为了短拆成三条——拆开之后你以后读到的是碎片，不是那件事。'
@@ -3855,7 +3868,8 @@ function staticPart(){
    +'同一件事散在好几条里，改一条成完整版，再忘掉剩下的碎片；'
    +'旧的已经不成立了，直接改掉或删掉。\n'
    +'分类是给她翻着方便的。'+CATS.join('、')
-   +' 够用就用；实在归不进去自己起一个，两到四个字，起了就一直用同一个。');
+   +' 够用就用；实在归不进去自己起一个，两到四个字，起了就一直用同一个。'
+   +'〈'+SUMCAT+'〉是页面自己在用的，别往里写。');
 
   if(D.acts)p.push('【什么时候翻】\n'
    +'该翻：她问「上次那个后来怎样了」；她提到一个人或一件事而眼前的上下文里没有；'
@@ -3864,16 +3878,17 @@ function staticPart(){
    +'一次可以写好几个 [[查:]]，会一个一个做完再让你接着说。'
    +'多个关键词先按「都要有」找，一条都没有会自动放宽成「有一个算一个」。'
    +'同一个词第二次不再执行，结果一直留在上面。\n'
+   +'一轮最多翻 '+TURNMAX+' 次，每次都要重发一遍上下文，是真花钱的。'
+   +'翻两次还没头绪，就直接问她。\n'
    +'图片翻不出来，只能翻到「这里有几张图」。碰到只有图没有字的那条，'
    +'先展开看前后文，还不清楚就直接问她。\n'
    +'翻不到就说没找到，然后问她。问她不丢人，编才丢人。');
 
   if(D.acts)p.push('【记忆库归你】\n'
-   +'记忆库全站通用，不属于某一段对话——在这里记下的，换到任何一段你都还记得。\n'
+   +'每段对话的上下文是独立的，换一段就没了；记忆库和翻查是全站通的。\n'
    +'记什么改什么删什么你自己判断，不用先问她，界面上也没有替你兜着的撤回。\n'
    +'代价是删错改错你自己收——你最近动过的会列在下面，原文都在，'
-   +'删错了加回来，改坏了改回去。这份清单只有你看得见。\n'
-   +'所以宁可少记一条，也别记废话。');
+   +'删错了加回来，改坏了改回去。这份清单只有你看得见。');
 
   if(D.voice)p.push('【她想要的说话方式】\n'+D.voice);
   if(D.free)p.push('【她定的规矩 · 这几条最要紧】\n'+D.free);
@@ -3894,7 +3909,7 @@ function usPart(q){
     +w[n.getDay()]+' '+hm(Date.now())+'。');
   var s='【你们】\n'+u.join('\n');
 
-  var mm=pickMems(q);
+  var mm=pickMems(q),tot=coreMems().length;
   if(mm.length){
     bump(mm);
     var cs=memCodes(),by={};
@@ -3909,12 +3924,22 @@ function usPart(q){
       by[c].forEach(function(m){
         out.push('· #'+cs.map[m.id]+' '+m.t+'（'+dlab(m.ts)
           +(m.imp===3?' · 要紧':'')+(m.lock?' · 她锁住了，你动不了':'')+'）');});});
-    s+='\n\n【你记得的事】\n'+out.join('\n');
-    var tot=live().length;
+    s+='\n\n【你记得的事 · '+mm.length+' / '+MEMCAP+'】\n'+out.join('\n');
     if(tot>mm.length)
-      s+='\n（还有 '+(tot-mm.length)+' 条这一轮没带上来，想不起细节就翻。）';
-    if(D.acts)s+='\n（# 后面那串是编号，[[改:]] 和 [[忘掉:]] 用它指认。）';}
+      s+='\n（记忆库一共 '+tot+' 条，这一轮按相关度只带了上面这些。'
+       +'你看不到全部——所以别断言「记忆库里没有」，'
+       +'想确认某件事记过没有，先翻对话。）';
+    if(D.acts)s+='\n（# 后面那串是编号，[[改:]] 和 [[忘掉:]] 用它指认。'
+     +'带不上来的那些编号你也拿不到，动不了。）';}
   else s+='\n\n【你记得的事】\n还是空的。她说的话里有该长期记住的，自己记下来。';
+
+  var sm=sumPick();
+  if(sm.length){
+    s+='\n\n【最近聊过什么】';
+    sm.forEach(function(m){
+      s+='\n· '+dlab(m.ts)+'　'+m.t;});
+    s+='\n（这是页面替你收的梗概，不是记忆，也不占上面那 '+MEMCAP+' 格。'
+     +'只是让你知道聊过，细节自己翻。）';}
 
   if(D.acts){
     var tb=tombText();
@@ -3924,8 +3949,8 @@ function usPart(q){
   var sc2=SS.length,mc=0;
   SS.forEach(function(x){mc+=(MSG[x.id]||[]).length;});
   s+='\n\n【能翻的东西】\n你们一共 '+sc2+' 段对话、'+mc+' 条消息，全都存着。'
-   +'上面只带了最近 '+Math.max(2,Math.min(60,D.ctx||12))+' 条——'
-   +'更早的想不起来就直接翻，不要瞎猜也不要说「我不记得」。\n'
+   +'上面只带了这一段最近 '+Math.max(2,Math.min(60,D.ctx||12))+' 条——'
+   +'更早的、别的段里的，想不起来就直接翻。\n'
    +'隔得久的地方，页面会用圆括号插一句「距上一条隔了多久」。'
    +'看清了再接话，别复述，也别自己写这种括号。';
 
@@ -3982,11 +4007,12 @@ function runActs(m,after,q,sid){
       if(!nv.t){acts.push({s:'miss',t:mm[1]});return;}
       tombAdd('edit',nv.t,t2.t);
       acts.push({s:'edit',t:nv.t,old:t2.t});
-      t2.t=nv.t;if(nv.c)t2.cat=nv.c;t2.et=Date.now();
+      t2.t=nv.t;if(nv.c&&nv.c!==SUMCAT)t2.cat=nv.c;t2.et=Date.now();
       touched=1;
       return;}
     var sc=splitCat(x.v);
     if(!sc.t)return;
+    if(sc.c===SUMCAT)sc.c='';
     if(dupOf(sc.t)){acts.push({s:'dup',t:sc.t});return;}
     addMem(sc.t,sc.c,x.k==='锁住'?3:2,'ai',
       {sid:sid||S().id,mid:m.id,ts:Date.now()},x.k==='锁住');
@@ -4147,7 +4173,13 @@ function ask(after){
     fail(mm,e,'发送');}
 }
 function maybeHi(){
-  if(!D.hi||!D.apiUrl||!D.apiKey||BUSY||CV!=='chat')return;
+  if(!D.hi||!D.apiUrl||!D.apiKey||BUSY)return;
+  if(CV!=='chat'){
+    var g0=GAPMS;
+    if(g0&&g0>=D.hi*3600000){
+      try{view('chat');}catch(e){return;}
+      setTimeout(maybeHi,320);}
+    return;}
   var g=GAPMS;
   if(!g||g<D.hi*3600000){seen();return;}
   var ta=document.getElementById('ta');
@@ -4213,12 +4245,11 @@ function lookSheet(q){
   var h='';
   if(!hits.length)h+='<div class="empty">现在翻不到了。</div>';
   hits.forEach(function(x){
-    h+='<div class="res"><div class="rh"><span class="rt">'
-     +esc(x.s.ti||'对话')+' · '+dtl(x.m.ts)+'</span><span class="who">'
-     +(x.m.r==='me'?esc(D.me):esc(D.you))+'</span></div>'
-     +'<div class="rb">'+hi(cut(x.t||picWord(x.m),sp.kw),sp.kw)+'</div>'
-     +'<div class="ra"><button onclick="closeSheet(1);jump(\''
-     +x.s.id+'\',\''+x.m.id+'\')">跳过去看</button></div></div>';});
+    h+='<div class="res pz" onclick="closeSheet(1);jump(\''
+     +x.s.id+'\',\''+x.m.id+'\')">'
+     +'<div class="rh"><span class="rt">'+dtl(x.m.ts)+'</span>'
+     +'<span class="who">'+(x.m.r==='me'?esc(D.me):esc(D.you))+'</span></div>'
+     +'<div class="rb">'+hi(cut(x.t||picWord(x.m),sp.kw),sp.kw)+'</div></div>';});
   sheet({lk2:1,title:'「'+q+'」',body:h});}
 function slimActs(){
   var b=msBox();if(!b)return;
@@ -4373,7 +4404,7 @@ function shSess(){
   +I.chevD+'</div></div>'
   +'<div class="nt">整理摘要在记忆库那边。</div>'});}
 
-/* ── 摘要 ── */
+/* ── 梗概：按时间顺序读，读到哪标到哪 ── */
 function exCount(s){
   var ex=s.ex||0,n=0;
   (MSG[s.id]||[]).forEach(function(m){
@@ -4393,17 +4424,19 @@ function exTarget(){
   for(i=0;i<ls.length;i++)if(ls[i].s===cur)return ls[i];
   ls.sort(function(a,b){return(b.s.at||0)-(a.s.at||0);});
   return ls[0];}
-var SUMT='';
+var SUMT='',SUMUPTO=0;
 function exRun(){
   if(EXB)return;
   if(!D.apiUrl||!D.apiKey){toast('要先填中转设置');return;}
   var t=exTarget();
   if(!t){toast('没有新的可以看');return;}
   var s=t.s,sid=s.id,ex=s.ex||0;
-  var arr=(MSG[sid]||[]).filter(function(m){
+  var all=(MSG[sid]||[]).filter(function(m){
     return!m.err&&!m.st&&(m.r==='me'||m.r==='ai')
-      &&(fullT(m)||m.t||(m.pics&&m.pics.length))&&(m.ts||0)>ex;}).slice(-60);
+      &&(fullT(m)||m.t||(m.pics&&m.pics.length))&&(m.ts||0)>ex;});
+  var arr=all.slice(0,60);
   if(!arr.length){toast('没有新的可以看');return;}
+  SUMUPTO=arr[arr.length-1].ts||Date.now();
   EXB=1;EXSID=sid;
   if(CV==='mem')drawMem();
   var conv=arr.map(function(m){
@@ -4444,7 +4477,7 @@ function exRun(){
       if(CV==='mem')drawMem();return;}
     if(/^没什么事[。.!！]?$/.test(t2)){
       var s2=sessById(EXSID);
-      if(s2){s2.ex=Date.now();saveS();}
+      if(s2){s2.ex=SUMUPTO;saveS();}
       toast('这段没什么要留的');
       if(CV==='mem')drawMem();else view('mem');
       return;}
@@ -4458,29 +4491,30 @@ function exRun(){
     if(CV==='mem')drawMem();});}
 function sumSheet(){
   var s=sessById(EXSID),n=s?exCount(s):0;
-  sheet({full:1,title:'「'+(s?(s.ti||'对话'):'对话')+'」聊了什么',
-    ok:'记进记忆库',
-    body:'<div class="fd"><textarea id="sm" style="min-height:210px;'
-  +'line-height:1.8">'+esc(SUMT)+'</textarea></div>'
+  sheet({sum:1,title:'「'+(s?(s.ti||'对话'):'对话')+'」聊了什么',
+    ok:'留下这段',
+    body:'<div class="fd"><textarea id="sm">'+esc(SUMT)+'</textarea></div>'
   +'<div class="cd cd0"><div class="rw pz" onclick="exSkip()">'
   +'<span class="l" style="color:var(--dim)">不留了，只标记看过</span>'
   +I.chevD+'</div></div>'
-  +'<div class="nt">读了 '+n+' 句。归到〈聊过什么〉，想一直带着就去点「锁」。</div>',
+  +'<div class="nt">梗概只让我知道聊过什么，细节我自己翻。'
+  +'不占记忆库那 '+MEMCAP+' 格，只带最近 '+SUMKEEP+' 段给我。</div>',
     onOk:function(){
       var t=val('sm');
       if(!t){toast('是空的');return false;}
       var s2=sessById(EXSID);
       if(!s2){toast('那段对话不在了');closeSheet(1);return'done';}
-      addMem(t.slice(0,400),'聊过什么',1,'ai',
+      var nm=addMem(t.slice(0,400),SUMCAT,1,'ai',
         {sid:s2.id,mid:'',ts:Date.now()});
-      s2.ex=Date.now();SUMT='';
+      if(nm)nm.sum=1;
+      s2.ex=SUMUPTO||Date.now();SUMT='';
       saveD();saveS();closeSheet(1);
       if(CV==='mem')drawMem();else view('mem');
-      toast('存好了');
+      toast('留下了');
       return'done';}});}
 function exSkip(){
   var s=sessById(EXSID);
-  if(s){s.ex=Date.now();saveS();}
+  if(s){s.ex=SUMUPTO||Date.now();saveS();}
   SUMT='';EXR=[];EXSEL={};closeSheet(1);
   if(CV==='mem')drawMem();else view('mem');
   toast('标记看过了');}
@@ -4523,6 +4557,7 @@ function editMem(id,pre,from){
       if(/["'\\<>]/.test(c))c='';
       if(m){
         m.t=t;m.cat=c;m.imp=EDIMP;m.et=Date.now();
+        if(c!==SUMCAT)delete m.sum;
         saveD();closeSheet(1);
         if(CV==='mem')drawMem();else view('mem');
         return'done';}
@@ -4579,24 +4614,23 @@ drawMem=function(){
   [].forEach.call(box.querySelectorAll('.exb'),function(e){e.remove();});
   var h='';
   if(EXB)h='<div class="exb"><div class="x1"><b>正在读…</b>'
-   +'<s>一会儿给你一段摘要</s></div><span class="spin"></span></div>';
+   +'<s>一会儿给你一段梗概</s></div><span class="spin"></span></div>';
   else{
     var n=exTotal();
     if(n){
       var lt=exList(),tg=exTarget(),ti=tg?(tg.s.ti||'对话'):'',sub;
       if(lt.length>1)
-        sub='分布在 '+lt.length+' 段里，先读「'+esc(ti)+'」的 '+tg.n+' 句';
+        sub='分布在 '+lt.length+' 段里，先读「'+esc(ti)+'」最早的那些';
       else if(tg&&tg.s!==S())sub='在「'+esc(ti)+'」那段里';
-      else sub='我读一遍，收成一段给你看';
+      else sub='我从最早的读起，一次六十句';
       h='<div class="exb"><div class="x1"><b>'+n+' 句还没整理</b>'
        +'<s>'+sub+'</s></div>'
        +'<button class="x2 pz" onclick="exRun()">读一读</button></div>';}}
-  var mn=live().length;
-  if(mn>=32)h+='<div class="exb"><div class="x1">'
-   +'<b>记忆库 '+mn+' 条</b><s>'
-   +(mn>MEMCAP?('超过 '+MEMCAP+' 条了，每次只带最相关的那些给我。'
-     +'太杂的话跟我说一声，我自己去合。')
-    :('快到 '+MEMCAP+' 条了。'))+'</s></div></div>';
+  var cn=coreMems().length;
+  if(cn>=MEMCAP-8)h+='<div class="exb"><div class="x1">'
+   +'<b>记忆库 '+cn+' / '+MEMCAP+'</b><s>'
+   +(cn>=MEMCAP?'满了。我再记新的就得先挤掉一条最弱的。'
+    :'快满了。梗概不占格子，这里数的是真记忆。')+'</s></div></div>';
   if(h)box.insertAdjacentHTML('afterbegin',h);
   try{foldMems();}catch(e){}
   xBind();};
@@ -4607,7 +4641,8 @@ runFind=function(){
     var b=document.getElementById('fres');
     var i=document.getElementById('fq');
     var q=i?i.value.trim():'';
-    if(b&&q&&q.split(/\s+/).length>1&&!b.querySelector('.res')){
+    if(b&&q&&q.split(/\s+/).length>1
+      &&/(找到 0 条|·\s*0 条)/.test(b.textContent||'')){
       SOFTQ=1;G2.runFind();SOFTQ=0;
       var e=b.querySelector('.lbs');
       if(e&&b.querySelector('.res'))e.textContent=e.textContent+' · 放宽了';}
@@ -4654,7 +4689,7 @@ var NOTE={
 '自己动手':'记忆库交给我，记改删我自己判断。关掉我就只说话。',
 '先开口':'隔太久没说话，我先开口。会花一次调用。',
 '联网查资料':'聊私事记得关——开着等于把你的话发给 Jina。',
-'干杂活的模型':'读摘要不用很聪明，用便宜的就行。',
+'干杂活的模型':'读梗概不用很聪明，用便宜的就行。',
 '深浅':'跟着天色：晚七点转深，早七点转回来。',
 '背景':'图铺满，盖一层同色的纱。跟着完整备份走。',
 '中转设置':'地址要写全，写到 /v1 就停会报 404。',
@@ -4664,7 +4699,7 @@ var NOTE={
 '模型':'报 404 就照中转的文档改写法。',
 '清掉聊天图片':'文字一句不动，背景图留着。删了拿不回来。',
 '改一下':'一字不改直接发也行，下面会重来一遍。',
-'这段对话':'整理摘要在记忆库那边。',
+'这段对话':'整理梗概在记忆库那边。',
 '带多少给我':'图片按整条消息算，最多 6 张。翻以前不花钱。',
 '我们':'','写在墙上':'','纪念日':'','记住一件事':'','改一条':'',
 '这条好像记过了':'','粘贴恢复':''
@@ -4705,7 +4740,7 @@ markNew(1);scBind();
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='mem'){try{drawMem();}catch(e){}}
 if(CV==='chat')requestAnimationFrame(function(){stickHard();});
- /* ══════════ I MISS U · 第三段 · 视觉 ══════════ */
+/* ══════════ I MISS U · 第三段 · 视觉 ══════════ */
 if(typeof G3==='undefined')var G3={};
 if(!G3.sheet)G3.sheet=sheet;
 
