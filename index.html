@@ -6151,6 +6151,159 @@ if(!G18.pt){
   };
 }
 if(CV==='chat'){try{paint(1);}catch(e){}}
+  /* ══════════ 统合层 v1 · 第十九段 · 玻璃与搜索 ══════════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    /* 页面里的卡片一律毛玻璃，面板不动 */
+    '#pg .cd,#pg .mcd,#pg .res,#pg .exb,#pg .stc{'
+   +'background:rgba(255,255,255,.42)!important;'
+   +'border:1px solid rgba(255,255,255,.5)!important;'
+   +'backdrop-filter:blur(20px) saturate(1.25);'
+   +'-webkit-backdrop-filter:blur(20px) saturate(1.25);'
+   +'box-shadow:0 1px 2px var(--sd),0 12px 30px -20px var(--sd2)!important}'
+   +'html.dark #pg .cd,html.dark #pg .mcd,html.dark #pg .res,'
+   +'html.dark #pg .exb,html.dark #pg .stc{'
+   +'background:rgba(34,30,25,.46)!important;'
+   +'border-color:rgba(255,255,255,.10)!important}'
+   +'#pg .rw+.rw{border-top-color:rgba(255,255,255,.42)!important}'
+   +'html.dark #pg .rw+.rw{border-top-color:rgba(255,255,255,.07)!important}'
+    /* 搜索框与分类条 */
+   +'#pg .sbox .w{background:rgba(255,255,255,.42)!important;'
+   +'border:1px solid rgba(255,255,255,.5)!important;'
+   +'backdrop-filter:blur(18px) saturate(1.25);'
+   +'-webkit-backdrop-filter:blur(18px) saturate(1.25)}'
+   +'html.dark #pg .sbox .w{background:rgba(34,30,25,.46)!important;'
+   +'border-color:rgba(255,255,255,.10)!important}'
+   +'#pg .chips button{background:rgba(255,255,255,.34)!important;'
+   +'border:1px solid rgba(255,255,255,.46)!important;'
+   +'backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}'
+   +'html.dark #pg .chips button{background:rgba(34,30,25,.4)!important;'
+   +'border-color:rgba(255,255,255,.09)!important}'
+   +'#pg .chips button.on{background:rgba(43,38,32,.82)!important;'
+   +'border-color:transparent!important;color:var(--onink)!important}'
+    /* 标签：只留细边 */
+   +'#pg .tag{background:none!important;border:1px solid var(--dl);'
+   +'font-weight:500!important;padding:2px 7px!important}'
+   +'#pg .tag.ct{color:var(--tag4t)!important;'
+   +'border-color:rgba(109,116,128,.34)}'
+   +'#pg .tag.ai,#pg .tag.me{color:var(--dim)!important}'
+   +'#pg .tag.lk{color:var(--tag3t)!important;'
+   +'border-color:rgba(169,115,106,.4)}'
+    /* 记忆卡底部：轻下去 */
+   +'#pg .mcd .f{border-top-color:rgba(255,255,255,.4)!important;'
+   +'margin-top:12px!important;padding-top:10px!important}'
+   +'html.dark #pg .mcd .f{border-top-color:rgba(255,255,255,.07)!important}'
+   +'#pg .mcd .a{gap:19px!important}'
+   +'#pg .mcd .a button{font-size:11.5px!important;color:var(--dim2)!important;'
+   +'font-weight:400!important}'
+   +'#pg .mcd .a button.r{color:var(--tag3t)!important}'
+   +'#pg .mcd .ts{font-size:11px!important}'
+    /* 长记忆收起来 */
+   +'#pg .mcd .t.fold{max-height:154px;overflow:hidden;'
+   +'-webkit-mask-image:linear-gradient(180deg,#000 74%,transparent);'
+   +'mask-image:linear-gradient(180deg,#000 74%,transparent)}'
+   +'#pg .mcd .mo{display:inline-block;margin-top:6px;font-size:11.5px;'
+   +'color:var(--dim);font-weight:500}'
+    /* 整理提示：去掉红框黑药丸 */
+   +'#pg .exb{border-color:rgba(255,255,255,.5)!important}'
+   +'#pg .exb .x1 b{font-weight:600!important}'
+   +'#pg .exb .x2{background:none!important;color:var(--rose)!important;'
+   +'padding:6px 2px!important;font-size:13px!important;'
+   +'font-weight:600!important}'
+    /* 翻翻以前：只留一个主动作 */
+   +'#pg .res .ra{gap:20px!important;margin-top:11px!important}'
+   +'#pg .res .ra button{font-size:12.5px!important}'
+   +'#pg .res .ra button:nth-child(2){color:var(--dim2)!important;'
+   +'font-weight:400!important}'
+   +'#pg .res .rc{border-left-color:var(--dl)!important;opacity:.9}';
+  document.head.appendChild(s);
+})();
+
+if(typeof G19==='undefined')var G19={};
+
+/* ── 搜索：先严后宽 ── */
+var SOFTQ=0;
+function score(t,kw){
+  if(!kw.length)return 1;
+  var low=(t||'').toLowerCase(),sc=0,all=1,hitn=0;
+  kw.forEach(function(w){
+    var W=w.toLowerCase(),s=0;
+    if(low.indexOf(W)>=0)s=10;
+    if(!s)expand(w).forEach(function(x){
+      if(x!==w&&low.indexOf(x.toLowerCase())>=0)s=Math.max(s,4);});
+    if(!s&&W.length>=3){
+      var hit=0,tot=0;
+      for(var i=0;i<W.length-1;i++){tot++;if(low.indexOf(W.substr(i,2))>=0)hit++;}
+      if(tot&&hit/tot>=0.6)s=2;}
+    if(s)hitn++;else all=0;
+    sc+=s;});
+  if(all)return sc+6;
+  if(SOFTQ&&hitn)return sc;
+  return 0;}
+
+if(!G19.rf){
+  G19.rf=runFind;
+  runFind=function(){
+    SOFTQ=0;
+    G19.rf();
+    try{
+      var b=document.getElementById('fres');
+      var i=document.getElementById('fq');
+      var q=i?i.value.trim():'';
+      if(b&&q&&q.split(/\s+/).length>1
+        &&!b.querySelector('.res')){
+        SOFTQ=1;G19.rf();SOFTQ=0;
+        var e=b.querySelector('.lbs');
+        if(e&&b.querySelector('.res'))
+          e.textContent=e.textContent+' · 放宽了';}
+    }catch(e){}
+    SOFTQ=0;
+    try{foldMems();}catch(e){}
+  };
+}
+if(!G19.la){
+  G19.la=lookAdd;
+  lookAdd=function(q){
+    SOFTQ=0;
+    var r=G19.la(q);
+    if(!r.n&&String(q).trim().split(/\s+/).length>1){
+      LOOKS.pop();
+      SOFTQ=1;
+      r=G19.la(q);
+      SOFTQ=0;
+      if(r.n&&LOOKS.length){
+        var last=LOOKS[LOOKS.length-1];
+        last.txt='（严格匹配没有，放宽成「有一个算一个」后的结果）\n'+last.txt;}}
+    SOFTQ=0;
+    return r;};
+}
+
+/* ── 长记忆收起来 ── */
+function foldMems(){
+  [].forEach.call(document.querySelectorAll('#pg .mcd'),function(w){
+    var t=w.querySelector('.t');
+    if(!t||t.dataset.fd)return;
+    t.dataset.fd='1';
+    if(t.scrollHeight<=170)return;
+    t.classList.add('fold');
+    var b=document.createElement('button');
+    b.className='mo pz';b.textContent='展开';
+    b.onclick=function(e){
+      e.stopPropagation();
+      var on=t.classList.toggle('fold');
+      b.textContent=on?'展开':'收起';};
+    t.parentNode.insertBefore(b,t.nextSibling);});}
+if(!G19.dm){
+  G19.dm=drawMem;
+  drawMem=function(){
+    G19.dm();
+    try{foldMems();}catch(e){}
+  };
+}
+if(CV==='mem'){try{drawMem();}catch(e){}}
+if(CV==='find'){try{runFind();}catch(e){}}
+if(CV==='more'){try{view('more');}catch(e){}}
 </script>
 </body>
 </html>
