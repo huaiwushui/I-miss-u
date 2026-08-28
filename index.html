@@ -5686,6 +5686,36 @@ function runActs(m,after,q,sid){
   return nextRound(m,after,q,sid,'');}
 
 if(CV==='chat'){try{paint(1);}catch(e){}}
+  /* ══════════ 统合层 v1 · 第十三段 · 壁纸铺到底 ══════════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    'html.hasbg{background-repeat:no-repeat;background-position:center;'
+   +'background-size:cover;height:calc(100% + 96px)}'
+   +'html.hasbg body{background:transparent!important;height:100%}'
+   +'html.hasbg #bgl,html.hasbg #bgv{display:none!important}';
+  document.head.appendChild(s);
+})();
+
+function bgPaint(){
+  de.style.setProperty('--edge',edgeColor());
+  if(!D.bgOn||!BGDATA){
+    de.classList.remove('hasbg');
+    de.style.backgroundImage='';
+    de.style.backgroundColor='';
+    if(BGL)BGL.style.backgroundImage='';
+    if(BGV)BGV.style.background='';
+    return;
+  }
+  var a=(D.bgv==null?45:D.bgv)/100;
+  var c=isDark()?'22,20,15':'245,243,238';
+  var v='rgba('+c+','+a+')';
+  de.style.backgroundColor=edgeColor();
+  de.style.backgroundImage=
+    'linear-gradient('+v+','+v+'),url("'+BGDATA+'")';
+  de.classList.add('hasbg');
+}
+try{bgPaint();}catch(e){}
 </script>
 </body>
 </html>
