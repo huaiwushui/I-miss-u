@@ -5716,6 +5716,28 @@ function bgPaint(){
   de.classList.add('hasbg');
 }
 try{bgPaint();}catch(e){}
+  /* ══════════ 统合层 v1 · 第十四段 · 间距 ══════════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    /* 顶部整体上提 */
+    '.hd{padding-top:max(6px,calc(var(--st) - 10px))!important}'
+   +'#dw .hh{padding-top:max(14px,calc(var(--st) + 8px))!important}'
+   +'#dw .nv{padding-top:16px!important}'
+    /* 底部整体上抬 */
+   +'.ib{padding-bottom:max(12px,calc(var(--sb) - 12px))!important}'
+   +'html.kbon .ib{padding-bottom:6px!important}'
+   +'.selbar{padding-bottom:max(12px,calc(var(--sb) - 12px))!important}'
+   +'#dw .bt{padding-bottom:max(12px,calc(var(--sb) - 12px))!important}'
+   +'html.kbon #dw .bt{padding-bottom:10px!important}'
+    /* 一来一回的节奏 */
+   +'#ms .m.me{margin-bottom:16px!important}'
+   +'#ms .m.ai{margin-bottom:28px!important}'
+   +'#ms .m.me .eo{margin-top:4px!important}'
+   +'#ms>.m:last-child{margin-bottom:8px!important}';
+  document.head.appendChild(s);
+})();
+if(CV==='chat'){try{paint(1);}catch(e){}}
 </script>
 </body>
 </html>
