@@ -5750,7 +5750,7 @@ if(CV==='chat'){try{paint(1);}catch(e){}}
    +'.vt{writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;'
    +'text-orientation:upright;-webkit-text-orientation:upright;'
    +'font-family:"Hiragino Mincho ProN","Yu Mincho","Songti SC",serif}'
-    /* 顶部 */
+    /* 小窝顶部 */
    +'.hrow{display:flex;align-items:flex-start;justify-content:space-between;'
    +'gap:14px;margin-bottom:18px}'
    +'.hdate{flex:none;text-align:right;margin-top:8px}'
@@ -5766,7 +5766,7 @@ if(CV==='chat'){try{paint(1);}catch(e){}}
    +'color:var(--rose)}'
    +'.hero2 .hl{margin-top:13px;font-size:12.5px;letter-spacing:.14em;'
    +'color:var(--dim)}'
-    /* 配角一律收窄 */
+    /* 配角收窄 */
    +'.seas{display:flex;flex-direction:row-reverse;align-items:center;'
    +'gap:14px;padding:13px 16px!important;margin-bottom:9px!important}'
    +'.seas .sv{flex:none;font-size:16.5px;letter-spacing:.2em;'
@@ -5774,8 +5774,8 @@ if(CV==='chat'){try{paint(1);}catch(e){}}
    +'.seas .sx{flex:1;min-width:0}'
    +'.seas .sd{font-size:10.5px;letter-spacing:.12em;color:var(--dim2)}'
    +'.seas .sn{margin-top:5px;font-size:13.5px;color:var(--ink2)}'
-   +'.hanni .rw{padding:13px 17px!important}'
    +'.hanni{margin-bottom:9px!important}'
+   +'.hanni .rw{padding:13px 17px!important}'
     /* 墙上那句 */
    +'.wall{position:relative;display:flex;justify-content:flex-end;'
    +'min-height:148px;padding:17px 17px 15px!important}'
@@ -5788,18 +5788,20 @@ if(CV==='chat'){try{paint(1);}catch(e){}}
    +'.hfoot{margin:22px 0 6px;text-align:center;font-size:10px;'
    +'letter-spacing:.34em;color:var(--dim2);'
    +'font-family:"Hiragino Mincho ProN","Songti SC",serif}'
-    /* 锁屏：清空叠的东西 */
+    /* 锁屏：清空叠的东西，整体居中 */
    +'#lk .lkd,#lk .dotb{display:none!important}'
    +'html.hasbg #lk{background:transparent!important}'
    +'html.hasbg #lk:before{display:none!important}'
-   +'#lk{padding-bottom:calc(var(--sb) + 104px)!important}'
+   +'#lk{justify-content:center!important;'
+   +'padding-top:calc(var(--st) + 18px)!important;'
+   +'padding-bottom:calc(var(--sb) + 24px)!important}'
    +'#lk .jp{writing-mode:horizontal-tb!important;'
    +'-webkit-writing-mode:horizontal-tb!important;'
    +'font-size:32px!important;letter-spacing:.22em!important;'
    +'text-indent:.22em!important}'
    +'#lk .jp:after{display:none!important}'
    +'#lk .en{margin-top:16px!important}'
-   +'#dts{margin:34px 0 30px!important;gap:16px!important}'
+   +'#dts{margin:32px 0 28px!important;gap:16px!important}'
     /* 按键：照苹果的手感 */
    +'#pad{grid-template-columns:repeat(3,84px)!important;'
    +'gap:19px 22px!important}'
@@ -5813,7 +5815,16 @@ if(CV==='chat'){try{paint(1);}catch(e){}}
    +'#pad button:active{transform:scale(.93)}'
    +'html.hasbg #pad button.f{background:none!important;border:0!important;'
    +'box-shadow:none!important;backdrop-filter:none!important;'
-   +'-webkit-backdrop-filter:none!important}';
+   +'-webkit-backdrop-filter:none!important}'
+    /* 侧边栏底部：跟发送键齐平 */
+   +'#dw .bt{padding-bottom:max(28px,calc(var(--sb) + 6px))!important}'
+   +'html.kbon #dw .bt{padding-bottom:10px!important}'
+    /* 面板灰字：贴紧上面那块 */
+   +'#sh .bdy>.nt{padding-top:2px!important;padding-bottom:0!important}'
+   +'#sh .bdy>.nt:last-child{padding-bottom:2px!important}'
+   +'#sh .fd{margin-bottom:7px!important}'
+   +'#sh .bdy{padding-bottom:max(12px,calc(var(--sb) - 2px))!important}'
+   +'html.kbon #sh .bdy{padding-bottom:10px!important}';
   document.head.appendChild(s);
 })();
 
@@ -5830,7 +5841,7 @@ if(!G16.on){
   enter=function(){
     try{
       var l=document.getElementById('lk');
-      if(l){l.style.display='none';}
+      if(l)l.style.display='none';
     }catch(e){}
     return G16.enter(1);
   };
@@ -5906,26 +5917,6 @@ function vHome(){
   +'<div style="height:10px"></div></div></div>';
 }
 if(CV==='home'){try{view('home');}catch(e){}}
-  /* ══════════ 统合层 v1 · 第十六段 · 收尾微调 ══════════ */
-(function(){
-  var s=document.createElement('style');
-  s.textContent=
-    /* 锁屏整体下移，灵动岛机型不再显得偏上 */
-    '#lk{padding-top:calc(var(--st) + 92px)!important;'
-   +'padding-bottom:calc(var(--sb) + 46px)!important;'
-   +'justify-content:flex-start!important}'
-   +'#dts{margin:30px 0 26px!important}'
-    /* 侧边栏底部：跟发送键齐平 */
-   +'#dw .bt{padding-bottom:max(28px,calc(var(--sb) + 6px))!important}'
-   +'html.kbon #dw .bt{padding-bottom:10px!important}'
-    /* 面板灰字：贴紧上面那块 */
-   +'#sh .bdy>.nt{padding-top:2px!important;padding-bottom:0!important}'
-   +'#sh .bdy>.nt:last-child{padding-bottom:2px!important}'
-   +'#sh .fd{margin-bottom:7px!important}'
-   +'#sh .bdy{padding-bottom:max(12px,calc(var(--sb) - 2px))!important}'
-   +'html.kbon #sh .bdy{padding-bottom:10px!important}';
-  document.head.appendChild(s);
-})();
 </script>
 </body>
 </html>
