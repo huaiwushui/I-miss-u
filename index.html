@@ -5292,6 +5292,60 @@ function vHome(){
   +'<div style="height:10px"></div></div></div>';}
 
 if(CV){try{view(CV);}catch(e){}}
+  /* ══════════ 补丁 · 键盘与输入框 ══════════ */
+/* 砍掉预锁，回到跟着 visualViewport 走 */
+KPRE=0;clearTimeout(KROLL);
+function kPre(){}
+
+function kpaint(){
+  if(!vv)return;
+  if(window.scrollY)window.scrollTo(0,0);
+  var gap=kbGap(),h=Math.round(vv.height),open=gap>60;
+  if(open&&gap!==kbH){kbH=gap;
+    try{localStorage.setItem('us.kbH',gap);}catch(e){}}
+  var ch=(h!==_kh3||open!==_kop);
+  _kh3=h;_kop=open;KLAST=h;KOT=0;
+  de.classList.toggle('kbon',open);
+  kSet(open?h:0);
+  if(ch){
+    var b=msBox();
+    if(b){
+      if(open){SC.pin=1;SC.el=null;toEnd(b);}
+      else clampSc(b);}
+    scAfter();}}
+
+document.addEventListener('focusin',function(e){
+  if(!e.isTrusted)return;
+  kwake();
+  var t=e.target;
+  if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
+  if(kbH>60&&kbGap()<=60){
+    de.classList.add('kbon');
+    KLAST=-1;KOT=-1;
+    kSet(FULLH?FULLH-kbH:0);
+    var b=msBox();
+    if(b){SC.pin=1;SC.el=null;toEnd(b);}}
+  ktrack(900);
+  scAfter();},true);
+
+/* 输入框：每次都量真实高度，保护滚动位 */
+function fitTa(el){
+  if(!el)return;
+  var b=msBox(),wasEnd=b?scEnd(b):0;
+  var sc=el.parentElement,st=-1;
+  while(sc&&sc!==document.body){
+    if(sc.scrollHeight>sc.clientHeight+1
+      &&/(auto|scroll)/.test(getComputedStyle(sc).overflowY)){
+      st=sc.scrollTop;break;}
+    sc=sc.parentElement;}
+  el.style.height='auto';
+  var cap=Math.round((vv?vv.height:window.innerHeight)*0.34);
+  el.style.height=Math.max(26,Math.min(el.scrollHeight+2,cap))+'px';
+  if(sc&&st>=0&&sc.scrollTop!==st)sc.scrollTop=st;
+  if(b){
+    if(wasEnd||SC.pin){SC.pin=1;SC.el=null;toEnd(b);}
+    else clampSc(b);}
+  scAfter();}
 </script>
 </body>
 </html>
