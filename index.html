@@ -5726,7 +5726,7 @@ try{bgPaint();}catch(e){}
    +'.ib{padding-bottom:max(16px,calc(var(--sb) - 6px))!important}'
    +'html.kbon .ib{padding-bottom:6px!important}'
    +'.selbar{padding-bottom:max(16px,calc(var(--sb) - 6px))!important}'
-   +'#dw .bt{padding-bottom:max(12px,calc(var(--sb) - 14px))!important}'
+   +'#dw .bt{padding-bottom:max(16px,calc(var(--sb) - 6px))!important}'
    +'html.kbon #dw .bt{padding-bottom:10px!important}'
    +'#ms .m.me{margin-bottom:16px!important}'
    +'#ms .m.ai{margin-bottom:28px!important}'
@@ -5747,79 +5747,94 @@ if(CV==='chat'){try{paint(1);}catch(e){}}
    +'box-shadow:0 1px 2px var(--sd),0 12px 30px -18px var(--sd2)!important}'
    +'html.dark .gl2{background:rgba(34,30,25,.46)!important;'
    +'border-color:rgba(255,255,255,.10)!important}'
-    /* 竖排 */
    +'.vt{writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;'
    +'text-orientation:upright;-webkit-text-orientation:upright;'
    +'font-family:"Hiragino Mincho ProN","Yu Mincho","Songti SC",serif}'
-    /* 点阵方块 + 细线 */
-   +'.dotb{display:block;position:absolute;pointer-events:none;'
-   +'border:1px solid rgba(255,255,255,.55);'
-   +'background-image:radial-gradient(var(--dim2) 1px,transparent 1px);'
-   +'background-size:8px 8px}'
     /* 顶部 */
    +'.hrow{display:flex;align-items:flex-start;justify-content:space-between;'
-   +'gap:14px;margin-bottom:20px}'
-   +'.hdate{flex:none;text-align:right;margin-top:7px}'
-   +'.hdate b{display:block;font:600 15px/1 -apple-system;'
+   +'gap:14px;margin-bottom:18px}'
+   +'.hdate{flex:none;text-align:right;margin-top:8px}'
+   +'.hdate b{display:block;font:600 14.5px/1 -apple-system;'
    +'letter-spacing:.06em;color:var(--ink2)}'
    +'.hdate s{display:block;text-decoration:none;margin-top:5px;'
-   +'font-size:11px;letter-spacing:.2em;color:var(--dim2);'
+   +'font-size:10.5px;letter-spacing:.2em;color:var(--dim2);'
    +'font-family:"Hiragino Mincho ProN","Songti SC",serif}'
-    /* 天数 */
-   +'.hero2{position:relative;overflow:hidden;text-align:center;'
-   +'padding:27px 18px 22px!important}'
-   +'.hero2 .hn{font:700 52px/1 -apple-system;letter-spacing:-.045em;'
+    /* 主角：天数 */
+   +'.hero2{text-align:center;padding:40px 18px 34px!important;'
+   +'border-radius:24px!important;margin-bottom:14px!important}'
+   +'.hero2 .hn{font:700 68px/1 -apple-system;letter-spacing:-.05em;'
    +'color:var(--rose)}'
-   +'.hero2 .hl{margin-top:9px;font-size:12px;letter-spacing:.12em;'
+   +'.hero2 .hl{margin-top:13px;font-size:12.5px;letter-spacing:.14em;'
    +'color:var(--dim)}'
-   +'.hero2 .dotb{right:14px;top:14px;width:46px;height:32px;opacity:.4}'
-    /* 节气 */
+    /* 配角一律收窄 */
    +'.seas{display:flex;flex-direction:row-reverse;align-items:center;'
-   +'gap:16px;padding:17px!important}'
-   +'.seas .sv{flex:none;font-size:20px;letter-spacing:.24em;'
+   +'gap:14px;padding:13px 16px!important;margin-bottom:9px!important}'
+   +'.seas .sv{flex:none;font-size:16.5px;letter-spacing:.2em;'
    +'color:var(--ink2)}'
    +'.seas .sx{flex:1;min-width:0}'
-   +'.seas .sd{font-size:11px;letter-spacing:.14em;color:var(--dim2)}'
-   +'.seas .sn{margin-top:7px;font-size:14.5px;color:var(--ink2);'
-   +'line-height:1.6}'
+   +'.seas .sd{font-size:10.5px;letter-spacing:.12em;color:var(--dim2)}'
+   +'.seas .sn{margin-top:5px;font-size:13.5px;color:var(--ink2)}'
+   +'.hanni .rw{padding:13px 17px!important}'
+   +'.hanni{margin-bottom:9px!important}'
     /* 墙上那句 */
    +'.wall{position:relative;display:flex;justify-content:flex-end;'
-   +'min-height:176px;padding:19px 18px 17px!important}'
-   +'.wall .wq{font-size:17.5px;line-height:2.15;letter-spacing:.1em;'
-   +'color:var(--ink2);max-height:190px}'
-   +'.wall .wq.e{color:var(--dim2);font-size:15px}'
-   +'.wall .bow{position:absolute;left:15px;bottom:14px;width:42px;'
-   +'opacity:.95;pointer-events:none}'
-   +'html.dark .wall .bow{opacity:.8}'
-   +'.hfoot{margin:24px 0 8px;text-align:center;font-size:10.5px;'
+   +'min-height:148px;padding:17px 17px 15px!important}'
+   +'.wall .wq{font-size:16.5px;line-height:2.1;letter-spacing:.09em;'
+   +'color:var(--ink2);max-height:160px}'
+   +'.wall .wq.e{color:var(--dim2);font-size:14.5px}'
+   +'.wall .bow{position:absolute;left:15px;bottom:13px;width:36px;'
+   +'opacity:.92;pointer-events:none}'
+   +'html.dark .wall .bow{opacity:.75}'
+   +'.hfoot{margin:22px 0 6px;text-align:center;font-size:10px;'
    +'letter-spacing:.34em;color:var(--dim2);'
    +'font-family:"Hiragino Mincho ProN","Songti SC",serif}'
-    /* 锁屏 */
+    /* 锁屏：清空叠的东西 */
+   +'#lk .lkd,#lk .dotb{display:none!important}'
    +'html.hasbg #lk{background:transparent!important}'
    +'html.hasbg #lk:before{display:none!important}'
-   +'#lk .jp{writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;'
-   +'text-orientation:upright;-webkit-text-orientation:upright;'
-   +'font-size:30px!important;letter-spacing:.36em!important;'
-   +'text-indent:0!important}'
-   +'#lk .jp:after{content:"";position:absolute;right:-17px;top:7%;'
-   +'width:1px;height:86%;background:var(--dl);opacity:.85}'
-   +'#lk .en{margin-top:24px!important}'
-   +'#dts{margin:32px 0 28px!important}'
-   +'#lk .lkd{position:absolute;left:32px;top:15%;width:62px;height:42px;'
-   +'opacity:.26}'
+   +'#lk{padding-bottom:calc(var(--sb) + 104px)!important}'
+   +'#lk .jp{writing-mode:horizontal-tb!important;'
+   +'-webkit-writing-mode:horizontal-tb!important;'
+   +'font-size:32px!important;letter-spacing:.22em!important;'
+   +'text-indent:.22em!important}'
+   +'#lk .jp:after{display:none!important}'
+   +'#lk .en{margin-top:16px!important}'
+   +'#dts{margin:34px 0 30px!important;gap:16px!important}'
+    /* 按键：照苹果的手感 */
+   +'#pad{grid-template-columns:repeat(3,84px)!important;'
+   +'gap:19px 22px!important}'
+   +'#pad button{height:84px!important;font-size:30px!important}'
    +'html.hasbg #pad button{background:rgba(255,255,255,.34)!important;'
    +'border:1px solid rgba(255,255,255,.5);'
    +'backdrop-filter:blur(14px) saturate(1.3);'
    +'-webkit-backdrop-filter:blur(14px) saturate(1.3)}'
    +'html.dark.hasbg #pad button{background:rgba(32,29,24,.42)!important;'
    +'border-color:rgba(255,255,255,.12)}'
-   +'#pad button:active{transform:scale(.92);'
-   +'box-shadow:0 0 0 7px rgba(255,255,255,.15)}'
+   +'#pad button:active{transform:scale(.93)}'
    +'html.hasbg #pad button.f{background:none!important;border:0!important;'
    +'box-shadow:none!important;backdrop-filter:none!important;'
    +'-webkit-backdrop-filter:none!important}';
   document.head.appendChild(s);
 })();
+
+try{
+  var _lkd=document.querySelector('#lk .lkd');
+  if(_lkd)_lkd.remove();
+}catch(e){}
+
+/* ── 解锁不再闪 ── */
+if(typeof G16==='undefined')var G16={};
+if(!G16.on){
+  G16.on=1;
+  G16.enter=enter;
+  enter=function(){
+    try{
+      var l=document.getElementById('lk');
+      if(l){l.style.display='none';}
+    }catch(e){}
+    return G16.enter(1);
+  };
+}
 
 var BOW='<svg class="bow" viewBox="0 0 64 46" fill="none">'
 +'<path d="M30 21C24.5 11.5 14.5 7.5 9.5 11.5c-5 4-2.5 13.5 7 16.5 '
@@ -5869,7 +5884,7 @@ function vHome(){
   +'<div class="sub">'+esc(D.me)+' 和 '+esc(D.you)+' 的地方</div></div>'
   +'<div class="hdate"><b>'+(n.getMonth()+1)+'.'+n.getDate()+'</b>'
   +'<s>'+w[n.getDay()]+'</s></div></div>'
-  +'<div class="cd gl2 hero2 pz" onclick="shUs()"><i class="dotb"></i>'
+  +'<div class="cd gl2 hero2 pz" onclick="shUs()">'
   +(dt!=null
     ?'<div class="hn">'+dt+'</div><div class="hl">在一起的第 '+dt+' 天</div>'
     :'<div class="hn">·</div><div class="hl">写下开始的那天</div>')
@@ -5878,7 +5893,7 @@ function vHome(){
   +'<div class="sx"><div class="sd">'
   +n.getFullYear()+' 年 '+(n.getMonth()+1)+' 月 '+n.getDate()+' 日</div>'
   +'<div class="sn">'+s.cn+'</div></div></div>'
-  +'<div class="cd cd0 gl2"><div class="rw pz" onclick="shAnni()">'
+  +'<div class="cd cd0 gl2 hanni"><div class="rw pz" onclick="shAnni()">'
   +'<span class="l">'+(nx?esc(nx.name):'纪念日')+'</span>'
   +'<span style="color:var(--rose);font-weight:600;font-size:15px">'
   +(nx?(nx.days===0?'就是今天':nx.days+' 天后'):'＋')+'</span></div></div>'
@@ -5890,15 +5905,6 @@ function vHome(){
   +'<div class="hfoot">わたしたちの場所</div>'
   +'<div style="height:10px"></div></div></div>';
 }
-
-(function(){
-  var l=document.getElementById('lk');
-  if(!l)return;
-  if(!l.querySelector('.lkd')){
-    var d=document.createElement('i');
-    d.className='lkd dotb';
-    l.insertBefore(d,l.firstChild);}
-})();
 if(CV==='home'){try{view('home');}catch(e){}}
 </script>
 </body>
