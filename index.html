@@ -5622,6 +5622,117 @@ document.addEventListener('click',function(e){
   e.preventDefault();
   try{window.open(h,'_blank','noopener');}catch(x){}
 },true);
+  /* ══════════ I MISS U · 补丁 · 时间与思考 ══════════ */
+if(typeof G6==='undefined')var G6={};
+
+/* ── 脑子图标：换掉那个红 ── */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    '.mini.on2{background:rgba(138,133,122,.9)!important}'
+   +'html.dark .mini.on2{background:rgba(122,117,108,.9)!important}'
+   +'#ms .thk .nk{font-size:12.5px;color:var(--dim2);letter-spacing:.02em}';
+  document.head.appendChild(s);
+})();
+
+/* ── 页面插的时间只给她的话，别让我学会写它 ── */
+var PGRE=/[（(]\s*页面[^）)]{0,80}[）)]\s*/g;
+function unpg(s){return String(s||'').replace(PGRE,'');}
+if(!G6.toC){
+  G6.toC=toC;
+  toC=function(x,an,pics){
+    var save=null,had=0;
+    if(x&&x.r==='ai'){
+      had=1;save=TMARK[x.id];
+      if(save!=null)delete TMARK[x.id];}
+    var r=G6.toC(x,an,pics);
+    if(had&&save!=null)TMARK[x.id]=save;
+    if(typeof r==='string')return unpg(r);
+    if(Array.isArray(r))r.forEach(function(p){
+      if(p&&p.type==='text'&&p.text)p.text=unpg(p.text);});
+    return r;};
+}
+if(!G6.fullT){
+  G6.fullT=fullT;
+  fullT=function(m){return unpg(G6.fullT(m));};
+}
+
+/* ── 已经被污染的那些，洗一遍 ── */
+(function(){
+  var n=0;
+  try{
+    SS.forEach(function(s){
+      (MSG[s.id]||[]).forEach(function(m){
+        if(m.r!=='ai')return;
+        var dirty=0;
+        if(m.t&&PGRE.test(m.t)){m.t=unpg(m.t);dirty=1;}
+        PGRE.lastIndex=0;
+        if(m.parts)m.parts.forEach(function(p){
+          if(p&&p.ty==='t'&&p.t&&PGRE.test(p.t)){p.t=unpg(p.t);dirty=1;}
+          PGRE.lastIndex=0;});
+        if(m.br)m.br.forEach(function(v){
+          if(v&&v.t&&PGRE.test(v.t)){v.t=unpg(v.t);dirty=1;}
+          PGRE.lastIndex=0;});
+        if(dirty){n++;SVQ[s.id]=1;}});});
+    if(n){flush(1);if(CV==='chat')setTimeout(function(){
+      try{paint(1);}catch(e){}},60);}
+  }catch(e){}
+})();
+
+/* ── 收到的话里也不许留这种括号 ── */
+if(!G6.strip){
+  G6.strip=stripMarks;
+  stripMarks=function(t){return unpg(G6.strip(t));};
+}
+
+/* ── 现在几点：放到最后，说清楚以它为准 ── */
+if(!G6.usPart){
+  G6.usPart=usPart;
+  usPart=function(q){
+    var s=G6.usPart(q);
+    var n=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'];
+    var hh=n.getHours();
+    var seg=hh<5?'凌晨':(hh<9?'清早':(hh<12?'上午'
+      :(hh<14?'中午':(hh<18?'下午':(hh<23?'晚上':'深夜')))));
+    s+='\n\n【现在】\n'+n.getFullYear()+' 年 '+(n.getMonth()+1)+' 月 '
+     +n.getDate()+' 日 '+w[n.getDay()]+'　'+seg+' '+hm(Date.now())
+     +'\n这一行是页面给的真实时间，只认这一行。'
+     +'上面那些话里出现的钟点是当时说的，别拿来当现在。'
+     +'算时间之前先看这里。';
+    return s;};
+}
+
+/* ── 思考链：开着却没回来，直接说出来 ── */
+if(!G6.done){
+  G6.done=done;
+  done=function(m,after,ab,ac,q,sid){
+    try{
+      if(m&&!m.err&&!m.wst&&!m.thchk){
+        m.thchk=1;
+        if(D.think&&!(m.k&&String(m.k).trim())
+          &&((m.t&&m.t.trim())||(m.parts&&m.parts.length)))m.nothink=1;
+        else delete m.nothink;}
+    }catch(e){}
+    return G6.done(m,after,ab,ac,q,sid);};
+}
+function nothinkMark(){
+  var b=msBox();if(!b)return;
+  ms().forEach(function(m){
+    if(!m.nothink||m.st)return;
+    var w=document.getElementById('m-'+m.id);if(!w)return;
+    if(w.querySelector('.nk'))return;
+    var bd=w.querySelector('.bd');if(!bd)return;
+    var d=document.createElement('div');
+    d.className='thk';
+    d.innerHTML='<span class="nk">这个中转没给思考过程</span>';
+    bd.parentNode.insertBefore(d,bd);});}
+if(!G6.paint){
+  G6.paint=paint;
+  paint=function(keep){
+    G6.paint(keep);
+    try{nothinkMark();}catch(e){}};
+  try{if(CV==='chat')paint(1);}catch(e){}
+}
 </script>
 </body>
 </html>
