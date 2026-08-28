@@ -4705,6 +4705,487 @@ markNew(1);scBind();
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='mem'){try{drawMem();}catch(e){}}
 if(CV==='chat')requestAnimationFrame(function(){stickHard();});
+  /* ══════════ I MISS U · 第三段 · 视觉 ══════════ */
+if(typeof G3==='undefined')var G3={};
+if(!G3.sheet)G3.sheet=sheet;
+if(!G3.drawer)G3.drawer=drawer;
+
+(function(){
+  var s=document.createElement('style');
+  var G='background:rgba(255,255,255,.30)!important;'
+   +'border:1px solid rgba(255,255,255,.46)!important;'
+   +'box-shadow:inset 0 1px 0 rgba(255,255,255,.5),'
+   +'0 1px 2px var(--sd),0 12px 30px -22px var(--sd2)!important;'
+   +'transform:translateZ(0)';
+  var GD='background:rgba(30,27,22,.42)!important;'
+   +'border-color:rgba(255,255,255,.09)!important;'
+   +'box-shadow:inset 0 1px 0 rgba(255,255,255,.06),'
+   +'0 1px 2px var(--sd)!important';
+  var B='backdrop-filter:blur(14px) saturate(1.2);'
+   +'-webkit-backdrop-filter:blur(14px) saturate(1.2)';
+  var MIN='"Hiragino Mincho ProN","Yu Mincho","Songti SC",serif';
+  s.textContent=
+    ':root{--sel:rgba(112,124,138,.085);--sel2:rgba(112,124,138,.13);'
+   +'--bub:rgba(112,124,138,.105);--ln2:rgba(112,124,138,.18)}'
+   +'html.dark{--sel:rgba(226,232,240,.075);--sel2:rgba(226,232,240,.12);'
+   +'--ln2:rgba(226,232,240,.14)}'
+    /* 壁纸铺到底 */
+   +'html.hasbg{background-repeat:no-repeat;background-position:center;'
+   +'background-size:cover;height:calc(100% + 96px)}'
+   +'html.hasbg body{background:transparent!important;height:100%}'
+   +'html.hasbg #bgl,html.hasbg #bgv{display:none!important}'
+    /* 卡片与控件 */
+   +'#pg .cd,#pg .mcd,#pg .res,#pg .exb,#pg .stc,#pg .sbox .w,'
+   +'.cb,.pill,.ibx,.selbar{'+G+'}'
+   +'html.hasbg #pg .cd,html.hasbg #pg .mcd,html.hasbg #pg .res,'
+   +'html.hasbg #pg .exb,html.hasbg #pg .stc,html.hasbg #pg .sbox .w,'
+   +'html.hasbg .cb,html.hasbg .pill,html.hasbg .ibx,'
+   +'html.hasbg .selbar{'+B+'}'
+   +'html.dark #pg .cd,html.dark #pg .mcd,html.dark #pg .res,'
+   +'html.dark #pg .exb,html.dark #pg .stc,html.dark #pg .sbox .w,'
+   +'html.dark .cb,html.dark .pill,html.dark .ibx,'
+   +'html.dark .selbar{'+GD+'}'
+   +'.selbar{border-top:0!important}'
+   +'#pg .rw+.rw{border-top-color:var(--ln2)!important}'
+   +'#pg .chips button{background:rgba(255,255,255,.28)!important;'
+   +'border:1px solid rgba(255,255,255,.42)!important}'
+   +'html.dark #pg .chips button{background:rgba(30,27,22,.4)!important;'
+   +'border-color:rgba(255,255,255,.09)!important}'
+   +'#pg .chips button.on{background:rgba(43,38,32,.8)!important;'
+   +'border-color:transparent!important;color:var(--onink)!important}'
+   +'.mini,.mchip{background:var(--sel2)}'
+   +'.mini.on{background:var(--tag4t)}.mini.on2{background:var(--tag3t)}'
+   +'.bd code,.att .a,.pic{background:var(--sel2)}'
+    /* 面板：模糊延后，不套白卡 */
+   +'#sh .pn,#dw .pn{background:rgba(255,255,255,.62)!important;'
+   +'transform:translateZ(0)}'
+   +'html.dark #sh .pn,html.dark #dw .pn{'
+   +'background:rgba(26,23,19,.74)!important}'
+   +'html.hasbg #sh.gl .pn,html.hasbg #dw.gl .pn{'
+   +'background:rgba(255,255,255,.32)!important;'
+   +'backdrop-filter:blur(26px) saturate(1.25);'
+   +'-webkit-backdrop-filter:blur(26px) saturate(1.25)}'
+   +'html.dark.hasbg #sh.gl .pn,html.dark.hasbg #dw.gl .pn{'
+   +'background:rgba(26,23,19,.52)!important}'
+   +'#sh .fd input,#sh .fd textarea,#sh .cd,#sh .mcd,#sh .seg button,'
+   +'#sh .segw button{background:rgba(255,255,255,.4)!important;'
+   +'border-color:rgba(255,255,255,.5)!important}'
+   +'html.dark #sh .fd input,html.dark #sh .fd textarea,html.dark #sh .cd,'
+   +'html.dark #sh .mcd,html.dark #sh .seg button,'
+   +'html.dark #sh .segw button{background:rgba(255,255,255,.06)!important;'
+   +'border-color:rgba(255,255,255,.09)!important}'
+   +'#sh .seg button.on,#sh .segw button.on{'
+   +'background:rgba(43,38,32,.8)!important;border-color:transparent!important}'
+   +'#dw .nv a.on,#sls .it.on,#sls.edit .it{background:var(--sel)!important}'
+   +'#sh .bdy>.nt{padding-top:11px!important;padding-bottom:0!important}'
+   +'#sh .bdy{padding-bottom:max(11px,calc(var(--sb) - 12px))!important}'
+   +'html.kbon #sh .bdy{padding-bottom:11px!important}'
+   +'#sh .nt,.nt{font-size:12px;line-height:1.6;color:var(--dim2);'
+   +'text-wrap:balance}'
+   +'#sh .xx{flex:none;width:30px;height:30px;display:flex;'
+   +'align-items:center;justify-content:center;background:none!important;'
+   +'border:0!important;opacity:.45}'
+    /* 三个面板：去壳，铺在玻璃上 */
+   +'#sh.lk2 .pn,#sh.sum .pn{height:72%;max-height:none}'
+   +'#sh.lk2 .bdy,#sh.sum .bdy{padding-left:calc(22px + var(--sl))!important;'
+   +'padding-right:calc(22px + var(--sr))!important}'
+   +'#sh.lk2 .st .tt,#sh.sum .st .tt{font-family:'+MIN+';font-weight:400;'
+   +'font-size:16.5px;letter-spacing:.06em}'
+   +'#sh.lk2 .res{background:none!important;border:0!important;'
+   +'border-bottom:1px solid var(--ln2)!important;box-shadow:none!important;'
+   +'border-radius:0!important;padding:15px 0 14px!important;'
+   +'margin:0!important;position:relative}'
+   +'#sh.lk2 .res:last-child{border-bottom:0!important}'
+   +'#sh.lk2 .res .rh{margin-bottom:7px!important}'
+   +'#sh.lk2 .res .rt{font-size:10.5px!important;font-weight:400!important;'
+   +'letter-spacing:.05em}'
+   +'#sh.lk2 .res .who{font-size:10.5px!important;font-weight:400!important;'
+   +'color:var(--dim2)!important}'
+   +'#sh.lk2 .res .rb{font-size:13.5px!important;line-height:1.72!important;'
+   +'padding-right:16px}'
+   +'#sh.lk2 .res .ra{display:none!important}'
+   +'#sh.lk2 .res:after{content:"";position:absolute;right:2px;top:50%;'
+   +'width:6px;height:6px;border-right:1.4px solid var(--i3);'
+   +'border-bottom:1.4px solid var(--i3);'
+   +'transform:translateY(-50%) rotate(-45deg)}'
+   +'#sh.sum .fd{margin-bottom:4px!important}'
+   +'#sh.sum .fd textarea{background:none!important;border:0!important;'
+   +'padding:2px 0 12px!important;font-family:'+MIN+';'
+   +'font-size:15.5px!important;line-height:2.05!important;'
+   +'letter-spacing:.03em;min-height:250px!important}'
+   +'#sh.sum .cd{background:none!important;border:0!important;'
+   +'box-shadow:none!important;border-top:1px solid var(--ln2)!important;'
+   +'border-radius:0!important;margin:0!important}'
+   +'#sh.sum .rw{padding:14px 0!important}'
+   +'#sh.sum .rw .l{font-size:13.5px;font-weight:400}'
+   +'#sh.sum .bdy>.nt{padding-left:0!important;padding-right:0!important}'
+   +'#sh.think .bdy{padding-left:calc(22px + var(--sl))!important;'
+   +'padding-right:calc(22px + var(--sr))!important}'
+   +'#sh.think .hb .tt{font-family:'+MIN+';font-weight:400!important;'
+   +'font-size:16.5px!important;letter-spacing:.06em}'
+   +'#sh.think .hb .cx{background:var(--sel2)!important}'
+   +'.kb{font-size:14.5px!important;line-height:2!important;'
+   +'letter-spacing:.02em;color:var(--dim)!important;padding:0 0 16px!important}'
+    /* 标签与记忆卡 */
+   +'#pg .tag{background:none!important;border:1px solid var(--dl);'
+   +'font-weight:500!important;padding:2px 7px!important}'
+   +'#pg .tag.ct{color:var(--tag4t)!important;'
+   +'border-color:rgba(109,116,128,.32)}'
+   +'#pg .tag.ai,#pg .tag.me{color:var(--dim)!important}'
+   +'#pg .tag.lk{color:var(--tag3t)!important;'
+   +'border-color:rgba(169,115,106,.38)}'
+   +'#pg .mcd .f{border-top-color:var(--ln2)!important;'
+   +'margin-top:12px!important;padding-top:10px!important}'
+   +'#pg .mcd .a{gap:19px!important}'
+   +'#pg .mcd .a button{font-size:11.5px!important;'
+   +'color:var(--dim2)!important;font-weight:400!important}'
+   +'#pg .mcd .a button.r{color:var(--tag3t)!important}'
+   +'#pg .mcd .ts{font-size:11px!important}'
+   +'#pg .mcd .t.fold{max-height:154px;overflow:hidden;'
+   +'-webkit-mask-image:linear-gradient(180deg,#000 74%,transparent);'
+   +'mask-image:linear-gradient(180deg,#000 74%,transparent)}'
+   +'#pg .mcd .mo{display:inline-block;margin-top:6px;font-size:11.5px;'
+   +'color:var(--dim);font-weight:500}'
+   +'#pg .exb{border-color:rgba(255,255,255,.46)!important}'
+   +'#pg .exb .x2{background:none!important;color:var(--rose)!important;'
+   +'padding:6px 2px!important;font-size:13px!important}'
+   +'#pg .res .ra{gap:20px!important;margin-top:11px!important}'
+   +'#pg .res .ra button{font-size:12.5px!important}'
+   +'#pg .res .ra button:nth-child(2){color:var(--dim2)!important;'
+   +'font-weight:400!important}'
+   +'#pg .res .rc{border-left-color:var(--dl)!important;opacity:.9}'
+    /* 气泡 */
+   +'html:not(.dark) #ms .m.me .bd{background:var(--bub)}'
+   +'#ms .m.me{align-items:stretch!important;margin-bottom:16px!important}'
+   +'#ms .m.me .in{display:block!important;width:100%!important;'
+   +'max-width:100%!important;text-align:right!important}'
+   +'#ms .m.me .bd{display:inline-block!important;width:auto!important;'
+   +'max-width:80%!important;margin:0!important;text-align:left!important;'
+   +'vertical-align:top;white-space:pre-wrap!important;'
+   +'word-break:normal!important;overflow-wrap:break-word!important;'
+   +'padding:10px 15px!important;line-height:1.62!important;'
+   +'border-radius:20px!important;box-sizing:border-box}'
+   +'#ms .m.me .bd.tight{padding:8px 14px!important;'
+   +'line-height:1.5!important;border-radius:18px!important}'
+   +'#ms .m.me .bd *{text-align:left}'
+   +'#ms .m.me .eo{justify-content:flex-end;margin-top:4px!important}'
+   +'#ms .m.ai{margin-bottom:28px!important}'
+   +'#ms .m.ai .bd{line-height:1.72}'
+   +'#ms>.m:last-child{margin-bottom:8px!important}'
+   +'#ms .more{color:var(--dim);font-weight:500}'
+   +'#ms .act{margin-top:9px}'
+   +'#ms .act .ai2{color:var(--dim);font-weight:500}'
+   +'#ms .act .at{display:none}'
+    /* 隔了多久 */
+   +'#ms .gsep{margin:4px 0 26px!important;gap:12px!important}'
+   +'#ms .gsep i{background:var(--dl)!important;opacity:.4}'
+   +'#ms .gsep span{display:inline-flex!important;align-items:baseline;'
+   +'gap:8px;font-size:10.5px!important;color:var(--dim2)!important;'
+   +'letter-spacing:.04em}'
+   +'#ms .gsep span b{font-weight:400;font-size:10.5px;letter-spacing:.1em;'
+   +'font-variant-numeric:tabular-nums;color:var(--dim2)}'
+   +'#ms .gsep span s{text-decoration:none!important;font-size:10.5px}'
+    /* 翻查痕迹 */
+   +'#ms .wbx{border-left-width:1px!important;'
+   +'border-left-color:var(--dl)!important;padding-left:12px!important;'
+   +'margin-bottom:13px!important}'
+   +'#ms .wbx .wh{font-size:11.5px!important;font-weight:500!important;'
+   +'color:var(--dim2)!important;letter-spacing:.03em}'
+   +'#ms .wbx .wh svg{opacity:.55}'
+   +'#ms .wbx .wl{margin-top:6px!important;font-size:12px!important}'
+    /* 间距 */
+   +'.hd{padding-top:max(10px,calc(var(--st) - 3px))!important}'
+   +'#dw .hh{padding-top:max(18px,calc(var(--st) + 14px))!important}'
+   +'#dw .nv{padding-top:16px!important}'
+   +'.ib{padding-top:4px;padding-bottom:max(16px,calc(var(--sb) - 6px))!important}'
+   +'html.kbon .ib{padding-bottom:6px!important}'
+   +'.selbar{padding-bottom:max(16px,calc(var(--sb) - 6px))!important}'
+   +'#dw .bt{padding-bottom:max(28px,calc(var(--sb) + 6px))!important}'
+   +'html.kbon #dw .bt{padding-bottom:10px!important}'
+   +'.chips,.cbx{scrollbar-width:none}'
+   +'.chips::-webkit-scrollbar,.cbx::-webkit-scrollbar{'
+   +'height:0!important;display:none!important}'
+   +'.chips{-webkit-mask-image:linear-gradient(90deg,#000 0,#000 '
+   +'calc(100% - 20px),transparent);'
+   +'mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 20px),transparent)}'
+    /* 小窝 */
+   +'.gl2{'+G+'}'
+   +'html.hasbg .gl2{'+B+'}'
+   +'html.dark .gl2{'+GD+'}'
+   +'.vt{writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;'
+   +'text-orientation:upright;-webkit-text-orientation:upright;'
+   +'font-family:'+MIN+'}'
+   +'.hrow{display:flex;align-items:flex-start;'
+   +'justify-content:space-between;gap:14px;margin-bottom:18px}'
+   +'.hdate{flex:none;text-align:right;margin-top:8px}'
+   +'.hdate b{display:block;font:400 15px/1 '+MIN+';letter-spacing:.06em;'
+   +'color:var(--ink2)}'
+   +'.hdate s{display:block;text-decoration:none;margin-top:5px;'
+   +'font-size:10.5px;letter-spacing:.2em;color:var(--dim2);'
+   +'font-family:'+MIN+'}'
+   +'#pg .hrow .big,#pg .hrow .sub{font-family:'+MIN+'!important}'
+   +'#pg .hrow .big{font-weight:400!important}'
+   +'.hero2{text-align:center;padding:54px 18px 46px!important;'
+   +'border-radius:24px!important;margin-bottom:14px!important}'
+   +'.hero2 .hn{font:400 76px/1 '+MIN+';letter-spacing:.02em;'
+   +'color:var(--rose)}'
+   +'.hero2 .hl{margin-top:16px;font-size:12px;letter-spacing:.18em;'
+   +'color:var(--dim);font-family:'+MIN+'}'
+   +'.seas{display:flex;flex-direction:row-reverse;align-items:center;'
+   +'gap:14px;padding:12px 16px!important;margin-bottom:9px!important}'
+   +'.seas .sv{flex:none;font-size:16.5px;letter-spacing:.2em;'
+   +'color:var(--ink2)}'
+   +'.seas .sx{flex:1;min-width:0}'
+   +'.seas .sd{font-size:10.5px;letter-spacing:.12em;color:var(--dim2);'
+   +'font-family:'+MIN+'}'
+   +'.seas .sn{margin-top:5px;font-size:13.5px;color:var(--ink2);'
+   +'font-family:'+MIN+'}'
+   +'.hanni{margin-bottom:9px!important}'
+   +'.hanni .rw{padding:12px 17px!important}'
+   +'.hanni .rw .l{font-family:'+MIN+';font-weight:400}'
+   +'.wall{position:relative;display:flex;justify-content:flex-end;'
+   +'min-height:118px;padding:17px 17px 15px!important}'
+   +'.wall .wq{font-size:16.5px;line-height:2.1;letter-spacing:.09em;'
+   +'color:var(--ink2);max-height:160px}'
+   +'.wall .wq.e{color:var(--dim2);font-size:14.5px}'
+   +'.wall .bow{position:absolute;left:15px;bottom:13px;width:36px;'
+   +'opacity:.9;pointer-events:none}'
+   +'html.dark .wall .bow{opacity:.7}'
+   +'#pg .sc2{font-family:'+MIN+';font-weight:400}'
+   +'.hfoot{margin:22px 0 6px;text-align:center;font-size:10px;'
+   +'letter-spacing:.34em;color:var(--dim2);font-family:'+MIN+'}'
+    /* 锁屏 */
+   +'html.hasbg #lk{background:transparent!important}'
+   +'html.hasbg #lk:before{display:none!important}'
+   +'#lk{justify-content:center!important;'
+   +'padding-top:calc(var(--st) + 18px)!important;'
+   +'padding-bottom:calc(var(--sb) + 24px)!important}'
+   +'#lk .jp{font-size:32px!important;letter-spacing:.22em!important;'
+   +'text-indent:.22em!important}'
+   +'#lk .en{margin-top:16px!important}'
+   +'#dts{margin:32px 0 28px!important;gap:16px!important}'
+   +'#pad{grid-template-columns:repeat(3,84px)!important;'
+   +'gap:19px 22px!important}'
+   +'#pad button{height:84px!important;font-size:30px!important;'
+   +'background:var(--card)}'
+   +'html.hasbg #pad button{background:rgba(255,255,255,.32)!important;'
+   +'border:1px solid rgba(255,255,255,.46);'
+   +'backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}'
+   +'html.dark.hasbg #pad button{background:rgba(32,29,24,.42)!important;'
+   +'border-color:rgba(255,255,255,.1)}'
+   +'#pad button:active{transform:scale(.93)}'
+   +'html.hasbg #pad button.f{background:none!important;border:0!important;'
+   +'box-shadow:none!important;backdrop-filter:none!important;'
+   +'-webkit-backdrop-filter:none!important}';
+  document.head.appendChild(s);
+})();
+
+/* ── 壁纸铺满 ── */
+function bgPaint(){
+  de.style.setProperty('--edge',edgeColor());
+  if(!D.bgOn||!BGDATA){
+    de.classList.remove('hasbg');
+    de.style.backgroundImage='';de.style.backgroundColor='';
+    return;}
+  var a=(D.bgv==null?45:D.bgv)/100;
+  var c=isDark()?'22,20,15':'245,243,238';
+  var v='rgba('+c+','+a+')';
+  de.style.backgroundColor=edgeColor();
+  de.style.backgroundImage='linear-gradient('+v+','+v+'),url("'+BGDATA+'")';
+  de.classList.add('hasbg');}
+function bgSample(u,cb){
+  var im=new Image();
+  im.onerror=function(){cb(null);};
+  im.onload=function(){
+    try{
+      var vw=Math.max(1,window.innerWidth||360);
+      var vh=Math.max(1,window.innerHeight||640);
+      var ar=vw/vh,iw=im.width,ih=im.height;
+      if(!iw||!ih){cb(null);return;}
+      var iar=iw/ih,sx,sy,sw,sh;
+      if(iar>ar){sh=ih;sw=ih*ar;sx=(iw-sw)/2;sy=0;}
+      else{sw=iw;sh=iw/ar;sx=0;sy=(ih-sh)/2;}
+      var W=48,H=Math.max(6,Math.round(W/ar));
+      var cv=document.createElement('canvas');cv.width=W;cv.height=H;
+      var x=cv.getContext('2d');
+      x.drawImage(im,sx,sy,sw,sh,0,0,W,H);
+      var rows=Math.max(2,Math.round(H*0.05));
+      var d=x.getImageData(0,H-rows,W,rows).data;
+      var r=0,g=0,b=0,n=0;
+      for(var i=0;i<d.length;i+=4){
+        if(d[i+3]<8)continue;
+        r+=d[i];g+=d[i+1];b+=d[i+2];n++;}
+      cb(n?[Math.round(r/n),Math.round(g/n),Math.round(b/n)]:null);
+    }catch(e){cb(null);}};
+  im.src=u;}
+function bgReSample(){
+  if(!D.bgOn||!BGDATA)return;
+  bgSample(BGDATA,function(c){
+    if(!c)return;
+    var o=D.bgc;
+    if(o&&o.length===3&&Math.abs(o[0]-c[0])<3
+      &&Math.abs(o[1]-c[1])<3&&Math.abs(o[2]-c[2])<3)return;
+    D.bgc=c;saveD();bgPaint();});}
+window.addEventListener('orientationchange',function(){
+  setTimeout(bgReSample,650);});
+try{bgPaint();}catch(e){}
+setTimeout(bgReSample,300);
+
+/* ── 模糊延到动画结束 ── */
+function glLate(id){
+  setTimeout(function(){
+    var e=document.getElementById(id);
+    if(e)e.classList.add('gl');},300);}
+sheet=function(o){
+  G3.sheet(o);
+  glLate('sh');
+  try{if(o&&o.sum){
+    var d=document.getElementById('sh');
+    if(d)d.classList.add('sum');}}catch(e){}};
+drawer=function(on){
+  G3.drawer(on);
+  if(on)glLate('dw');};
+
+/* ── 翻到的：整条可点 ── */
+function lookSheet(q){
+  var sp=splitQ(q),hits=[];
+  SOFTQ=0;
+  function grab(){
+    var o=[];
+    SS.forEach(function(s){
+      (MSG[s.id]||[]).forEach(function(mm){
+        if(!alive(mm)||mm.st||mm.err)return;
+        if(sp.dr&&!(mm.ts>=sp.dr.a&&mm.ts<sp.dr.b))return;
+        if(score(hay(mm),sp.kw)<=0)return;
+        var t=fullT(mm)||'';
+        o.push({s:s,m:mm,t:t,sc:score(t,sp.kw)});});});
+    return o;}
+  hits=grab();
+  if(!hits.length&&sp.kw.length>1){SOFTQ=1;hits=grab();SOFTQ=0;}
+  SOFTQ=0;
+  if(sp.kw.length)hits.sort(function(a,b){return b.sc-a.sc||b.m.ts-a.m.ts;});
+  else hits.sort(function(a,b){return b.m.ts-a.m.ts;});
+  hits=hits.slice(0,12);
+  var h='';
+  if(!hits.length)h+='<div class="empty">现在翻不到了。</div>';
+  hits.forEach(function(x){
+    h+='<div class="res pz" onclick="closeSheet(1);jump(\''
+     +x.s.id+'\',\''+x.m.id+'\')">'
+     +'<div class="rh"><span class="rt">'+dtl(x.m.ts)+'</span>'
+     +'<span class="who">'+(x.m.r==='me'?esc(D.me):esc(D.you))+'</span></div>'
+     +'<div class="rb">'+hi(cut(x.t||picWord(x.m),sp.kw),sp.kw)+'</div></div>';});
+  sheet({lk2:1,title:'「'+q+'」',body:h});}
+
+/* ── 摘要面板：一页信纸 ── */
+function sumSheet(){
+  var s=sessById(EXSID),n=s?exCount(s):0;
+  sheet({sum:1,title:'「'+(s?(s.ti||'对话'):'对话')+'」聊了什么',
+    ok:'记进记忆库',
+    body:'<div class="fd"><textarea id="sm">'+esc(SUMT)+'</textarea></div>'
+  +'<div class="cd cd0"><div class="rw pz" onclick="exSkip()">'
+  +'<span class="l" style="color:var(--dim)">不留了，只标记看过</span>'
+  +I.chevD+'</div></div>'
+  +'<div class="nt">读了 '+n+' 句。归到〈聊过什么〉，想一直带着就去点「锁」。</div>',
+    onOk:function(){
+      var t=val('sm');
+      if(!t){toast('是空的');return false;}
+      var s2=sessById(EXSID);
+      if(!s2){toast('那段对话不在了');closeSheet(1);return'done';}
+      addMem(t.slice(0,400),'聊过什么',1,'ai',
+        {sid:s2.id,mid:'',ts:Date.now()});
+      s2.ex=Date.now();SUMT='';
+      saveD();saveS();closeSheet(1);
+      if(CV==='mem')drawMem();else view('mem');
+      toast('存好了');
+      return'done';}});}
+
+/* ── 编号找不到就按内容匹配 ── */
+function memByCode(code){
+  var raw=String(code||'').trim();
+  var c=raw.toLowerCase().replace(/[#\s]/g,'');
+  if(!c)return null;
+  var cs=memCodes(),id=cs.rev[c];
+  if(id)return memById(id);
+  var hit=null;
+  live().forEach(function(m){
+    if(!hit&&String(m.id||'').toLowerCase().slice(-c.length)===c)hit=m;});
+  if(hit)return hit;
+  if(raw.length>=4){
+    var best=null,bs=0;
+    live().forEach(function(m){
+      var r=simRate(m.t,raw);
+      if(r>bs){bs=r;best=m;}});
+    if(bs>=0.4)return best;}
+  return null;}
+
+/* ── 小窝 ── */
+var BOW='<svg class="bow" viewBox="0 0 64 46" fill="none">'
++'<path d="M30 21C24.5 11.5 14.5 7.5 9.5 11.5c-5 4-2.5 13.5 7 16.5 '
++'5 1.6 9.5 1.4 13.5-.8Z" fill="#fff" fill-opacity=".9" '
++'stroke="rgba(0,0,0,.08)" stroke-width="1"/>'
++'<path d="M34 21c5.5-9.5 15.5-13.5 20.5-9.5 5 4 2.5 13.5-7 16.5 '
++'-5 1.6-9.5 1.4-13.5-.8Z" fill="#fff" fill-opacity=".9" '
++'stroke="rgba(0,0,0,.08)" stroke-width="1"/>'
++'<path d="M29.5 25.5 21 44l12.5-9.5Z" fill="#fff" fill-opacity=".85" '
++'stroke="rgba(0,0,0,.07)" stroke-width="1"/>'
++'<path d="M34.5 25.5 43 44l-12.5-9.5Z" fill="#fff" fill-opacity=".85" '
++'stroke="rgba(0,0,0,.07)" stroke-width="1"/>'
++'<ellipse cx="32" cy="23.5" rx="4.2" ry="4.6" fill="#fff" '
++'stroke="rgba(0,0,0,.09)" stroke-width="1"/></svg>';
+function jSeason(){
+  var n=new Date(),k=(n.getMonth()+1)*100+n.getDate();
+  var t=[[106,'小寒','冷得深了'],[120,'大寒','最冷的一段'],
+  [204,'立春','风开始软了'],[219,'雨水','雪化成雨'],
+  [306,'啓蟄','虫醒了'],[321,'春分','昼夜一样长'],
+  [405,'清明','天清景明'],[420,'穀雨','雨水润着谷子'],
+  [506,'立夏','夏天起头'],[521,'小満','麦子渐渐满了'],
+  [606,'芒種','该插秧了'],[621,'夏至','白天最长'],
+  [707,'小暑','热起来了'],[723,'大暑','一年最热'],
+  [808,'立秋','暑气开始退'],[823,'処暑','热到头了'],
+  [908,'白露','草上有露'],[923,'秋分','昼夜再平分'],
+  [1008,'寒露','露水发凉'],[1024,'霜降','开始有霜'],
+  [1107,'立冬','冬天起头'],[1122,'小雪','初雪将至'],
+  [1207,'大雪','雪该厚了'],[1222,'冬至','夜最长']];
+  var cur=t[t.length-1],i;
+  for(i=0;i<t.length;i++)if(k>=t[i][0])cur=t[i];
+  return{jp:cur[1],cn:cur[2]};}
+function vHome(){
+  var dt=dayN(),nx=null;
+  D.annis.forEach(function(a){
+    var r=nextAn(a.date);
+    if(r&&(!nx||r.days<nx.days))nx={name:a.name,days:r.days};});
+  var s=jSeason(),n=new Date();
+  var w=['日','月','火','水','木','金','土'];
+  return'<div class="vw"><div class="hd">'
+  +'<button class="cb pz" onclick="drawer(1)">'+I.menu+'</button><span></span></div>'
+  +'<div class="sa pgw">'
+  +'<div class="hrow"><div style="min-width:0">'
+  +'<div class="big">'+hello()+'</div>'
+  +'<div class="sub">'+esc(D.me)+' 和 '+esc(D.you)+' 的地方</div></div>'
+  +'<div class="hdate"><b>'+(n.getMonth()+1)+'.'+n.getDate()+'</b>'
+  +'<s>'+w[n.getDay()]+'</s></div></div>'
+  +'<div class="cd gl2 hero2 pz" onclick="shUs()">'
+  +(dt!=null
+    ?'<div class="hn">'+dt+'</div><div class="hl">在一起的第 '+dt+' 天</div>'
+    :'<div class="hn">·</div><div class="hl">写下开始的那天</div>')
+  +'</div>'
+  +'<div class="cd gl2 seas"><div class="sv vt">'+s.jp+'</div>'
+  +'<div class="sx"><div class="sd">'
+  +n.getFullYear()+' 年 '+(n.getMonth()+1)+' 月 '+n.getDate()+' 日</div>'
+  +'<div class="sn">'+s.cn+'</div></div></div>'
+  +'<div class="cd cd0 gl2 hanni"><div class="rw pz" onclick="shAnni()">'
+  +'<span class="l">'+(nx?esc(nx.name):'纪念日')+'</span>'
+  +'<span style="color:var(--rose);font-weight:600;font-size:15px">'
+  +(nx?(nx.days===0?'就是今天':nx.days+' 天后'):'＋')+'</span></div></div>'
+  +'<div class="sc2">写在墙上的一句</div>'
+  +'<div class="cd gl2 wall pz" onclick="shWall()">'
+  +(D.wall?'<div class="wq vt">'+esc(D.wall)+'</div>'
+         :'<div class="wq vt e">想说的一句话</div>')
+  +BOW+'</div>'
+  +'<div class="hfoot">わたしたちの場所</div>'
+  +'<div style="height:10px"></div></div></div>';}
+
+try{view(CV||'chat');}catch(e){}
 </script>
 </body>
 </html>
