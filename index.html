@@ -5906,6 +5906,26 @@ function vHome(){
   +'<div style="height:10px"></div></div></div>';
 }
 if(CV==='home'){try{view('home');}catch(e){}}
+  /* ══════════ 统合层 v1 · 第十六段 · 收尾微调 ══════════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    /* 锁屏整体下移，灵动岛机型不再显得偏上 */
+    '#lk{padding-top:calc(var(--st) + 92px)!important;'
+   +'padding-bottom:calc(var(--sb) + 46px)!important;'
+   +'justify-content:flex-start!important}'
+   +'#dts{margin:30px 0 26px!important}'
+    /* 侧边栏底部：跟发送键齐平 */
+   +'#dw .bt{padding-bottom:max(28px,calc(var(--sb) + 6px))!important}'
+   +'html.kbon #dw .bt{padding-bottom:10px!important}'
+    /* 面板灰字：贴紧上面那块 */
+   +'#sh .bdy>.nt{padding-top:2px!important;padding-bottom:0!important}'
+   +'#sh .bdy>.nt:last-child{padding-bottom:2px!important}'
+   +'#sh .fd{margin-bottom:7px!important}'
+   +'#sh .bdy{padding-bottom:max(12px,calc(var(--sb) - 2px))!important}'
+   +'html.kbon #sh .bdy{padding-bottom:10px!important}';
+  document.head.appendChild(s);
+})();
 </script>
 </body>
 </html>
