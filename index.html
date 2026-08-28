@@ -6050,6 +6050,107 @@ if(!G17.on){
   };
 }
 if(CV==='find'){try{runFind();}catch(e){}}
+  /* ══════════ 统合层 v1 · 第十八段 · 时间与痕迹 ══════════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    /* 隔了多久：细线 + 钟点 */
+    '#ms .gsep{margin:4px 0 26px!important;gap:12px!important}'
+   +'#ms .gsep i{background:var(--dl)!important;opacity:.45}'
+   +'#ms .gsep span{display:inline-flex;align-items:baseline;gap:10px}'
+   +'#ms .gsep span b{font-weight:500;font-size:12px;letter-spacing:.16em;'
+   +'color:var(--dim);font-variant-numeric:tabular-nums;'
+   +'font-family:"Hiragino Mincho ProN","Songti SC",serif}'
+   +'#ms .gsep span s{text-decoration:none;font-size:10.5px;'
+   +'letter-spacing:.06em;color:var(--dim2)}'
+    /* 翻查痕迹：收细 */
+   +'#ms .wbx{border-left-width:1px!important;'
+   +'border-left-color:var(--dl)!important;padding-left:12px!important;'
+   +'margin-bottom:13px!important}'
+   +'#ms .wbx .wh{font-size:11.5px!important;font-weight:500!important;'
+   +'color:var(--dim2)!important;letter-spacing:.03em}'
+   +'#ms .wbx .wh svg{opacity:.55}'
+   +'#ms .wbx .wl{margin-top:6px!important;font-size:12px!important}'
+   +'#ms .wbx .wl a{opacity:.85}';
+  document.head.appendChild(s);
+})();
+
+if(typeof G18==='undefined')var G18={};
+
+/* ── 上下文里的时间：只在隔久了插一句 ── */
+var TMARK={},TGAP=1800000;
+function markTimes(list){
+  TMARK={};
+  var prev=0;
+  (list||[]).forEach(function(x){
+    var ts=x.ts||0;
+    if(prev&&ts-prev>TGAP)TMARK[x.id]=ts-prev;
+    prev=ts;});
+}
+function toC(x,an,pics){
+  if(x.r==='quote')return'【我们以前说过的 · '+(x.from||'')+'】\n'+x.t;
+  var p=[],np=(x.pics||[]).length,tx=(x.r==='ai')?fullT(x):(x.t||'');
+  var gm=TMARK[x.id]
+    ?'（页面：这条距上一条隔了 '+dur(TMARK[x.id])+'）\n':'';
+  if(np&&pics&&pics.__skip&&pics.__skip[x.id]){
+    var tag='［她在这里发过 '+np+' 张图片，这一轮没带上来。'
+      +'图片本身翻不回来，想知道是什么就直接问她。］';
+    return gm+(tx?(tag+'\n'+tx):tag);}
+  if(np&&pics)x.pics.forEach(function(pid){
+    var u=pics[pid];if(!u)return;
+    if(an){var mt=(u.match(/^data:([^;]+);/)||[])[1]||'image/jpeg';
+      p.push({type:'image',source:{type:'base64',media_type:mt,
+        data:u.split(',')[1]||''}});}
+    else p.push({type:'image_url',image_url:{url:u}});});
+  if(tx)p.push({type:'text',text:gm+tx});
+  else if(gm)p.push({type:'text',text:gm+'…'});
+  if(!p.length)p.push({type:'text',text:'…'});
+  return(p.length===1&&p[0].type==='text')?p[0].text:p;
+}
+if(!G18.bm){
+  G18.bm=buildMsgs;
+  buildMsgs=function(an,forHi,pics){
+    try{markTimes(ctxList());}catch(e){TMARK={};}
+    return G18.bm(an,forHi,pics);
+  };
+}
+
+/* ── 提示词里那句跟着改 ── */
+if(!G18.up){
+  G18.up=usPart;
+  usPart=function(q){
+    var s=G18.up(q);
+    return s.replace(
+      /那些话每条开头方括号[\s\S]*?自己写方括号。/,
+      '隔得久的地方，页面会用圆括号插一句「距上一条隔了多久」。'
+     +'看清了再接话，别复述，也别自己写这种括号。');
+  };
+}
+
+/* ── 那条线上写清几点 ── */
+function gsepTime(){
+  var b=document.getElementById('ms');
+  if(!b)return;
+  var gs=b.querySelectorAll('.gsep');
+  if(!gs.length)return;
+  var arr=[],i;
+  ms().forEach(function(m){if(m.r==='gap')arr.push(m);});
+  for(i=0;i<gs.length&&i<arr.length;i++){
+    var sp=gs[i].querySelector('span');
+    if(!sp||sp.dataset.tm)continue;
+    sp.dataset.tm='1';
+    sp.innerHTML='<b>'+hm(arr[i].ts)+'</b><s>隔了 '
+      +esc(dur(arr[i].g||0))+'</s>';
+  }
+}
+if(!G18.pt){
+  G18.pt=paint;
+  paint=function(keep){
+    G18.pt(keep);
+    try{gsepTime();}catch(e){}
+  };
+}
+if(CV==='chat'){try{paint(1);}catch(e){}}
 </script>
 </body>
 </html>
