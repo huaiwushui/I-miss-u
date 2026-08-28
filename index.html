@@ -2813,18 +2813,23 @@ boot();
   var s=document.createElement('style');
   var EZ='cubic-bezier(.32,.72,0,1)';
   s.textContent=
-    ':root{--kb:0px}'
+    ':root{--kb:0px;--ksl:0px}'
    +'#ms{overflow-anchor:none;'
    +'padding-bottom:calc(16px + var(--kb))!important}'
+   +'#ms.slide{transform:translate3d(0,calc(-1 * var(--ksl)),0);'
+   +'transition:transform .22s '+EZ+';will-change:transform}'
    +'#ta{overflow-y:hidden}'
-   +'.ib,.selbar{transform:translate3d(0,calc(-1 * var(--kb)),0);'
-   +'transition:transform .2s '+EZ+';will-change:transform}'
+   +'.mw{overflow:hidden}'
+   +'.hd{position:relative;z-index:8}'
+   +'.ib,.selbar{position:relative;z-index:8;'
+   +'transform:translate3d(0,calc(-1 * var(--kb)),0);'
+   +'transition:transform .22s '+EZ+';will-change:transform}'
    +'#dn{position:absolute;right:calc(18px + var(--sr));'
    +'bottom:calc(18px + var(--kb));'
-   +'width:36px;height:36px;border-radius:50%;background:var(--card);z-index:6;'
+   +'width:36px;height:36px;border-radius:50%;background:var(--card);z-index:9;'
    +'box-shadow:0 0 0 1px var(--sd),0 4px 14px -4px var(--sd2);'
    +'display:flex;align-items:center;justify-content:center;opacity:0;'
-   +'pointer-events:none;transition:opacity .22s ease,bottom .2s '+EZ+'}'
+   +'pointer-events:none;transition:opacity .22s ease,bottom .22s '+EZ+'}'
    +'#dn.on{opacity:.82;pointer-events:auto}'
    +'#dn:active{opacity:1}'
    +'#ms>.m{content-visibility:visible;contain-intrinsic-size:auto;'
@@ -3038,14 +3043,42 @@ function xBind(){
   });
 }
 
-/* ── 键盘：焦点只管开，收起来一律听测量 ── */
-var KBCUR=0,KGUESS=0,KZERO=0,KRAF=0,KSAFE=12;
+/* ── 键盘：输入框跟着走，消息区滑过去不跳 ── */
+var KBCUR=0,KGUESS=0,KZERO=0,KRAF=0,KSL=0,KSLT=0;
+function slideOff(){
+  clearTimeout(KSLT);
+  var b=msBox();
+  if(!b)return;
+  if(!KSL){b.classList.remove('slide');return;}
+  KSL=0;
+  b.classList.remove('slide');
+  de.style.setProperty('--ksl','0px');}
+function slideTo(px){
+  var b=msBox();
+  if(!b){KSL=0;return;}
+  clearTimeout(KSLT);
+  if(px<=0){
+    if(!KSL)return;
+    KSL=0;
+    de.style.setProperty('--ksl','0px');
+    KSLT=setTimeout(function(){
+      var c=msBox();if(c)c.classList.remove('slide');},260);
+    return;}
+  KSL=px;
+  b.classList.add('slide');
+  de.style.setProperty('--ksl',px+'px');
+  KSLT=setTimeout(function(){
+    var c=msBox();
+    if(!c||KSL!==px)return;
+    KSL=0;
+    c.classList.remove('slide');
+    de.style.setProperty('--ksl','0px');
+  },240);}
 function kbApply(gap){
   gap=Math.max(0,Math.round(gap||0));
-  if(gap>60)gap+=KSAFE;
   if(gap===KBCUR)return;
   var b=msBox(),pin=b?(scEnd(b)||SC.pin):1,st=b?b.scrollTop:0;
-  var d=gap-KBCUR;
+  var was=KBCUR,pre=b?scMax(b):0;
   KBCUR=gap;
   de.style.setProperty('--kb',gap+'px');
   de.classList.toggle('kbon',gap>60);
@@ -3056,9 +3089,18 @@ function kbApply(gap){
       el.style.removeProperty('transform');
       if(gap>60&&vh>240)el.style.setProperty('height',vh+'px','important');
       else el.style.removeProperty('height');});
-  if(b){
-    if(pin){SC.pin=1;SC.el=null;toEnd(b);}
-    else b.scrollTop=Math.max(0,Math.min(st+d,scMax(b)));}
+  if(!b){scAfter();return;}
+  var post=scMax(b),shift;
+  if(pin){
+    SC.pin=1;SC.el=null;
+    shift=post-st;
+    toEnd(b);
+  }else{
+    var want=Math.max(0,Math.min(st+(gap-was),post));
+    shift=want-st;
+    b.scrollTop=want;}
+  if(Math.abs(shift)>8&&Math.abs(gap-was)>60)slideTo(shift>0?shift:0);
+  else slideOff();
   scAfter();}
 function kSet(h){
   if(!h){KGUESS=0;kbApply(0);return;}
@@ -3079,7 +3121,7 @@ function kRead(){
   if(gap!==kbH){kbH=gap;
     try{localStorage.setItem('us.kbH',gap);}catch(e){}}
   KGUESS=0;
-  if(Math.abs(gap-(KBCUR-KSAFE))>6)kbApply(gap);}
+  if(Math.abs(gap-KBCUR)>6)kbApply(gap);}
 function kPoll(){
   if(KRAF)return;
   KRAF=1;
@@ -3117,14 +3159,14 @@ document.addEventListener('focusout',function(e){
 window.addEventListener('scroll',function(){
   if(window.scrollY)window.scrollTo(0,0);},{passive:true});
 window.addEventListener('orientationchange',function(){
-  FULLH=0;FULLW=0;KGUESS=0;KZERO=0;
+  FULLH=0;FULLW=0;KGUESS=0;KZERO=0;slideOff();
   setTimeout(function(){
     FULLH=0;FULLW=0;kbApply(0);
     if(window.scrollY)window.scrollTo(0,0);
     clampSc(msBox());scAfter();},500);});
 document.addEventListener('visibilitychange',function(){
   if(document.hidden)return;
-  KGUESS=0;KZERO=0;kPoll();});
+  KGUESS=0;KZERO=0;slideOff();kPoll();});
 setInterval(function(){
   if(!vv)return;
   if(!KBCUR)return;
@@ -3138,7 +3180,7 @@ function fitTa(el){
   if(!el)return;
   var b=msBox(),wasEnd=b?(scEnd(b)||SC.pin):1;
   var st=b?b.scrollTop:0;
-  var cap=Math.round((FULLH||window.innerHeight||640)*0.30);
+  var cap=Math.round((FULLH||window.innerHeight||640)*0.20);
   el.style.height='auto';
   var need=el.scrollHeight+2;
   var h=Math.max(26,Math.min(need,cap));
@@ -5425,6 +5467,138 @@ if(!G4.view){
 avLoad().then(function(){
   if(CV==='home'){try{avMount();}catch(e){}}
 });
+  /* ══════════ I MISS U · 桌面模式兜底 ══════════ */
+if(typeof G5==='undefined')var G5={};
+function isPWA(){
+  try{
+    if(window.navigator.standalone===true)return 1;
+    if(window.matchMedia
+      &&window.matchMedia('(display-mode:standalone)').matches)return 1;
+  }catch(e){}
+  return 0;}
+
+/* ── 冷启动首帧刘海高度不可信 ── */
+(function(){
+  function probe(){
+    try{
+      var d=document.createElement('div');
+      d.style.cssText='position:fixed;top:0;left:0;width:1px;opacity:0;'
+       +'pointer-events:none;height:env(safe-area-inset-top,0px)';
+      document.body.appendChild(d);
+      var h=Math.round(d.getBoundingClientRect().height);
+      d.remove();return h;
+    }catch(e){return 0;}}
+  function fix(){
+    var h=probe();
+    if(h>=20){de.style.removeProperty('--st');return 1;}
+    if(isPWA())de.style.setProperty('--st','44px');
+    return 0;}
+  if(!fix()){
+    setTimeout(fix,300);
+    setTimeout(fix,900);
+    setTimeout(fix,2000);}
+})();
+
+/* ── 导出：桌面模式下 a[download] 是死路 ── */
+function expRaw(s,name,big,mk){
+  if(!isPWA()){
+    try{
+      var b=new Blob([s],{type:'application/json'}),u=URL.createObjectURL(b);
+      var a=document.createElement('a');a.href=u;a.download=name;
+      document.body.appendChild(a);a.click();
+      setTimeout(function(){URL.revokeObjectURL(u);
+        if(a.parentNode)a.remove();},1500);
+      mk();toast('导出了 '+name);return;
+    }catch(e){}}
+  if(big){
+    sheet({title:'存不出来',
+      body:'<div class="cd" style="font-size:14px;line-height:1.8">'
+    +'这台机器的「共享」没接住这份文件，图片版太大也复制不动。<br><br>'
+    +'换「只要文字」那一份，能直接复制出来。'
+    +'图片想留档的话，用 Safari 打开这个网址再导出一次。</div>'});
+    return;}
+  sheet({title:'复制出来存好',
+    body:'<div class="fd"><textarea id="xp" readonly '
+  +'style="min-height:200px;font-size:11px;line-height:1.5">'
+  +esc(s)+'</textarea></div>'
+  +'<div class="cd cd0"><div class="rw pz" onclick="expCopy()">'
+  +'<span class="l" style="color:var(--rose)">全部复制</span>'
+  +I.chevD+'</div></div>'
+  +'<div class="nt">粘进备忘录或者「文件」存着。恢复的时候用「粘贴备份内容」。</div>'});
+  G5.mk=mk;}
+function expCopy(){
+  var e=document.getElementById('xp');
+  if(!e){toast('内容不在了');return;}
+  clip(e.value,function(){
+    toast('复制好了，快去粘起来');
+    if(G5.mk){G5.mk();G5.mk=null;}
+    closeSheet();});}
+function expFile(withPics){
+  var pk={v:7,D:D,list:SS,msg:MSG};
+  (withPics?dbAll('pic'):Promise.resolve(null)).then(function(p){
+    if(p)pk.pic=p;
+    var s;
+    try{s=JSON.stringify(pk);}catch(e){toast('导不出来，内容太大了');return;}
+    var name='imissu-'+stamp()+(withPics?'-full':'')+'.json';
+    var big=(s.length>1500000);
+    function mk(){
+      D.bkAt=Date.now();saveD();flush(1);
+      if(CV==='more')view('more');}
+    var f=null;
+    try{f=new File([s],name,{type:'application/json'});}catch(e){}
+    if(f&&navigator.share&&navigator.canShare
+      &&navigator.canShare({files:[f]})){
+      navigator.share({files:[f]}).then(function(){
+        mk();toast('存好了');
+      },function(err){
+        if(err&&err.name==='AbortError')return;
+        expRaw(s,name,big,mk);});
+      return;}
+    expRaw(s,name,big,mk);
+  },function(){toast('读不出图片，换「只要文字」试试');});}
+
+/* ── 草稿：被系统杀掉也还在 ── */
+var DKEY='us.draft';
+(function(){
+  try{
+    var v=localStorage.getItem(DKEY)||'';
+    if(v&&!DRAFT){
+      DRAFT=v;
+      var ta=document.getElementById('ta');
+      if(ta&&!ta.value){ta.value=v;try{fitTa(ta);btn();}catch(e){}}}
+  }catch(e){}
+  var last=DRAFT||'';
+  function sync(){
+    try{
+      var ta=document.getElementById('ta');
+      var v=ta?ta.value:DRAFT;
+      if(v==null)v='';
+      if(v===last)return;
+      last=v;
+      if(v)localStorage.setItem(DKEY,v);
+      else localStorage.removeItem(DKEY);
+    }catch(e){}}
+  setInterval(sync,1500);
+  window.addEventListener('pagehide',sync);
+  document.addEventListener('visibilitychange',function(){
+    if(document.hidden)sync();});
+})();
+
+/* ── 切后台回来：别把还在跑的那条判死 ── */
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden)return;
+  try{WD.t=Date.now();WD.id='';WD.len=-1;}catch(e){}
+});
+
+/* ── 外链：交给 Safari，别把这一页带走 ── */
+document.addEventListener('click',function(e){
+  var a=e.target&&e.target.closest&&e.target.closest('a[href]');
+  if(!a)return;
+  var h=a.getAttribute('href')||'';
+  if(!/^https?:/i.test(h))return;
+  e.preventDefault();
+  try{window.open(h,'_blank','noopener');}catch(x){}
+},true);
 </script>
 </body>
 </html>
