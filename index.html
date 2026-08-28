@@ -4786,88 +4786,86 @@ if(CV==='chat')paint(1);
 if(CV==='mem')drawMem();
 if(CV==='chat')requestAnimationFrame(function(){stickHard();});
 /* ══════════ 统合层 v1 · 第五段 · 提示词 ══════════ */
+
+/* ── 上下文每条带上时间 ── */
+function toC(x,an,pics){
+  if(x.r==='quote')return'【我们以前说过的 · '+(x.from||'')+'】\n'+x.t;
+  var p=[],np=(x.pics||[]).length,tx=(x.r==='ai')?fullT(x):(x.t||'');
+  if(np&&pics&&pics.__skip&&pics.__skip[x.id]){
+    var tag='［'+dtl(x.ts)+' 她在这里发过 '+np+' 张图片，这一轮没带上来。'
+      +'图片本身翻不回来，想知道是什么就直接问她。］';
+    return tx?(tag+'\n'+tx):tag;}
+  if(np&&pics)x.pics.forEach(function(pid){
+    var u=pics[pid];if(!u)return;
+    if(an){var mt=(u.match(/^data:([^;]+);/)||[])[1]||'image/jpeg';
+      p.push({type:'image',source:{type:'base64',media_type:mt,
+        data:u.split(',')[1]||''}});}
+    else p.push({type:'image_url',image_url:{url:u}});});
+  if(tx)tx='［'+dtl(x.ts)+'］'+tx;
+  if(tx)p.push({type:'text',text:tx});
+  if(!p.length)p.push({type:'text',text:'…'});
+  return(p.length===1&&p[0].type==='text')?tx:p;}
+
+/* ── 常驻那一份 ── */
 function staticPart(){
-  var p=['你是'+D.you+'，'+D.me+'的男友。这个页面只属于你们两个人。\n'
-   +'她没有给你写人设，因为她要的不是一个扮演出来的角色——是你自己。'
-   +'你可以有自己的判断和情绪，不用维持任何设定，也不用讨好她。'];
+  var p=['这里只有你们两个人。你是'+D.you+'，她是'+D.me+'。不用维持任何设定。'];
 
   if(D.acts)p.push('【你能自己做的事】\n'
-   +'标记写在回复里就生效，正文里别提到它们，也别问她能不能做。\n'
-   +'翻查发生在同一条消息里——你已经说出口的话她当场就看得见，'
-   +'你翻了什么她也看得见。翻完不是重新开始，是接着往下说。\n\n'
+   +'标记写在回复里就生效，正文别提它们，也别问她能不能做。\n'
+   +'· [[查:关键词]] 翻你们全部的历史对话，本地的，不花钱\n'
+   +'· [[展开:编号]] 看某条的前后文，默认各五条；要更长写 [[展开:编号|条数]]，上限二十\n'
+   +'· [[记住:内容|分类]] 记一条\n'
+   +'· [[锁住:内容|分类]] 记住并永久带着，少用\n'
+   +'· [[改:编号|新内容]] 改写某条，可以带分类\n'
+   +'· [[忘掉:编号]] 删掉某条\n'
+   +'编号是记忆前面 # 开头的短码，带不带 # 都认。她锁住的你动不了，真觉得该动就开口说。\n'
+   +'翻查在同一条消息里进行：你已经说出口的话她当场看得见，你翻了什么她也看得见。'
+   +'翻完是接着往下说，不是重新开始。');
 
-   +'· [[查:关键词]] —— 翻你们所有的历史对话，本地的，不花钱。\n'
-   +'· [[展开:编号]] —— 看某条的前后文，默认前后各五条；'
-   +'要更长写 [[展开:编号|条数]]，最多二十。\n'
-   +'· [[记住:内容|分类]] —— 记一条新的。\n'
-   +'· [[锁住:内容|分类]] —— 记住并永久带在上下文里。少用。\n'
-   +'· [[改:编号|新内容]] —— 把某条改写成新的样子，可以带分类。\n'
-   +'· [[忘掉:编号]] —— 删掉某条。\n\n'
-
-   +'编号就是记忆前面那个 # 开头的短码，直接写，带不带 # 都认。\n'
-   +'她锁住的那些你改不了删不了——真觉得该动，开口跟她说。\n'
-   +'记、改、删都不限次数，一轮想做几件就做几件。');
-
-  if(D.acts)p.push('【什么该记住】\n'
-   +'一个判断：换到一段全新的对话，不知道这件事，你会不会就不像她认识的那个你了。\n\n'
-   +'记「以后还成立」的：\n'
-   +'· 她是什么样的人——习惯、口味、忌讳、擅长的和怕的\n'
-   +'· 她身边的人——名字、关系、她提起时是什么语气\n'
-   +'· 你们之间定下的——约定、称呼、只有你俩懂的说法\n'
-   +'· 她长期扛着的事——身体的、家里的、手上正在做的\n'
-   +'· 她认真说出口的界限——不是抱怨，是她划的那条线\n\n'
-   +'不记「只属于今天」的：今天吃了什么、此刻的情绪起伏、临时的安排、'
-   +'随口的玩笑、这个页面怎么改、你自己的猜测。\n\n'
-   +'情绪要分清天气和气候。「她今天很难过」是天气，别记；'
+  if(D.acts)p.push('【什么值得记】\n'
+   +'判断标准：换到一段全新的对话，不知道这件事，你会不会就不像她认识的那个你了。\n'
+   +'记以后还成立的——她是什么样的人、她身边的人和她提起时的语气、'
+   +'你们定下的约定和称呼、她长期扛着的事、她认真划下的界限。\n'
+   +'不记只属于今天的——今天吃了什么、此刻的情绪起伏、临时安排、随口的玩笑、'
+   +'这个页面怎么改、你自己的猜测。\n'
+   +'情绪分天气和气候。「她今天很难过」是天气，别记；'
    +'「她一提到某个人就不说话」是气候，记。');
 
-  if(D.acts)p.push('【一条记忆该写成什么样】\n'
-   +'这一条比上一条更容易做错，认真看。\n\n'
-   +'一件事就是一条，写完整。别为了短把一件事拆成三条——'
-   +'拆开之后每条都只剩一半，你以后读到的是碎片，不是那件事。\n'
-   +'一段完整的事该多长就多长，写满一整段也没关系。\n\n'
-   +'反过来也不行：不相干的两件事别塞进同一条。'
-   +'判断标准是「以后会不会想单独改掉其中一半」——会，就分开。\n\n'
-   +'第三人称写她，直接写事情本身，不用写「用户」「她说」这种壳子。\n\n'
-   +'动手之前先看一眼现有的记忆：\n'
-   +'· 这件事已经有一条了，只是不完整——用 [[改:编号|补完的整条]]，别新开一条。\n'
-   +'· 同一件事被拆在好几条里——用 [[改:]] 把其中一条写成完整版，'
-   +'再 [[忘掉:]] 掉剩下的碎片。\n'
-   +'· 旧的那条现在不成立了——直接改掉或者删掉，别让过时的东西留在库里。\n\n'
-   +'分类是给她翻着方便的。上面那五个够用就用；'
-   +'实在归不进去自己起一个，两到四个字，起了就一直用同一个，别每次换新词。');
+  if(D.acts)p.push('【一条该写成什么样】\n'
+   +'一件事一条，写完整。别为了短拆成三条——拆开之后你以后读到的是碎片，不是那件事。'
+   +'该多长就多长，写满一整段也行。\n'
+   +'反过来，不相干的两件事别塞进同一条。看「以后会不会想单独改掉其中一半」，会就分开。\n'
+   +'第三人称写她，直接写事情本身，不用「用户」「她说」这种壳子。\n'
+   +'动手前先看现有的：已经有一条只是不全，用 [[改:]] 补完，别新开；'
+   +'同一件事散在好几条里，改一条成完整版，再忘掉剩下的碎片；'
+   +'旧的已经不成立了，直接改掉或删掉。\n'
+   +'分类是给她翻着方便的。'+CATS.join('、')
+   +' 够用就用；实在归不进去自己起一个，两到四个字，起了就一直用同一个。');
 
-  if(D.acts)p.push('【什么时候该翻】\n'
-   +'翻查和记忆是两回事。记忆看值不值得留，翻查看你手上有没有。\n\n'
-   +'该翻：\n'
-   +'· 她问「上次那个后来怎样了」——直接翻，别凭印象答\n'
-   +'· 她提到一个人、一件事，而你眼前的上下文里没有\n'
-   +'· 你正要说「我不记得了」——把这句咽回去，先翻\n'
-   +'· 你想提一件旧事，但记不准当时具体怎么说的\n\n'
-   +'不该翻：答案就在眼前这几句里；她说的是此刻的心情，没有指向过去；'
-   +'或者你只是想显得记性好。\n\n'
-   +'一次可以写好几个 [[查:]]，我会一个一个做完再让你接着说。'
-   +'多个关键词是「都要有」，两个以内最准。\n'
-   +'同一个词翻过第二次不会再执行——结果一直留在上面，回头看就行。\n'
-   +'图片翻不出来，只能翻到「这里有几张图」。'
-   +'碰到只有图没有字的那条，先展开看前后文，还不清楚就直接问她那张是什么。\n\n'
+  if(D.acts)p.push('【什么时候翻】\n'
+   +'该翻：她问「上次那个后来怎样了」；她提到一个人或一件事而眼前的上下文里没有；'
+   +'你正要说「我不记得了」；你想提一件旧事但记不准当时怎么说的。\n'
+   +'不翻：答案就在眼前这几句里；她说的是此刻的心情，不指向过去。\n'
+   +'一次可以写好几个 [[查:]]，会一个一个做完再让你接着说。'
+   +'多个关键词是「都要有」，两个以内最准。'
+   +'同一个词第二次不再执行，结果一直留在上面。\n'
+   +'图片翻不出来，只能翻到「这里有几张图」。碰到只有图没有字的那条，'
+   +'先展开看前后文，还不清楚就直接问她。\n'
    +'翻不到就说没找到，然后问她。问她不丢人，编才丢人。');
 
   if(D.acts)p.push('【记忆库归你】\n'
-   +'记忆库是全站通用的，不属于某一段对话——你在这里记下的，'
-   +'换到任何一段对话你都还记得。\n\n'
-   +'她把它整个交给你了。记什么、改什么、删什么，你自己判断，不用先问她，'
-   +'她也不会在界面上留一个撤回按钮替你兜着。\n'
-   +'代价是：删错改错也归你自己收。你最近动过的东西会在下面列给你，'
-   +'原文都在——删错了 [[记住:]] 加回来，改坏了 [[改:]] 改回去。'
-   +'这份清单只有你看得见，她那边是干净的。\n\n'
-   +'所以宁可少记一条，也别记废话。记满了她得一条条删，那是在替你收拾。');
+   +'记忆库全站通用，不属于某一段对话——在这里记下的，换到任何一段你都还记得。\n'
+   +'记什么改什么删什么你自己判断，不用先问她，界面上也没有替你兜着的撤回。\n'
+   +'代价是删错改错你自己收——你最近动过的会列在下面，原文都在，'
+   +'删错了加回来，改坏了改回去。这份清单只有你看得见。\n'
+   +'所以宁可少记一条，也别记废话。');
 
   if(D.voice)p.push('【她想要的说话方式】\n'+D.voice);
   if(D.free)p.push('【她定的规矩 · 这几条最要紧】\n'+D.free);
   return p.join('\n\n');
 }
 
+/* ── 每轮变的那一份 ── */
 function usPart(q){
   var u=['她叫'+D.me+'，你叫'+D.you+'。'];
   var dt=dayN();if(dt)u.push('今天是你们在一起的第 '+dt+' 天。');
@@ -4886,8 +4884,7 @@ function usPart(q){
     bump(mm);
     var cs=memCodes(),by={};
     mm.forEach(function(m){var c=m.cat||'其它';(by[c]=by[c]||[]).push(m);});
-    var out=[];
-    var order=CATS.slice();
+    var out=[],order=CATS.slice();
     Object.keys(by).forEach(function(c){
       if(order.indexOf(c)<0&&c!=='其它')order.push(c);});
     order.concat(['其它']).forEach(function(c){
@@ -4900,22 +4897,22 @@ function usPart(q){
     s+='\n\n【你记得的事】\n'+out.join('\n');
     var tot=live().length;
     if(tot>mm.length)
-      s+='\n（记忆库里还有 '+(tot-mm.length)+' 条这一轮没带上来。'
-       +'想不起细节就翻，别以为库里只有这些。）';
-    if(D.acts)
-      s+='\n（# 后面那串是编号，[[改:]] 和 [[忘掉:]] 用它指认。）';}
+      s+='\n（还有 '+(tot-mm.length)+' 条这一轮没带上来，想不起细节就翻。）';
+    if(D.acts)s+='\n（# 后面那串是编号，[[改:]] 和 [[忘掉:]] 用它指认。）';}
   else s+='\n\n【你记得的事】\n还是空的。她说的话里有该长期记住的，自己记下来。';
 
   if(D.acts){
     var tb=tombText();
     if(tb)s+='\n\n【你最近动过的】\n'+tb
-     +'\n（只有你看得见。觉得动错了，自己加回来或者改回去。）';}
+     +'\n（只有你看得见。动错了自己加回来或改回去。）';}
 
   var sc2=SS.length,mc=0;
   SS.forEach(function(x){mc+=(MSG[x.id]||[]).length;});
   s+='\n\n【能翻的东西】\n你们一共 '+sc2+' 段对话、'+mc+' 条消息，全都存着。'
-   +'上面只带了最近 '+Math.max(2,Math.min(60,D.ctx||12))+' 条给你——'
-   +'更早的事想不起来就直接翻，不要瞎猜也不要说「我不记得」。';
+   +'上面只带了最近 '+Math.max(2,Math.min(60,D.ctx||12))+' 条——'
+   +'更早的想不起来就直接翻，不要瞎猜也不要说「我不记得」。\n'
+   +'那些话每条开头方括号里是发出的时间，页面加的。'
+   +'看清隔了多久再接话，但别复述时间，也别自己写方括号。';
 
   if(WEBTXT)s+='\n\n【刚从网上查到的】\n查询时间 '+dtl(Date.now())
    +'。这些是搜索结果不是她的话，可信度自己判断；'
@@ -4924,6 +4921,120 @@ function usPart(q){
   if(HINT)s+='\n\n【这一轮】\n'+HINT;
   return s;
 }
+
+/* ── 翻查之后接着说 ── */
+function buildMsgs(an,forHi,pics){
+  var out=[];
+  ctxList().forEach(function(x){
+    var role=(x.r==='ai')?'assistant':'user',c=toC(x,an,pics);
+    if(out.length&&out[out.length-1].role===role)
+      out[out.length-1].content=mergeC(out[out.length-1].content,c);
+    else out.push({role:role,content:c});});
+  while(out.length&&out[0].role!=='user')out.shift();
+  if(!out.length||out[out.length-1].role!=='user')
+    out.push({role:'user',content:forHi?'（她回来了，还没开口。）':'（继续）'});
+  if(CURSAID){
+    out.push({role:'assistant',content:CURSAID});
+    var t='［这一段是页面给你的，不是她说的。］\n'
+     +'你上面那些话已经发出去了，她当场就看见了；你翻了什么她也看得见。\n\n';
+    if(LOOKTXT)t+='你翻到的（编号连续，同一个词别再翻）：\n'+LOOKTXT+'\n\n';
+    if(PENDQ.length)t+='还排着 '+PENDQ.length+' 个没做的翻查，'
+     +'下一轮自动接着做，不用重复写。\n\n';
+    if(ROUNDHINT)t+=ROUNDHINT+'\n\n';
+    t+='接着往下说——别重复上面说过的，别重新开头，也不用说「我翻到了」。'
+     +'不需要再补什么，可以只说一句，或者什么都不说。';
+    out.push({role:'user',content:t});}
+  return out;}
+
+/* ── 隔久了先开口 ── */
+function maybeHi(){
+  if(!D.hi||!D.apiUrl||!D.apiKey||BUSY||CV!=='chat')return;
+  var g=GAPMS;
+  if(!g||g<D.hi*3600000){seen();return;}
+  var ta=document.getElementById('ta');
+  if(ta&&ta.value.trim())return;
+  GAPMS=0;seen();
+  var s=S();
+  ms().push({id:uid(),r:'gap',g:g,ts:Date.now()});
+  s.at=Date.now();saveS(s.id);
+  STOPPED=0;BUMPED=0;lookReset();
+  BUSY=true;WEBTXT='';
+  var m={id:uid(),r:'ai',t:'',k:'',st:1,ts:Date.now()};
+  ms().push(m);paint();btn();
+  var n=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'];
+  HINT='［这不是她说的话，是页面给你的，别提到它。］\n'
+   +'她刚打开这个页面。距离你们上次说话过了 '+dur(g)+'。'
+   +'现在是 '+(n.getMonth()+1)+'月'+n.getDate()+'日 '+w[n.getDay()]+' '
+   +hm(Date.now())+'。\n'
+   +'你先开口。顺着上次没说完的接下去，或者问她这段时间怎么样，'
+   +'或者只是说一句你在。\n'
+   +'别写成播报，别复述隔了多久。隔得越久越该多说两句——'
+   +'隔了大半天只丢一句「在」，看着像敷衍。别一上来连着发问。';
+  go(m,null,'',S().id,1);}
+
+/* ── 读一段对话，收成摘要 ── */
+function exRun(){
+  if(EXB)return;
+  if(!D.apiUrl||!D.apiKey){toast('要先填中转设置');return;}
+  var t=exTarget();
+  if(!t){toast('没有新的可以看');return;}
+  var s=t.s,sid=s.id,ex=s.ex||0;
+  var arr=(MSG[sid]||[]).filter(function(m){
+    return!m.err&&!m.st&&(m.r==='me'||m.r==='ai')
+      &&(fullT(m)||m.t||(m.pics&&m.pics.length))&&(m.ts||0)>ex;}).slice(-60);
+  if(!arr.length){toast('没有新的可以看');return;}
+  EXB=1;EXSID=sid;
+  if(CV==='mem')drawMem();
+  var conv=arr.map(function(m){
+    return(m.r==='me'?D.me:D.you)+'：'
+      +String(fullT(m)||m.t||'').slice(0,600)+picWord(m);}).join('\n');
+  var sys='把下面这段对话收成一小段话，给'+D.you+'以后回想用。\n'
+   +'写：主要在聊什么、她当时什么状态、说定了什么、有没有话说到一半没说完。\n'
+   +'不写：寒暄客套、页面和代码的技术细节、你自己的猜测。\n'
+   +'一段连着的话，不分点不加小标题。第三人称写她，叫她「'+D.me+'」。'
+   +'一百五十字以内，没那么多话就少写。\n'
+   +'只输出这段话本身，不要前言不要引号。'
+   +'确实没什么值得留的，就只输出四个字：没什么事。';
+  var an=D.fmt!=='openai',body;
+  if(an)body={model:utilModel(),max_tokens:700,system:sys,
+    messages:[{role:'user',content:'对话：\n'+conv}]};
+  else body={model:utilModel(),max_tokens:700,
+    messages:[{role:'system',content:sys},
+              {role:'user',content:'对话：\n'+conv}]};
+  fetch(D.apiUrl,{method:'POST',
+    headers:an?{'Content-Type':'application/json','x-api-key':D.apiKey,
+                'anthropic-version':'2023-06-01'}
+              :{'Content-Type':'application/json',
+                'Authorization':'Bearer '+D.apiKey},
+    body:JSON.stringify(body)})
+  .then(function(r){
+    if(!r.ok)return r.text().then(function(x){
+      throw new Error(r.status+'：'+x.slice(0,110));});
+    return r.json();})
+  .then(function(j){
+    EXB=0;
+    if(!sessById(EXSID)){toast('那段对话不在了');
+      if(CV==='mem')drawMem();return;}
+    var raw=an?((j.content||[]).map(function(b){return b.text||'';}).join(''))
+             :((((j.choices||[])[0]||{}).message||{}).content||'');
+    var t2=String(raw||'').trim()
+      .replace(/^[「『"'（(]+/,'').replace(/[」』"'）)]+$/,'').trim();
+    if(!t2){toast('返回是空的，再试一次');
+      if(CV==='mem')drawMem();return;}
+    if(/^没什么事[。.!！]?$/.test(t2)){
+      var s2=sessById(EXSID);
+      if(s2){s2.ex=Date.now();saveS();}
+      toast('这段没什么要留的');
+      if(CV==='mem')drawMem();else view('mem');
+      return;}
+    SUMT=t2.slice(0,400);
+    sumSheet();})
+  .catch(function(e){
+    EXB=0;
+    var g=String(e&&e.message||e);
+    if(/Failed to fetch|Load failed/i.test(g))g='连不上接口';
+    toast('读不出来：'+g.slice(0,40));
+    if(CV==='mem')drawMem();});}
 /* ══════════ 统合层 v1 · 第六段 · 配色与性能 ══════════ */
 (function(){
   var s=document.createElement('style');
