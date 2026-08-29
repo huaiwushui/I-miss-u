@@ -6242,6 +6242,20 @@ document.addEventListener('focusin',function(e){
     if(G8.hold)G8.hold(560);
   }
 },true);
+  /* ══════════ I MISS U · 第九段 · 贴住键盘 ══════════ */
+if(typeof G9==='undefined')var G9={};
+if(!G9.css){
+G9.css=1;
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    'html.kbon .ib{padding-bottom:0!important;'
+   +'transform:translate3d(0,calc(4px - var(--kb)),0)!important}'
+   +'html.kbon .selbar{padding-bottom:0!important;'
+   +'transform:translate3d(0,calc(4px - var(--kb)),0)!important}';
+  document.head.appendChild(s);
+})();
+}
 </script>
 </body>
 </html>
