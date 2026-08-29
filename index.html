@@ -6256,6 +6256,62 @@ G9.css=1;
   document.head.appendChild(s);
 })();
 }
+  /* ══════════ I MISS U · 第十段 · 收尾 ══════════ */
+if(typeof GA==='undefined')var GA={};
+if(!GA.on){
+GA.on=1;
+
+/* 滚动露白：不要 content-visibility 了 */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    '#ms>.m,#ms.cv>.m{content-visibility:visible!important;'
+   +'contain-intrinsic-size:auto!important}';
+  document.head.appendChild(s);
+})();
+
+/* 底部保持器：画完之后再盯一会儿 */
+GA.until=0;GA.raf=0;
+GA.keep=function(ms){
+  GA.until=Math.max(GA.until,performance.now()+(ms||700));
+  if(GA.raf)return;
+  GA.raf=1;
+  (function f(){
+    var b=msBox();
+    if(b&&SC.pin&&!SC.hold)toEnd(b);
+    if(performance.now()<GA.until)requestAnimationFrame(f);
+    else GA.raf=0;
+  })();
+};
+
+GA.paint=paint;
+paint=function(keep){
+  var r;
+  try{r=GA.paint(keep);}catch(e){}
+  if(SC.pin&&!SC.hold)GA.keep(700);
+  return r;
+};
+
+/* 发送：先认定要回底部，再发 */
+GA.send=send;
+send=function(){
+  var ta=document.getElementById('ta');
+  if(ta&&((ta.value||'').trim()||ATT.length)){
+    SC.pin=1;SC.el=null;SC.hold=0;}
+  var r;
+  try{r=GA.send();}catch(e){}
+  GA.keep(1100);
+  return r;
+};
+
+/* 图片加载完会撑高，撑完再钉一次 */
+document.addEventListener('load',function(e){
+  var t=e.target;
+  if(!t||t.tagName!=='IMG')return;
+  if(!t.closest||!t.closest('#ms'))return;
+  if(SC.pin&&!SC.hold)GA.keep(320);
+},true);
+}
 </script>
 </body>
 </html>
