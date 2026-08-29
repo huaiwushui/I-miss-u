@@ -5831,7 +5831,6 @@ document.addEventListener('click',function(e){
   e.preventDefault();
   try{window.open(h,'_blank','noopener');}catch(x){}
 },true);
-
 /* ══════════ I MISS U · 补丁 ══════════ */
 if(typeof G6==='undefined')var G6={};
 
@@ -5841,8 +5840,6 @@ if(typeof G6==='undefined')var G6={};
   s.textContent=
     ':root{--fl2:rgba(109,116,128,.16)!important}'
    +'html.dark{--fl2:rgba(148,158,174,.19)!important}'
-   +'.ib,.selbar{transition:none!important}'
-   +'#dn{transition:opacity .22s ease!important}'
    +'#ms.slide{transition:none!important}'
    +'.hd{transform:none!important;will-change:auto!important}'
    +'#prb{position:fixed;z-index:99998;'
@@ -5916,7 +5913,6 @@ function bgSize(){
     '100% 100%,100% 100%,'+BGW+'px '+BGH+'px','important');
   de.style.setProperty('background-position',
     'center top,center top,center top','important');
-  de.style.removeProperty('background-attachment');
 }
 if(!G6.bgPaint){
   G6.bgPaint=bgPaint;
@@ -5928,7 +5924,6 @@ if(!G6.bgPaint){
       if(!D.bgOn||!BGDATA){
         de.style.removeProperty('background-size');
         de.style.removeProperty('background-position');
-        de.style.removeProperty('background-attachment');
         return;}
       bgSize();
     }catch(e){}
@@ -5939,68 +5934,6 @@ window.addEventListener('orientationchange',function(){
   BGW=0;BGH=0;
   setTimeout(function(){try{bgLock();bgSize();}catch(e){}},550);
 });
-
-/* ── 键盘：一个常驻追随器，谁都不会打架 ── */
-var KNOW=0,KWANT=0,KRAF=0,GUESSAT=0,GRACE=560;
-function pinRide(ms){
-  var t0=performance.now(),lim=ms||140;
-  (function f(){
-    var b=msBox();
-    if(b&&SC.pin)toEnd(b);
-    if(performance.now()-t0<lim)requestAnimationFrame(f);
-  })();
-}
-function kbWrite(v){
-  KNOW=v;
-  try{G6.kbApply(Math.round(v));}catch(e){}
-  var b=msBox();if(b&&SC.pin)toEnd(b);
-}
-/* 只改目标，不碰动画；循环自己会跟过去 */
-function kbAim(v){
-  KWANT=Math.max(0,Math.round(v));
-  if(KRAF)return;
-  KRAF=requestAnimationFrame(function f(){
-    var d=KWANT-KNOW;
-    if(Math.abs(d)<0.6){
-      KRAF=0;
-      if(KNOW!==KWANT)kbWrite(KWANT);
-      pinRide(140);return;}
-    /* 指数追随：起步柔、越近越慢，单帧封顶 56 */
-    var step=d*0.24;
-    if(step>56)step=56;else if(step<-56)step=-56;
-    else if(Math.abs(step)<1.4)step=d>0?1.4:-1.4;
-    kbWrite(KNOW+step);
-    KRAF=requestAnimationFrame(f);
-  });
-}
-if(!G6.kbApply){
-  G6.kbApply=kbApply;
-  kbApply=function(gap){
-    gap=Math.max(0,Math.round(gap||0));
-    /* 预锁刚出发那一下，壳会谎报没键盘，只挡这一小段 */
-    if(!gap&&GUESSAT&&Date.now()-GUESSAT<GRACE)return;
-    if(gap>60)GUESSAT=0;
-    return kbAim(gap);   /* 别的一概照收，绝不吞事件 */
-  };
-}
-document.addEventListener('focusin',function(e){
-  if(!e.isTrusted)return;
-  var t=e.target;
-  if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
-  if(kbH>60&&KWANT<=60){GUESSAT=Date.now();kbAim(kbH);}
-},true);
-document.addEventListener('focusout',function(e){
-  if(!e.isTrusted)return;
-  setTimeout(function(){
-    var a=document.activeElement;
-    if(a&&/^(INPUT|TEXTAREA)$/.test(a.tagName))return;
-    GUESSAT=0;kbAim(0);},0);
-},true);
-/* 兜底：焦点不在输入框却还抬着，就放下来（收起键盘那个键） */
-setInterval(function(){
-  var a=document.activeElement,inp=a&&/^(INPUT|TEXTAREA)$/.test(a.tagName);
-  if(!inp&&KWANT>60&&!(GUESSAT&&Date.now()-GUESSAT<GRACE))kbAim(0);
-},400);
 
 /* ── 那个二段滑动：不要了 ── */
 if(!G6.slideRun){
@@ -6117,8 +6050,7 @@ function pFold(){
   if(el){el.classList.toggle('fold');pDraw();}}
 function pCopy(){
   if(!PLOG.length){toast('还没记到');return;}
-  var t='うごき · '+PLOG.length+' 条\n'
-   +'（负数=往上跳，「浏览器」=不是我们的代码干的）\n\n'
+  var t='うごき · '+PLOG.length+' 条\n\n'
    +PLOG.slice(-40).map(function(x){
       return hm(x.t)+'  '+(x.d>0?'+':'')+x.d+'  '+x.w;}).join('\n');
   clip(t,function(){toast('抄好了，发我');});}
@@ -6138,9 +6070,8 @@ function shPrb(){
     body:'<div class="cd cd0"><div class="sw" onclick="pTg(this)">'
   +'<span class="l">开着</span><span class="k'+(PRB?' on':'')
   +'"><i></i></span></div></div>'
-  +'<div class="nt">开着的时候右上角挂一张小卡，记下聊天区每一次位移：'
-  +'谁动的、动了多少像素。灰色是我们的代码，暖色是浏览器自己干的。'
-  +'觉得屏幕抽了一下就点「抄给我」发我。点标题能收起来。平时关着。</div>'});}
+  +'<div class="nt">开着的时候右上角挂一张小卡，记下聊天区每一次位移。'
+  +'点标题能收起来。平时关着。</div>'});}
 try{NOTE['抽动探针']='';}catch(e){}
 if(!G6.vMore){
   G6.vMore=vMore;
