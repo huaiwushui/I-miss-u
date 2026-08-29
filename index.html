@@ -3543,7 +3543,6 @@ function unstick(m,why){
   if(!(m.t&&m.t.trim())&&!(m.parts&&m.parts.length))m.err=why;
   try{saveS(S().id);}catch(e){}
   if(CV==='chat'){paint();btn();}else btn();}
-setInterval(function(){
 
 /* ── 看门狗循环 ── */
 setInterval(function(){
@@ -3558,9 +3557,7 @@ setInterval(function(){
   if(BUSY&&idle>75000)unstick(m,'等太久了，没收到回应。');
 },1500);
 
-/* ── 四处修补 ── */
-
-/* 压图只压一次 */
+/* ── 压图只压一次 ── */
 var PRESHRUNK={};
 if(!G1.shrunkOnce){
   G1.shrunkOnce=1;
@@ -3591,7 +3588,7 @@ if(!G1.dbPut2){
   },60000);
 }
 
-/* 回到底部：只在聊天页、没在选择模式时存在 */
+/* ── 回到底部：只在聊天页、没在选择模式时存在 ── */
 function dnBox(){
   var b=document.getElementById('dn');
   if(CV!=='chat'||SEL){if(b)b.remove();return null;}
@@ -3612,13 +3609,14 @@ function dnSync(){
   if(!box||!b)return;
   b.classList.toggle('on',(scMax(box)-box.scrollTop)>400);}
 
-/* 滑动期间别抢滚动位置 */
+/* ── 滑动期间别抢滚动位置 ── */
 if(!G1.paintGuard){
   G1.paintGuard=1;
   G1.rawPaint=paint;
   paint=function(keep){
-    if(!KSL)return G1.rawPaint(keep);
-    var b=msBox(),was=b?b.scrollTop:0;
+    var b=msBox();
+    if(!b||!b.classList.contains('slide'))return G1.rawPaint(keep);
+    var was=b.scrollTop;
     G1.rawPaint(keep);
     var c=msBox();
     if(!c)return;
@@ -3626,18 +3624,7 @@ if(!G1.paintGuard){
     else c.scrollTop=Math.min(was,scMax(c));
   };
 }
-  G1.wdTimer=t;
-})();
-  var m=stuckOne();
-  if(!m){WD.id='';WD.len=-1;WD.t=0;return;}
-  var now=Date.now();
-  var len=((m.t||'').length)+((m.parts||[]).length*7)+(m.wst?1:0);
-  if(m.id!==WD.id){WD.id=m.id;WD.len=len;WD.t=now;return;}
-  if(len!==WD.len){WD.len=len;WD.t=now;return;}
-  var idle=now-WD.t;
-  if(!BUSY&&idle>2500){unstick(m,'断了，再说一次吧。');return;}
-  if(BUSY&&idle>75000)unstick(m,'等太久了，没收到回应。');
-},1500);
+
 /* ══════════ I MISS U · 第二段 · 逻辑与提示词 ══════════ */
 if(typeof G2==='undefined')var G2={};
 if(!G2.paint)G2.paint=paint;
