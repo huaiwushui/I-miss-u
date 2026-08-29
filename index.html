@@ -5940,8 +5940,8 @@ window.addEventListener('orientationchange',function(){
   setTimeout(function(){try{bgLock();bgSize();}catch(e){}},550);
 });
 
-/* ── 键盘：一次聚焦只准一条曲线 ── */
-var GUESSAT=0,GRACE=700,KNOW=0,KSID=0,KRAF=0;
+/* ── 键盘：一个常驻追随器，谁都不会打架 ── */
+var KNOW=0,KWANT=0,KRAF=0,GUESSAT=0,GRACE=560;
 function pinRide(ms){
   var t0=performance.now(),lim=ms||140;
   (function f(){
@@ -5950,61 +5950,57 @@ function pinRide(ms){
     if(performance.now()-t0<lim)requestAnimationFrame(f);
   })();
 }
-function kbStop(){if(KRAF)cancelAnimationFrame(KRAF);KRAF=0;}
-/* 当前值我自己记，不问别人 */
-function kbSet(v){
-  v=Math.max(0,Math.round(v));
+function kbWrite(v){
   KNOW=v;
-  try{G6.kbApply(v);}catch(e){}
+  try{G6.kbApply(Math.round(v));}catch(e){}
   var b=msBox();if(b&&SC.pin)toEnd(b);
 }
-function kbRun(to,ms){
-  to=Math.max(0,Math.round(to));
-  var from=KNOW,sid=++KSID;   /* 通行证：换号了就自己退场 */
-  kbStop();
-  if(Math.abs(to-from)<8){kbSet(to);pinRide(120);return;}
-  var t0=0,prev=from;
-  KRAF=requestAnimationFrame(function f(now){
-    if(sid!==KSID){KRAF=0;return;}
-    if(!t0){t0=now;KRAF=requestAnimationFrame(f);return;}
-    var p=Math.min(1,(now-t0)/ms);
-    var e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
-    var v=from+(to-from)*e;
-    if(v-prev>72)v=prev+72;else if(v-prev<-72)v=prev-72;
-    prev=v;kbSet(v);
-    if(p<1)KRAF=requestAnimationFrame(f);
-    else{KRAF=0;kbSet(to);pinRide(140);}
+/* 只改目标，不碰动画；循环自己会跟过去 */
+function kbAim(v){
+  KWANT=Math.max(0,Math.round(v));
+  if(KRAF)return;
+  KRAF=requestAnimationFrame(function f(){
+    var d=KWANT-KNOW;
+    if(Math.abs(d)<0.6){
+      KRAF=0;
+      if(KNOW!==KWANT)kbWrite(KWANT);
+      pinRide(140);return;}
+    /* 指数追随：起步柔、越近越慢，单帧封顶 56 */
+    var step=d*0.24;
+    if(step>56)step=56;else if(step<-56)step=-56;
+    else if(Math.abs(step)<1.4)step=d>0?1.4:-1.4;
+    kbWrite(KNOW+step);
+    KRAF=requestAnimationFrame(f);
   });
 }
 if(!G6.kbApply){
   G6.kbApply=kbApply;
   kbApply=function(gap){
     gap=Math.max(0,Math.round(gap||0));
-    if(KRAF)return;              /* 曲线在跑，谁都别插嘴 */
-    if(gap>60){
-      /* 已经抬起来了：只做静默对账，绝不再开一条曲线 */
-      if(KNOW>60||(GUESSAT&&Date.now()-GUESSAT<GRACE)){
-        if(Math.abs(gap-KNOW)>=8)kbSet(gap);
-        return;}
-      return kbRun(gap,300);}    /* 没预锁的第一次，自己走一条 */
-    if(GUESSAT&&Date.now()-GUESSAT<GRACE)return;
-    if(KNOW<=60){KNOW=0;return;}
-    return kbRun(0,200);
+    /* 预锁刚出发那一下，壳会谎报没键盘，只挡这一小段 */
+    if(!gap&&GUESSAT&&Date.now()-GUESSAT<GRACE)return;
+    if(gap>60)GUESSAT=0;
+    return kbAim(gap);   /* 别的一概照收，绝不吞事件 */
   };
 }
 document.addEventListener('focusin',function(e){
   if(!e.isTrusted)return;
   var t=e.target;
   if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
-  if(kbH>60&&KNOW<=60){GUESSAT=Date.now();kbRun(kbH,300);}
+  if(kbH>60&&KWANT<=60){GUESSAT=Date.now();kbAim(kbH);}
 },true);
 document.addEventListener('focusout',function(e){
   if(!e.isTrusted)return;
   setTimeout(function(){
     var a=document.activeElement;
     if(a&&/^(INPUT|TEXTAREA)$/.test(a.tagName))return;
-    GUESSAT=0;kbRun(0,200);},0);
+    GUESSAT=0;kbAim(0);},0);
 },true);
+/* 兜底：焦点不在输入框却还抬着，就放下来（收起键盘那个键） */
+setInterval(function(){
+  var a=document.activeElement,inp=a&&/^(INPUT|TEXTAREA)$/.test(a.tagName);
+  if(!inp&&KWANT>60&&!(GUESSAT&&Date.now()-GUESSAT<GRACE))kbAim(0);
+},400);
 
 /* ── 那个二段滑动：不要了 ── */
 if(!G6.slideRun){
