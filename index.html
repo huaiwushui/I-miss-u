@@ -3545,23 +3545,36 @@ function unstick(m,why){
   if(CV==='chat'){paint();btn();}else btn();}
 setInterval(function(){
 
-  /* ── 四处修补 ── */
+/* ── 看门狗循环 ── */
+setInterval(function(){
+  var m=stuckOne();
+  if(!m){WD.id='';WD.len=-1;WD.t=0;return;}
+  var now=Date.now();
+  var len=((m.t||'').length)+((m.parts||[]).length*7)+(m.wst?1:0);
+  if(m.id!==WD.id){WD.id=m.id;WD.len=len;WD.t=now;return;}
+  if(len!==WD.len){WD.len=len;WD.t=now;return;}
+  var idle=now-WD.t;
+  if(!BUSY&&idle>2500){unstick(m,'断了，再说一次吧。');return;}
+  if(BUSY&&idle>75000)unstick(m,'等太久了，没收到回应。');
+},1500);
+
+/* ── 四处修补 ── */
 
 /* 压图只压一次 */
+var PRESHRUNK={};
 if(!G1.shrunkOnce){
   G1.shrunkOnce=1;
-  var _shrink=shrink;
+  G1.rawShrink=shrink;
   shrink=function(src,a,b,c){
     var cb=(typeof a==='function')?a:c;
-    var wrap=function(u){
+    function wrap(u){
       if(u&&typeof u==='string')PRESHRUNK[u.slice(-40)]=1;
       if(typeof cb==='function')cb(u);
-    };
-    if(typeof a==='function')return _shrink(src,wrap);
-    return _shrink(src,a,b,wrap);
+    }
+    if(typeof a==='function')return G1.rawShrink(src,wrap);
+    return G1.rawShrink(src,a,b,wrap);
   };
 }
-var PRESHRUNK={};
 if(!G1.dbPut2){
   G1.dbPut2=dbPut;
   dbPut=function(store,key,val){
@@ -3571,12 +3584,12 @@ if(!G1.dbPut2){
     }
     return G1.dbPut2(store,key,val);
   };
+  setInterval(function(){
+    var ks=Object.keys(PRESHRUNK);
+    if(ks.length>40)ks.slice(0,ks.length-20)
+      .forEach(function(k){delete PRESHRUNK[k];});
+  },60000);
 }
-setInterval(function(){
-  var ks=Object.keys(PRESHRUNK);
-  if(ks.length>40)ks.slice(0,ks.length-20)
-    .forEach(function(k){delete PRESHRUNK[k];});
-},60000);
 
 /* 回到底部：只在聊天页、没在选择模式时存在 */
 function dnBox(){
@@ -3599,58 +3612,20 @@ function dnSync(){
   if(!box||!b)return;
   b.classList.toggle('on',(scMax(box)-box.scrollTop)>400);}
 
-/* 看门狗：只管它当初盯上的那一条 */
-WD={t:0,len:-1,id:'',sid:''};
-function stuckOne(){
-  var i,j,arr,s;
-  for(j=0;j<SS.length;j++){
-    s=SS[j];arr=MSG[s.id]||[];
-    for(i=arr.length-1;i>=0;i--)
-      if(arr[i].st||arr[i].wst)return{m:arr[i],sid:s.id};}
-  return null;}
-function unstick(m,why,sid){
-  if(!m)return;
-  m.st=0;m.wst=0;delete m._ks;delete m.forced;
-  BUSY=false;
-  try{CURSAID='';ROUNDHINT='';PENDQ=[];}catch(e){}
-  if(ABORT){try{ABORT.abort();}catch(e){}ABORT=null;}
-  if(TMR){clearInterval(TMR);TMR=null;}
-  if(!(m.t&&m.t.trim())&&!(m.parts&&m.parts.length))m.err=why;
-  try{saveS(sid||S().id);}catch(e){}
-  if(CV==='chat'){paint();btn();}else btn();}
-
 /* 滑动期间别抢滚动位置 */
 if(!G1.paintGuard){
   G1.paintGuard=1;
-  var _pnt=paint;
+  G1.rawPaint=paint;
   paint=function(keep){
-    if(KSL){
-      var b=msBox();
-      var was=b?b.scrollTop:0;
-      _pnt(keep);
-      var c=msBox();
-      if(c&&SC.pin)toEnd(c);
-      else if(c)c.scrollTop=Math.min(was,scMax(c));
-      return;}
-    return _pnt(keep);
+    if(!KSL)return G1.rawPaint(keep);
+    var b=msBox(),was=b?b.scrollTop:0;
+    G1.rawPaint(keep);
+    var c=msBox();
+    if(!c)return;
+    if(SC.pin)toEnd(c);
+    else c.scrollTop=Math.min(was,scMax(c));
   };
 }
-
-  /* 看门狗循环：跟着新的 stuckOne 走 */
-(function(){
-  var t=setInterval(function(){
-    var hit=stuckOne();
-    if(!hit){WD.id='';WD.len=-1;WD.t=0;WD.sid='';return;}
-    var m=hit.m,now=Date.now();
-    var len=((m.t||'').length)+((m.parts||[]).length*7)+(m.wst?1:0);
-    if(m.id!==WD.id){WD.id=m.id;WD.sid=hit.sid;WD.len=len;WD.t=now;return;}
-    if(len!==WD.len){WD.len=len;WD.t=now;return;}
-    var idle=now-WD.t;
-    var mine=(S()&&S().id===hit.sid);
-    if(!BUSY&&idle>2500){unstick(m,'断了，再说一次吧。',hit.sid);return;}
-    if(idle>75000&&(!mine||BUSY))
-      unstick(m,'等太久了，没收到回应。',hit.sid);
-  },1500);
   G1.wdTimer=t;
 })();
   var m=stuckOne();
