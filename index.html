@@ -5831,6 +5831,87 @@ document.addEventListener('click',function(e){
   e.preventDefault();
   try{window.open(h,'_blank','noopener');}catch(x){}
 },true);
+  /* ══════════ 补丁 · 壁纸钉死 / 命中色 / 年份 ══════════ */
+if(typeof G6==='undefined')var G6={};
+
+/* ── 命中与跳转：换成偏冷的石板灰蓝 ── */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    ':root{--fl2:rgba(109,116,128,.16)!important}'
+   +'html.dark{--fl2:rgba(148,158,174,.19)!important}';
+  document.head.appendChild(s);
+})();
+
+/* ── 光一个年份也能搜 ── */
+if(!G6.parseDate){
+  G6.parseDate=parseDate;
+  parseDate=function(s){
+    var r=G6.parseDate(s);
+    if(r)return r;
+    var t=String(s||'').replace(/\s/g,'');
+    var m=t.match(/^(\d{4})年?$/);
+    if(m){
+      var y=+m[1];
+      if(y>=2000&&y<=2100)
+        return{a:new Date(y,0,1).getTime(),
+               b:new Date(y+1,0,1).getTime(),lab:y+' 年'};}
+    return null;};
+}
+
+/* ── 壁纸：钉在屏幕上，键盘碰不到 ── */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    'html.hasbg{background-image:none!important;height:100%!important}'
+   +'#bgf{position:fixed;left:0;top:0;width:100vw;height:100vh;'
+   +'height:100lvh;z-index:-3;pointer-events:none;display:none;'
+   +'background-position:center;background-size:cover;'
+   +'background-repeat:no-repeat}'
+   +'html.hasbg #bgl,html.hasbg #bgv{display:none!important}'
+    /* 抬起收紧一点，去掉二段拉扯 */
+   +'#ms.slide{transition:none!important}'
+   +'.ib,.selbar{transition:transform .17s cubic-bezier(.33,1,.68,1)!important}';
+  document.head.appendChild(s);
+})();
+var BGF=null;
+function bgLayer(){
+  if(!BGF||!BGF.parentNode){
+    BGF=document.getElementById('bgf');
+    if(!BGF){
+      BGF=document.createElement('div');BGF.id='bgf';
+      document.body.insertBefore(BGF,document.body.firstChild);}}
+  return BGF;}
+if(!G6.bgPaint){
+  G6.bgPaint=bgPaint;
+  bgPaint=function(){
+    try{
+      var el=bgLayer();
+      de.style.setProperty('--edge',edgeColor());
+      de.style.backgroundImage='';
+      if(!D.bgOn||!BGDATA){
+        de.classList.remove('hasbg');
+        de.style.backgroundColor='';
+        el.style.display='none';el.style.backgroundImage='';
+        return;}
+      var a=(D.bgv==null?45:D.bgv)/100;
+      var c=isDark()?'22,20,15':'248,246,242';
+      var v='rgba('+c+','+a+')',w='rgba('+c+',0.12)';
+      de.style.backgroundColor=edgeColor();
+      el.style.display='block';
+      el.style.backgroundImage='linear-gradient('+v+','+v+'),'
+       +'linear-gradient('+w+','+w+'),url("'+BGDATA+'")';
+      de.classList.add('hasbg');
+    }catch(e){}
+  };
+  try{bgPaint();}catch(e){}
+}
+
+/* ── 那个二段滑动：不要了 ── */
+if(!G6.slideRun){
+  G6.slideRun=slideRun;
+  slideRun=function(){try{slideOff();}catch(e){}};
+}
 </script>
 </body>
 </html>
