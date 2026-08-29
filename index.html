@@ -6083,7 +6083,7 @@ if(!G6.vMore){
     return h.indexOf(mk)>=0?h.replace(mk,add+mk):h;};
 }
 if(PRB){try{pBox();pDraw();pWatch();}catch(e){}}
-  /* ══════════ I MISS U · 第七段 · 玻璃 ══════════ */
+/* ══════════ I MISS U · 第七段 · 玻璃 ══════════ */
 if(typeof G7==='undefined')var G7={};
 if(!G7.css){
 G7.css=1;
@@ -6092,33 +6092,81 @@ G7.css=1;
   var MIN='"Hiragino Mincho ProN","Yu Mincho","Songti SC",serif';
   var BL='blur(18px) saturate(170%)';
   s.textContent=
-    /* 一套玻璃，全站共用 */
-    ':root{--gb:rgba(252,251,248,.82);--gd:rgba(255,255,255,.7)}'
-   +'html.dark{--gb:rgba(30,27,22,.84);--gd:rgba(255,255,255,.1)}'
+    /* 一套玻璃 + 一个稳重的强调色 */
+    ':root{--gb:rgba(252,251,248,.82);--gd:rgba(255,255,255,.7);'
+   +'--acc:#6E7A6A}'
+   +'html.dark{--gb:rgba(30,27,22,.84);--gd:rgba(255,255,255,.1);'
+   +'--acc:#9AA694}'
 
     /* 面板与抽屉 */
    +'#sh .pn,#dw .pn{background:var(--gb)!important;'
    +'backdrop-filter:'+BL+'!important;'
    +'-webkit-backdrop-filter:'+BL+'!important}'
-   +'html.dark #sh .pn,html.dark #dw .pn{background:var(--gb)!important}'
    +'#sh .pn{border-top:1px solid var(--gd);'
+   +'border-radius:19px 19px 0 0!important;'
    +'box-shadow:0 -14px 40px -26px var(--sd2)!important}'
    +'#dw .pn{border-right:1px solid var(--gd);'
    +'box-shadow:1px 0 0 var(--ln2),0 0 70px -34px var(--sd2)!important}'
 
-    /* 面板里的零件：白玻璃描边，不要灰底 */
+    /* 抓手与标题：细、静、字距开 */
+   +'#sh .gb{width:30px!important;height:3.5px!important;'
+   +'opacity:.4;margin-bottom:13px!important}'
+   +'#sh .st{border-bottom:1px solid var(--ln2);'
+   +'padding:0 calc(20px + var(--sr)) 13px calc(20px + var(--sl))!important;'
+   +'align-items:baseline!important}'
+   +'#sh .st .tt{font-size:14px!important;letter-spacing:.16em!important;'
+   +'color:var(--dim)!important;font-weight:400!important}'
+    /* 保存不再是红的 */
+   +'#sh .st .ok{color:var(--acc)!important;font-size:13px!important;'
+   +'font-weight:500!important;letter-spacing:.12em!important;'
+   +'font-family:'+MIN+'!important}'
+
+    /* 内容区：跟那条线拉开距离，别贴着 */
+   +'#sh .bdy{padding:18px calc(20px + var(--sr)) '
+   +'max(20px,calc(var(--sb) - 4px)) calc(20px + var(--sl))!important}'
+   +'html.kbon #sh .bdy{padding-bottom:14px!important}'
+   +'#sh .bdy>*:first-child{margin-top:0!important}'
+
+    /* 面板零件：白玻璃描边 */
    +'#sh .fd input,#sh .fd textarea,#sh .cd,#sh .mcd,'
    +'#sh .seg button,#sh .segw button{'
    +'background:rgba(255,255,255,.46)!important;'
-   +'border:1px solid var(--gd)!important;box-shadow:none!important}'
+   +'border:1px solid var(--gd)!important;box-shadow:none!important;'
+   +'border-radius:14px!important}'
    +'html.dark #sh .fd input,html.dark #sh .fd textarea,html.dark #sh .cd,'
    +'html.dark #sh .mcd,html.dark #sh .seg button,'
    +'html.dark #sh .segw button{'
    +'background:rgba(255,255,255,.055)!important;'
    +'border-color:rgba(255,255,255,.1)!important}'
+   +'#sh .cd{border-radius:16px!important}'
+   +'#sh .fd input,#sh .fd textarea{padding:13px 15px!important}'
+   +'#sh .fd input:focus,#sh .fd textarea:focus{'
+   +'border-color:var(--acc)!important}'
    +'#sh .seg button.on,#sh .segw button.on{'
    +'background:var(--ink2)!important;border-color:transparent!important}'
    +'#sh .rw+.rw{border-top-color:var(--ln2)!important}'
+   +'#sh .rw{padding:14px 16px!important}'
+   +'#sh .rw .l{font-size:14.5px!important;font-weight:400!important;'
+   +'letter-spacing:.02em}'
+
+    /* 一组之间的呼吸：标签贴着它下面的东西，组与组拉开 */
+   +'#sh .fd,#sh .cd,#sh .seg,#sh .segw{margin-bottom:0!important}'
+   +'#sh .lbs{padding:0 2px 7px!important;font-size:11px!important;'
+   +'font-weight:400!important;letter-spacing:.14em!important;'
+   +'color:var(--dim2)!important;font-family:'+MIN+'!important}'
+   +'#sh .lbs:not(:first-child){padding-top:20px!important}'
+   +'#sh .cd+.lbs,#sh .fd+.lbs,#sh .seg+.lbs,#sh .segw+.lbs{'
+   +'padding-top:20px!important}'
+   +'#sh .fd+.fd{margin-top:8px!important}'
+   +'#sh .cd+.cd{margin-top:10px!important}'
+
+    /* 灰字提示：上下一样、不许太宽、只留一处 */
+   +'#sh .nt,#pg .nt{padding:14px 2px 0!important;'
+   +'font-size:11.5px!important;line-height:1.75!important;'
+   +'letter-spacing:.02em;color:var(--dim2)!important;'
+   +'max-width:29em;text-wrap:pretty}'
+   +'#sh .bdy>.nt:last-child{padding-bottom:2px!important}'
+   +'#sh .bdy>.nt:first-child{padding:0 2px 16px!important}'
 
     /* 头部小件、输入条、回到底部、提示条 */
    +'.cb,.pill,.ibx,.selbar,#dn{background:var(--gb)!important;'
@@ -6127,35 +6175,29 @@ G7.css=1;
    +'-webkit-backdrop-filter:'+BL+'!important;'
    +'box-shadow:0 1px 2px var(--sd),0 12px 30px -22px var(--sd2)!important}'
    +'html.hasbg .cb,html.hasbg .pill,html.hasbg .ibx,html.hasbg .selbar,'
-   +'html.hasbg #dn{background:var(--gb)!important;'
-   +'border-color:var(--gd)!important}'
-   +'html.dark.hasbg .cb,html.dark.hasbg .pill,html.dark.hasbg .ibx,'
-   +'html.dark.hasbg .selbar,html.dark.hasbg #dn{'
+   +'html.hasbg #dn,html.dark.hasbg .cb,html.dark.hasbg .pill,'
+   +'html.dark.hasbg .ibx,html.dark.hasbg .selbar,html.dark.hasbg #dn{'
    +'background:var(--gb)!important;border-color:var(--gd)!important}'
    +'.selbar{border-left:0!important;border-right:0!important;'
    +'border-bottom:0!important}'
-   +'#tst{background:var(--gb)!important;'
-   +'border:1px solid var(--gd);color:var(--ink2)!important;'
-   +'letter-spacing:.04em}'
+   +'#tst{background:var(--gb)!important;border:1px solid var(--gd);'
+   +'color:var(--ink2)!important;letter-spacing:.04em}'
 
-    /* 日系细节：抓手更细、标题带发丝线、字距放开 */
-   +'#sh .gb{width:30px!important;height:3.5px!important;opacity:.45}'
-   +'#sh .st{border-bottom:1px solid var(--ln2);'
-   +'padding-bottom:12px!important}'
-   +'#sh .st .tt{font-size:14.5px!important;letter-spacing:.14em!important;'
-   +'color:var(--dim)!important}'
-   +'#sh .st .ok{font-size:13.5px!important;letter-spacing:.06em}'
+    /* 强调色统一：链接式按钮不再各自为政 */
+   +'#pg .res .ra button,#pg .exb .x2,#pg .mcd .ts b,'
+   +'#sh .rw .l[style*="rose"]{color:var(--acc)!important}'
+   +'#pg .more,#ms .more{color:var(--dim)!important}'
+
+    /* 日系细节 */
    +'#pg .sc2{letter-spacing:.16em!important;font-size:11.5px!important;'
    +'color:var(--dim2)!important}'
-   +'#pg .lbs{letter-spacing:.1em!important;font-weight:400!important}'
-   +'#dw .lb span{opacity:.8}'
+   +'#pg .lbs{letter-spacing:.12em!important;font-weight:400!important}'
    +'#dw .nv a{letter-spacing:.08em!important}'
    +'#sls .it{letter-spacing:.05em!important}'
+   +'#dw .lb span{opacity:.8}'
 
-    /* 探针跟着变量走，以后改一处就全站同步 */
-   +'#prb{background:var(--gb)!important;'
-   +'border-color:var(--gd)!important}'
-   +'html.dark #prb{background:var(--gb)!important;'
+    /* 探针跟着变量走 */
+   +'#prb,html.dark #prb{background:var(--gb)!important;'
    +'border-color:var(--gd)!important}'
    +'#prb .pl{font-family:'+MIN+'}';
   document.head.appendChild(s);
