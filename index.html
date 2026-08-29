@@ -5940,8 +5940,8 @@ window.addEventListener('orientationchange',function(){
   setTimeout(function(){try{bgLock();bgSize();}catch(e){}},550);
 });
 
-/* ── 键盘：抬起自己走一条平缓的，收起立刻回位 ── */
-var GUESSAT=0,GRACE=650,KTGT=-1,KRAF=0;
+/* ── 键盘：一条不许被打断的曲线 ── */
+var GUESSAT=0,GRACE=700,KTGT=-1,KRAF=0,KMAX=0;
 function pinRide(ms){
   var t0=performance.now(),lim=ms||160;
   (function f(){
@@ -5951,23 +5951,35 @@ function pinRide(ms){
   })();
 }
 function kbStop(){if(KRAF)cancelAnimationFrame(KRAF);KRAF=0;}
-function kbRun(to,ms){
+function kbSet(v){
+  try{G6.kbApply(Math.max(0,Math.round(v)));}catch(e){}
+  var b=msBox();if(b&&SC.pin)toEnd(b);
+}
+function kbRun(to,ms,soft){
   to=Math.max(0,Math.round(to));
   if(KTGT===to&&KRAF)return;
   kbStop();
   var from=(typeof KBCUR==='number'?KBCUR:0)||0;
   KTGT=to;
-  if(Math.abs(to-from)<3){
-    try{G6.kbApply(to);}catch(e){}
-    pinRide(120);return;}
-  var t0=performance.now();
+  if(Math.abs(to-from)<3){kbSet(to);pinRide(120);return;}
+  var t0=0,prev=from,CAP=64;
   KRAF=requestAnimationFrame(function f(now){
+    /* 头一帧才定表：主线程被键盘卡住时不会一口气算出半屏 */
+    if(!t0){t0=now;KRAF=requestAnimationFrame(f);return;}
     var p=Math.min(1,(now-t0)/ms);
-    var e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
-    try{G6.kbApply(Math.round(from+(to-from)*e));}catch(err){}
-    var b=msBox();if(b&&SC.pin)toEnd(b);
-    if(p<1)KRAF=requestAnimationFrame(f);
-    else{KRAF=0;pinRide(120);}
+    var e=soft?1-Math.pow(1-p,2)
+              :(p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2);
+    var v=from+(to-from)*e,d=v-prev;
+    /* 掉帧兜底：单帧最多走 64，宁可慢一点也不许跳 */
+    if(d>CAP)v=prev+CAP;else if(d<-CAP)v=prev-CAP;
+    prev=v;kbSet(v);
+    if(p<1||Math.abs(v-to)>=1)KRAF=requestAnimationFrame(f);
+    else{
+      KRAF=0;
+      /* 收尾对账：预锁猜的个头跟真键盘不一样就补一小段 */
+      if(to>60&&KMAX>60&&Math.abs(KMAX-to)>=8)kbRun(KMAX,170,1);
+      else pinRide(120);
+    }
   });
 }
 if(!G6.kbApply){
@@ -5975,26 +5987,31 @@ if(!G6.kbApply){
   kbApply=function(gap){
     gap=Math.max(0,Math.round(gap||0));
     if(gap>60){
-      if(GUESSAT&&Date.now()-GUESSAT<GRACE&&KTGT>60
-         &&Math.abs(gap-KTGT)<90)return;
-      GUESSAT=0;
-      return kbRun(gap,280);}
+      if(gap>KMAX)KMAX=gap;
+      if(KRAF&&KTGT>60){
+        /* 正在飞：途中那些爬升值一概不理，绝不重启 */
+        if(gap<=KTGT+28)return;
+        return kbRun(gap,200,1);
+      }
+      return kbRun(gap,300);
+    }
     if(GUESSAT&&Date.now()-GUESSAT<GRACE)return;
-    return kbRun(0,190);
+    KMAX=0;
+    return kbRun(0,200);
   };
 }
 document.addEventListener('focusin',function(e){
   if(!e.isTrusted)return;
   var t=e.target;
   if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
-  if(kbH>60){GUESSAT=Date.now();kbRun(kbH,280);}
+  if(kbH>60){GUESSAT=Date.now();KMAX=0;kbRun(kbH,300);}
 },true);
 document.addEventListener('focusout',function(e){
   if(!e.isTrusted)return;
   setTimeout(function(){
     var a=document.activeElement;
     if(a&&/^(INPUT|TEXTAREA)$/.test(a.tagName))return;
-    GUESSAT=0;kbStop();KTGT=-1;kbRun(0,190);},0);
+    GUESSAT=0;KMAX=0;kbStop();KTGT=-1;kbRun(0,200);},0);
 },true);
 
 /* ── 那个二段滑动：不要了 ── */
