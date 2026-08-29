@@ -6092,81 +6092,80 @@ G7.css=1;
   var MIN='"Hiragino Mincho ProN","Yu Mincho","Songti SC",serif';
   var BL='blur(18px) saturate(170%)';
   s.textContent=
-    /* 一套玻璃 + 一个稳重的强调色 */
     ':root{--gb:rgba(252,251,248,.82);--gd:rgba(255,255,255,.7);'
+   +'--gz:rgba(255,255,255,.46);--gzb:rgba(255,255,255,.7);'
    +'--acc:#6E7A6A}'
-   +'html.dark{--gb:rgba(30,27,22,.84);--gd:rgba(255,255,255,.1);'
-   +'--acc:#9AA694}'
+   +'html.dark{--gb:rgba(30,27,22,.86);--gd:rgba(255,255,255,.1);'
+   +'--gz:rgba(255,255,255,.055);--gzb:rgba(255,255,255,.1);'
+   +'--acc:#9CA795}'
 
     /* 面板与抽屉 */
    +'#sh .pn,#dw .pn{background:var(--gb)!important;'
    +'backdrop-filter:'+BL+'!important;'
    +'-webkit-backdrop-filter:'+BL+'!important}'
-   +'#sh .pn{border-top:1px solid var(--gd);'
+   +'#sh .pn{padding-top:7px!important;'
+   +'border-top:1px solid var(--gd);'
    +'border-radius:19px 19px 0 0!important;'
    +'box-shadow:0 -14px 40px -26px var(--sd2)!important}'
    +'#dw .pn{border-right:1px solid var(--gd);'
    +'box-shadow:1px 0 0 var(--ln2),0 0 70px -34px var(--sd2)!important}'
 
-    /* 抓手与标题：细、静、字距开 */
-   +'#sh .gb{width:30px!important;height:3.5px!important;'
-   +'opacity:.4;margin-bottom:13px!important}'
+    /* 顶部压薄：7 + 3.5 + 8 + 标题 + 10 */
+   +'#sh .gb{width:28px!important;height:3.5px!important;'
+   +'opacity:.36;margin:0 auto 8px!important}'
    +'#sh .st{border-bottom:1px solid var(--ln2);'
-   +'padding:0 calc(20px + var(--sr)) 13px calc(20px + var(--sl))!important;'
+   +'padding:0 calc(20px + var(--sr)) 10px calc(20px + var(--sl))!important;'
    +'align-items:baseline!important}'
-   +'#sh .st .tt{font-size:14px!important;letter-spacing:.16em!important;'
-   +'color:var(--dim)!important;font-weight:400!important}'
-    /* 保存不再是红的 */
+   +'#sh .st .tt{font-size:13.5px!important;letter-spacing:.16em!important;'
+   +'color:var(--dim)!important;font-weight:400!important;'
+   +'font-family:'+MIN+'!important}'
    +'#sh .st .ok{color:var(--acc)!important;font-size:13px!important;'
    +'font-weight:500!important;letter-spacing:.12em!important;'
    +'font-family:'+MIN+'!important}'
 
-    /* 内容区：跟那条线拉开距离，别贴着 */
-   +'#sh .bdy{padding:18px calc(20px + var(--sr)) '
-   +'max(20px,calc(var(--sb) - 4px)) calc(20px + var(--sl))!important}'
-   +'html.kbon #sh .bdy{padding-bottom:14px!important}'
+    /* 内容区 */
+   +'#sh .bdy{padding:16px calc(20px + var(--sr)) '
+   +'max(12px,calc(var(--sb) - 16px)) calc(20px + var(--sl))!important}'
+   +'html.kbon #sh .bdy{padding-bottom:12px!important}'
    +'#sh .bdy>*:first-child{margin-top:0!important}'
 
-    /* 面板零件：白玻璃描边 */
+    /* 零件：一套玻璃，深浅都走变量 */
    +'#sh .fd input,#sh .fd textarea,#sh .cd,#sh .mcd,'
    +'#sh .seg button,#sh .segw button{'
-   +'background:rgba(255,255,255,.46)!important;'
-   +'border:1px solid var(--gd)!important;box-shadow:none!important;'
-   +'border-radius:14px!important}'
-   +'html.dark #sh .fd input,html.dark #sh .fd textarea,html.dark #sh .cd,'
-   +'html.dark #sh .mcd,html.dark #sh .seg button,'
-   +'html.dark #sh .segw button{'
-   +'background:rgba(255,255,255,.055)!important;'
-   +'border-color:rgba(255,255,255,.1)!important}'
+   +'background:var(--gz)!important;'
+   +'border:1px solid var(--gzb)!important;'
+   +'box-shadow:none!important;border-radius:14px!important;'
+   +'color:var(--ink2)!important}'
    +'#sh .cd{border-radius:16px!important}'
    +'#sh .fd input,#sh .fd textarea{padding:13px 15px!important}'
    +'#sh .fd input:focus,#sh .fd textarea:focus{'
    +'border-color:var(--acc)!important}'
+   +'#sh .fd input::placeholder,#sh .fd textarea::placeholder{'
+   +'color:var(--dim2)!important}'
    +'#sh .seg button.on,#sh .segw button.on{'
-   +'background:var(--ink2)!important;border-color:transparent!important}'
+   +'background:var(--ink2)!important;border-color:transparent!important;'
+   +'color:var(--onink)!important}'
    +'#sh .rw+.rw{border-top-color:var(--ln2)!important}'
    +'#sh .rw{padding:14px 16px!important}'
    +'#sh .rw .l{font-size:14.5px!important;font-weight:400!important;'
    +'letter-spacing:.02em}'
 
-    /* 一组之间的呼吸：标签贴着它下面的东西，组与组拉开 */
+    /* 呼吸：标签贴住它管的那块，组与组一律 20 */
    +'#sh .fd,#sh .cd,#sh .seg,#sh .segw{margin-bottom:0!important}'
    +'#sh .lbs{padding:0 2px 7px!important;font-size:11px!important;'
    +'font-weight:400!important;letter-spacing:.14em!important;'
    +'color:var(--dim2)!important;font-family:'+MIN+'!important}'
-   +'#sh .lbs:not(:first-child){padding-top:20px!important}'
-   +'#sh .cd+.lbs,#sh .fd+.lbs,#sh .seg+.lbs,#sh .segw+.lbs{'
-   +'padding-top:20px!important}'
+   +'#sh .cd+.lbs,#sh .fd+.lbs,#sh .seg+.lbs,#sh .segw+.lbs,'
+   +'#sh .mcd+.lbs{padding-top:20px!important}'
    +'#sh .fd+.fd{margin-top:8px!important}'
    +'#sh .cd+.cd{margin-top:10px!important}'
 
-    /* 灰字提示：上下一样、不许太宽、只留一处 */
-   +'#sh .nt,#pg .nt{padding:14px 2px 0!important;'
+    /* 灰字：上 13 下 13，宽度封住 */
+   +'#sh .nt,#pg .nt{padding:13px 2px!important;'
    +'font-size:11.5px!important;line-height:1.75!important;'
    +'letter-spacing:.02em;color:var(--dim2)!important;'
-   +'max-width:29em;text-wrap:pretty}'
-   +'#sh .bdy>.nt:last-child{padding-bottom:2px!important}'
-   +'#sh .bdy>.nt:first-child{padding:0 2px 16px!important}'
+   +'max-width:28em;text-wrap:pretty}'
+   +'#sh .bdy>.nt:first-child{padding:0 2px 14px!important}'
 
     /* 头部小件、输入条、回到底部、提示条 */
    +'.cb,.pill,.ibx,.selbar,#dn{background:var(--gb)!important;'
@@ -6183,9 +6182,9 @@ G7.css=1;
    +'#tst{background:var(--gb)!important;border:1px solid var(--gd);'
    +'color:var(--ink2)!important;letter-spacing:.04em}'
 
-    /* 强调色统一：链接式按钮不再各自为政 */
-   +'#pg .res .ra button,#pg .exb .x2,#pg .mcd .ts b,'
-   +'#sh .rw .l[style*="rose"]{color:var(--acc)!important}'
+    /* 强调色统一 */
+   +'#pg .res .ra button,#pg .exb .x2,#pg .mcd .ts b{'
+   +'color:var(--acc)!important}'
    +'#pg .more,#ms .more{color:var(--dim)!important}'
 
     /* 日系细节 */
@@ -6196,13 +6195,53 @@ G7.css=1;
    +'#sls .it{letter-spacing:.05em!important}'
    +'#dw .lb span{opacity:.8}'
 
-    /* 探针跟着变量走 */
+    /* 探针 */
    +'#prb,html.dark #prb{background:var(--gb)!important;'
    +'border-color:var(--gd)!important}'
    +'#prb .pl{font-family:'+MIN+'}';
   document.head.appendChild(s);
 })();
 }
+/* ══════════ I MISS U · 第八段 · 钉底 ══════════ */
+if(typeof G8==='undefined')var G8={};
+if(!G8.kbApply){
+  G8.kbApply=kbApply;
+  G8.pt=0;
+  G8.hold=function(ms){
+    if(G8.pt)return;
+    G8.pt=1;
+    var end=performance.now()+(ms||460);
+    (function f(){
+      var b=msBox();
+      if(b&&SC.pin&&!SC.hold)toEnd(b);
+      if(performance.now()<end)requestAnimationFrame(f);
+      else G8.pt=0;
+    })();
+  };
+  kbApply=function(gap){
+    var b=msBox();
+    var was=b?(scEnd(b)||SC.pin):1;
+    var r;
+    try{r=G8.kbApply(gap);}catch(e){}
+    if(was){
+      SC.pin=1;SC.el=null;
+      var c=msBox();
+      if(c)toEnd(c);
+      G8.hold(460);
+    }
+    return r;
+  };
+}
+document.addEventListener('focusin',function(e){
+  if(!e.isTrusted)return;
+  var t=e.target;
+  if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
+  var b=msBox();
+  if(b&&(scEnd(b)||SC.pin)){
+    SC.pin=1;SC.el=null;
+    if(G8.hold)G8.hold(560);
+  }
+},true);
 </script>
 </body>
 </html>
