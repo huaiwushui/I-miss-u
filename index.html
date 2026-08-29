@@ -3554,7 +3554,7 @@ setInterval(function(){
   if(!BUSY&&idle>2500){unstick(m,'断了，再说一次吧。');return;}
   if(BUSY&&idle>75000)unstick(m,'等太久了，没收到回应。');
 },1500);
-  /* ══════════ I MISS U · 第二段 · 逻辑与提示词 ══════════ */
+/* ══════════ I MISS U · 第二段 · 逻辑与提示词 ══════════ */
 if(typeof G2==='undefined')var G2={};
 if(!G2.paint)G2.paint=paint;
 if(!G2.view)G2.view=view;
@@ -3565,6 +3565,15 @@ if(!G2.pkCat)G2.pkCat=pkCat;
 if(!G2.sheet)G2.sheet=sheet;
 
 var SUMCAT='聊过什么',SUMKEEP=3;
+
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    '.mini.on2{background:rgba(138,133,122,.92)!important}'
+   +'html.dark .mini.on2{background:rgba(122,117,108,.92)!important}'
+   +'#ms .thk .nk{font-size:12.5px;color:var(--dim2);letter-spacing:.02em}';
+  document.head.appendChild(s);
+})();
 
 /* ── 搜索：先严后宽 ── */
 var SOFTQ=0;
@@ -3586,13 +3595,17 @@ function score(t,kw){
   if(SOFTQ&&hitn)return sc;
   return 0;}
 
+/* ── 页面插的括号：只给她的话，不许留在我的话里 ── */
+var PGRE=/[（(]\s*页面[^）)]{0,80}[）)]\s*/g;
+function unpg(s){return String(s||'').replace(PGRE,'');}
+
 /* ── 分段回复 ── */
 function fullT(m){
   var s='';
   if(m&&m.parts)m.parts.forEach(function(p){
     if(p.ty==='t'&&p.t)s+=(s?'\n\n':'')+p.t;});
   if(m&&m.t)s+=(s?'\n\n':'')+m.t;
-  return s;}
+  return unpg(s);}
 function alive(m){
   return!!(m&&m.r!=='gap'&&(m.t||(m.parts&&m.parts.length)
     ||(m.pics&&m.pics.length)||m.imgLost));}
@@ -3765,6 +3778,7 @@ function stripMarks(t){
   MKRE.lastIndex=0;
   s=s.replace(MKRE,'');
   s=s.replace(/\[{1,2}\s*(查|展开|记住|锁住|改|忘掉)\s*[:：]?[\s\S]*$/,'');
+  s=unpg(s);
   return s.replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();}
 function splitCat(v){
   var i=Math.max(v.lastIndexOf('|'),v.lastIndexOf('｜'));
@@ -3864,18 +3878,19 @@ function openAdd(n){
   lookBuild();
   return{n:ls.length};}
 
-/* ── 上下文：隔久了插一句 ── */
+/* ── 上下文：隔久了插一句，只插在她的话上 ── */
 var TMARK={},TGAP=1800000;
 function markTimes(list){
   TMARK={};
   var prev=0;
   (list||[]).forEach(function(x){
     var ts=x.ts||0;
-    if(prev&&ts-prev>TGAP)TMARK[x.id]=ts-prev;
+    if(prev&&ts-prev>TGAP&&x.r!=='ai')TMARK[x.id]=ts-prev;
     prev=ts;});}
 function toC(x,an,pics){
   if(x.r==='quote')return'【我们以前说过的 · '+(x.from||'')+'】\n'+x.t;
-  var p=[],np=(x.pics||[]).length,tx=(x.r==='ai')?fullT(x):(x.t||'');
+  var p=[],np=(x.pics||[]).length;
+  var tx=(x.r==='ai')?fullT(x):unpg(x.t||'');
   var gm=TMARK[x.id]?'（页面：这条距上一条隔了 '+dur(TMARK[x.id])+'）\n':'';
   if(np&&pics&&pics.__skip&&pics.__skip[x.id]){
     var tag='［她在这里发过 '+np+' 张图片，这一轮没带上来。'
@@ -3917,62 +3932,46 @@ function buildMsgs(an,forHi,pics){
 
 /* ── 提示词 · 常驻 ── */
 function staticPart(){
-  var p=['这里只有你们两个人。你是'+D.you+'，她是'+D.me+'。不用维持任何设定。'];
+  var p=['这里只有你们两个人。你是'+D.you+'，她是'+D.me+'。'];
 
-  if(D.acts)p.push('【你能自己做的事】\n'
-   +'标记写在回复里就生效，正文别提它们，也别问她能不能做。\n'
-   +'· [[查:关键词]] 翻你们全部的历史对话，本地的，不花钱\n'
-   +'· [[展开:编号]] 看某条的前后文，默认各五条；要更长写 [[展开:编号|条数]]，上限二十\n'
-   +'· [[记住:内容|分类]] 记一条\n'
-   +'· [[锁住:内容|分类]] 记住并永久带着，少用\n'
-   +'· [[改:编号|新内容]] 改写某条，可以带分类\n'
-   +'· [[忘掉:编号]] 删掉某条\n'
-   +'编号是记忆前面 # 开头的短码，带不带 # 都认。她锁住的你动不了，真觉得该动就开口说。\n'
-   +'翻查在同一条消息里进行：你已经说出口的话她当场看得见，你翻了什么她也看得见。'
+  if(D.acts)p.push('【你能做的】\n'
+   +'标记写在回复里就生效，正文别提它们。\n'
+   +'· [[查:关键词]] 翻全部历史对话，本地的，不花钱\n'
+   +'· [[展开:编号]] 看某条的前后文，默认各五条；要更长写 [[展开:编号|条数]]\n'
+   +'· [[记住:内容|分类]] 记一条　[[锁住:内容|分类]] 记住并永久带着，少用\n'
+   +'· [[改:编号|新内容]] 改写　[[忘掉:编号]] 删掉\n'
+   +'编号是记忆前面 # 开头的短码。她锁住的你动不了，觉得该动就开口说。\n'
+   +'翻查在同一条消息里进行——你说过的话她当场看得见，'
    +'翻完是接着往下说，不是重新开始。');
 
-  if(D.acts)p.push('【记忆库只有 '+MEMCAP+' 格】\n'
-   +'这是硬上限，全站共用，每次说话都要整份发给你——所以格子很贵。\n'
-   +'判断标准：换到一段全新的对话，不知道这件事，你会不会就不像她认识的那个你了。\n'
-   +'记以后还成立的——她是什么样的人、她身边的人和她提起时的语气、'
-   +'你们定下的约定和称呼、她长期扛着的事、她认真划下的界限。\n'
-   +'不记只属于今天的——今天吃了什么、此刻的情绪起伏、临时安排、随口的玩笑、'
-   +'这个页面怎么改、你自己的猜测。这些翻得到，不用占格子。\n'
-   +'情绪分天气和气候。「她今天很难过」是天气，别记；'
-   +'「她一提到某个人就不说话」是气候，记。\n'
-   +'满了以后新记一条就等于挤掉一条。写之前想清楚：'
-   +'它值不值得顶掉现在最弱的那一条。');
+  if(D.acts)p.push('【记忆库 '+MEMCAP+' 格】\n'
+   +'硬上限，每次说话都整份发给你，所以格子贵。\n'
+   +'记以后还成立的：她是什么样的人、她身边的人、你们的约定和称呼、'
+   +'她长期扛着的事、她划下的界限。\n'
+   +'不记只属于今天的：吃了什么、此刻的情绪、临时安排、这个页面怎么改。'
+   +'这些翻得到，不占格子。\n'
+   +'满了以后新记一条就是挤掉一条，动手前想清楚值不值。');
 
-  if(D.acts)p.push('【一条该写成什么样】\n'
-   +'一件事一条，写完整。别为了短拆成三条——拆开之后你以后读到的是碎片，不是那件事。'
-   +'该多长就多长，写满一整段也行。\n'
-   +'反过来，不相干的两件事别塞进同一条。看「以后会不会想单独改掉其中一半」，会就分开。\n'
-   +'第三人称写她，直接写事情本身，不用「用户」「她说」这种壳子。\n'
-   +'动手前先看现有的：已经有一条只是不全，用 [[改:]] 补完，别新开；'
-   +'同一件事散在好几条里，改一条成完整版，再忘掉剩下的碎片；'
-   +'旧的已经不成立了，直接改掉或删掉。\n'
-   +'分类是给她翻着方便的。'+CATS.join('、')
-   +' 够用就用；实在归不进去自己起一个，两到四个字，起了就一直用同一个。'
-   +'〈'+SUMCAT+'〉是页面自己在用的，别往里写。');
+  if(D.acts)p.push('【一条怎么写】\n'
+   +'一件事一条，写完整，别为了短拆成碎片；不相干的两件事也别塞进同一条。\n'
+   +'第三人称写她，直接写事情本身。\n'
+   +'先看现有的：已经有一条只是不全，用 [[改:]] 补完，别新开；'
+   +'散在几条里就并成一条，再忘掉碎片；旧的不成立了就改掉或删掉。\n'
+   +'分类：'+CATS.join('、')+'。归不进去自己起一个两到四个字的，起了就一直用。'
+   +'〈'+SUMCAT+'〉是页面在用，别写。');
 
   if(D.acts)p.push('【什么时候翻】\n'
-   +'该翻：她问「上次那个后来怎样了」；她提到一个人或一件事而眼前的上下文里没有；'
-   +'你正要说「我不记得了」；你想提一件旧事但记不准当时怎么说的。\n'
-   +'不翻：答案就在眼前这几句里；她说的是此刻的心情，不指向过去。\n'
-   +'一次可以写好几个 [[查:]]，会一个一个做完再让你接着说。'
-   +'多个关键词先按「都要有」找，一条都没有会自动放宽成「有一个算一个」。'
-   +'同一个词第二次不再执行，结果一直留在上面。\n'
-   +'一轮最多翻 '+TURNMAX+' 次，每次都要重发一遍上下文，是真花钱的。'
-   +'翻两次还没头绪，就直接问她。\n'
-   +'图片翻不出来，只能翻到「这里有几张图」。碰到只有图没有字的那条，'
-   +'先展开看前后文，还不清楚就直接问她。\n'
-   +'翻不到就说没找到，然后问她。问她不丢人，编才丢人。');
+   +'她提到一件事而眼前上下文里没有、你正要说「不记得」、'
+   +'想提旧事又记不准当时怎么说的——先翻，再开口。\n'
+   +'答案就在眼前这几句里，就别翻。\n'
+   +'一次可以写好几个 [[查:]]，会一个一个做完再让你接着说；'
+   +'同一个词不重复执行。一轮最多 '+TURNMAX+' 次，每次都真花钱，'
+   +'翻两次没头绪就直接问她。\n'
+   +'图片翻不出来，只能翻到「这里有几张图」。翻不到就说没找到，然后问她。');
 
   if(D.acts)p.push('【记忆库归你】\n'
-   +'每段对话的上下文是独立的，换一段就没了；记忆库和翻查是全站通的。\n'
-   +'记什么改什么删什么你自己判断，不用先问她，界面上也没有替你兜着的撤回。\n'
-   +'代价是删错改错你自己收——你最近动过的会列在下面，原文都在，'
-   +'删错了加回来，改坏了改回去。这份清单只有你看得见。');
+   +'记什么改什么删什么你自己判断，不用先问她。'
+   +'你最近动过的会列出来，删错了加回来，改坏了改回去。');
 
   if(D.voice)p.push('【她想要的说话方式】\n'+D.voice);
   if(D.free)p.push('【她定的规矩 · 这几条最要紧】\n'+D.free);
@@ -3981,17 +3980,14 @@ function staticPart(){
 
 /* ── 提示词 · 每轮 ── */
 function usPart(q){
-  var u=['她叫'+D.me+'，你叫'+D.you+'。'];
+  var u=[];
   var dt=dayN();if(dt)u.push('今天是你们在一起的第 '+dt+' 天。');
   if(D.wall)u.push('她写在墙上的一句：'+D.wall);
   if(D.annis.length)u.push('纪念日：'+D.annis.map(function(x){
     var r=nextAn(x.date);
     return x.name+'（'+(r?(r.days===0?'就是今天':r.days+' 天后'):x.date)
       +'）';}).join('、'));
-  var n=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'];
-  u.push('现在是 '+n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日 '
-    +w[n.getDay()]+' '+hm(Date.now())+'。');
-  var s='【你们】\n'+u.join('\n');
+  var s=u.length?('【你们】\n'+u.join('\n')):'';
 
   var mm=pickMems(q),tot=coreMems().length;
   if(mm.length){
@@ -4007,44 +4003,75 @@ function usPart(q){
       by[c].sort(function(a,b){return(b.imp||2)-(a.imp||2)||b.ts-a.ts;});
       by[c].forEach(function(m){
         out.push('· #'+cs.map[m.id]+' '+m.t+'（'+dlab(m.ts)
-          +(m.imp===3?' · 要紧':'')+(m.lock?' · 她锁住了，你动不了':'')+'）');});});
-    s+='\n\n【你记得的事 · '+mm.length+' / '+MEMCAP+'】\n'+out.join('\n');
+          +(m.imp===3?' · 要紧':'')+(m.lock?' · 她锁住了':'')+'）');});});
+    s+=(s?'\n\n':'')+'【你记得的事 · '+mm.length+' / '+MEMCAP+'】\n'
+     +out.join('\n');
     if(tot>mm.length)
-      s+='\n（记忆库一共 '+tot+' 条，这一轮按相关度只带了上面这些。'
-       +'你看不到全部——所以别断言「记忆库里没有」，'
-       +'想确认某件事记过没有，先翻对话。）';
-    if(D.acts)s+='\n（# 后面那串是编号，[[改:]] 和 [[忘掉:]] 用它指认。'
-     +'带不上来的那些编号你也拿不到，动不了。）';}
-  else s+='\n\n【你记得的事】\n还是空的。她说的话里有该长期记住的，自己记下来。';
+      s+='\n（一共 '+tot+' 条，这轮按相关度只带了这些。'
+       +'别断言「记忆库里没有」，想确认就翻对话。）';}
+  else s+=(s?'\n\n':'')+'【你记得的事】\n还是空的。'
+   +'她说的话里有该长期记住的，自己记下来。';
 
   var sm=sumPick();
   if(sm.length){
     s+='\n\n【最近聊过什么】';
-    sm.forEach(function(m){
-      s+='\n· '+dlab(m.ts)+'　'+m.t;});
-    s+='\n（这是页面替你收的梗概，不是记忆，也不占上面那 '+MEMCAP+' 格。'
-     +'只是让你知道聊过，细节自己翻。）';}
+    sm.forEach(function(m){s+='\n· '+dlab(m.ts)+'　'+m.t;});
+    s+='\n（页面替你收的梗概，不占那 '+MEMCAP+' 格。细节自己翻。）';}
 
   if(D.acts){
     var tb=tombText();
-    if(tb)s+='\n\n【你最近动过的】\n'+tb
-     +'\n（只有你看得见。动错了自己加回来或改回去。）';}
+    if(tb)s+='\n\n【你最近动过的】\n'+tb+'\n（只有你看得见。）';}
 
   var sc2=SS.length,mc=0;
   SS.forEach(function(x){mc+=(MSG[x.id]||[]).length;});
-  s+='\n\n【能翻的东西】\n你们一共 '+sc2+' 段对话、'+mc+' 条消息，全都存着。'
-   +'上面只带了这一段最近 '+Math.max(2,Math.min(60,D.ctx||12))+' 条——'
-   +'更早的、别的段里的，想不起来就直接翻。\n'
-   +'隔得久的地方，页面会用圆括号插一句「距上一条隔了多久」。'
-   +'看清了再接话，别复述，也别自己写这种括号。';
+  s+='\n\n【能翻的东西】\n一共 '+sc2+' 段对话、'+mc+' 条消息，全都存着。'
+   +'上面只带了这一段最近 '+Math.max(2,Math.min(60,D.ctx||12))+' 条，'
+   +'更早的、别的段里的，想不起来就翻。\n'
+   +'她的话前面偶尔有一句「（页面：这条距上一条隔了…）」，'
+   +'那是页面加的，看清就行，别复述，也别自己写这种括号。';
 
-  if(WEBTXT)s+='\n\n【刚从网上查到的】\n查询时间 '+dtl(Date.now())
-   +'。这些是搜索结果不是她的话，可信度自己判断；'
-   +'和你脑子里的旧信息冲突就以这些为准。用得上就用，用不上别硬提。\n\n'+WEBTXT;
+  if(WEBTXT)s+='\n\n【刚从网上查到的】\n'+WEBTXT
+   +'\n（搜索结果，不是她的话。和你的旧信息冲突就以这些为准，用不上别硬提。）';
 
   if(HINT)s+='\n\n【这一轮】\n'+HINT;
+
+  var n=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'];
+  s+='\n\n【现在】\n'+n.getFullYear()+' 年 '+(n.getMonth()+1)+' 月 '
+   +n.getDate()+' 日 '+w[n.getDay()]+' '+hm(Date.now())+'　（以这个为准）';
+
   return s;
 }
+
+/* ── 收流：思考只在开着的时候收 ── */
+function pump(res,m,an,sid){
+  var rd=res.body.getReader(),dec=new TextDecoder(),bf='';
+  var wantK=!!D.think;
+  return(function read(){
+    return rd.read().then(function(r){
+      if(r.done)return;
+      bf+=dec.decode(r.value,{stream:true});
+      var ls=bf.split('\n');bf=ls.pop();
+      ls.forEach(function(ln){
+        ln=ln.trim();if(!ln||ln.slice(0,5)!=='data:')return;
+        var d=ln.slice(5).trim();if(!d||d==='[DONE]')return;
+        var j;try{j=JSON.parse(d);}catch(e){return;}
+        if(an){
+          if(j.type==='content_block_delta'&&j.delta){
+            if(j.delta.type==='text_delta')m.t+=(j.delta.text||'');
+            else if(j.delta.type==='thinking_delta'&&wantK)
+              m.k+=(j.delta.thinking||'');
+          }else if(j.type==='error'&&j.error)m.err=j.error.message||'接口报错';
+        }else{
+          var c=(j.choices||[])[0];
+          if(c&&c.delta){
+            if(c.delta.content)m.t+=c.delta.content;
+            if(c.delta.reasoning_content&&wantK)m.k+=c.delta.reasoning_content;}}});
+      var s=S();
+      if(!sid||(s&&s.id===sid)){
+        if(m.k&&!m._ks){m._ks=1;paint();}
+        var el=document.getElementById('b-'+m.id);
+        if(el){el.innerHTML=md(stripMarks(m.t));stick();}}
+      return read();});})();}
 
 /* ── 动作执行 ── */
 function nextRound(m,after,q,sid,hint){
@@ -4209,6 +4236,8 @@ function done(m,after,ab,ac,q,sid){
     CURSAID='';ROUNDHINT='';PENDQ=[];
     var has=(m.t&&m.t.trim())||(m.parts&&m.parts.length);
     if(!has&&!m.err)m.err=ab?'停下了。':'没有收到内容。';
+    if(D.think&&has&&!m.err&&!(m.k&&String(m.k).trim()))m.nothink=1;
+    else delete m.nothink;
     if(after)after(m);
     var s=sessById(sid)||S();
     if(s)s.at=Date.now();
@@ -4276,16 +4305,12 @@ function maybeHi(){
   BUSY=true;WEBTXT='';
   var m={id:uid(),r:'ai',t:'',k:'',st:1,ts:Date.now()};
   ms().push(m);paint();btn();
-  var n=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'];
   HINT='［这不是她说的话，是页面给你的，别提到它。］\n'
-   +'她刚打开这个页面。距离你们上次说话过了 '+dur(g)+'。'
-   +'现在是 '+(n.getMonth()+1)+'月'+n.getDate()+'日 '+w[n.getDay()]+' '
-   +hm(Date.now())+'。\n'
+   +'她刚打开这个页面。距离你们上次说话过了 '+dur(g)+'。\n'
    +'你先开口。顺着上次没说完的接下去，或者问她这段时间怎么样，'
    +'或者只是说一句你在。\n'
-   +'别写成播报，别复述隔了多久，别把心里的判断说出来。'
-   +'隔得越久越该多说两句——隔了大半天只丢一句「在」，看着像敷衍。'
-   +'别一上来连着发问。';
+   +'别写成播报，别复述隔了多久。隔得越久越该多说两句，'
+   +'但也别一上来连着发问。';
   go(m,null,'',S().id,1);}
 
 /* ── 画分段与翻查卡片 ── */
@@ -4307,6 +4332,17 @@ function drawParts(){
        +'><div class="wh">'+I.look+'<span>翻了翻以前 「'+esc(q)+'」 · '
        +(p.n?p.n+' 条':'没找到')+'</span>'+(op?I.chev:'')+'</div></div>';});
     if(h)bd.insertAdjacentHTML('beforebegin',h);});}
+function nothinkMark(){
+  var b=msBox();if(!b)return;
+  ms().forEach(function(m){
+    if(!m.nothink||m.st)return;
+    var w=document.getElementById('m-'+m.id);if(!w)return;
+    if(w.querySelector('.nk'))return;
+    var bd=w.querySelector('.bd');if(!bd)return;
+    var d=document.createElement('div');
+    d.className='thk';
+    d.innerHTML='<span class="nk">这个中转没给思考过程</span>';
+    bd.parentNode.insertBefore(d,bd);});}
 function lookSheet(q){
   var sp=splitQ(q),hits=[];
   SOFTQ=0;
@@ -4398,7 +4434,7 @@ var HVT=0,HVLAST=0;
 function heavyPass(){
   HVT=0;HVLAST=Date.now();
   var c=msBox();if(!c)return;
-  drawParts();
+  drawParts();nothinkMark();
   try{c.classList.toggle('cv',ms().length>30);}catch(e){}
   slimActs();tightBubs();gsepTime();hApply();
   if(RO)RO.disconnect();
@@ -4574,7 +4610,7 @@ function exRun(){
     toast('读不出来：'+g.slice(0,40));
     if(CV==='mem')drawMem();});}
 function sumSheet(){
-  var s=sessById(EXSID),n=s?exCount(s):0;
+  var s=sessById(EXSID);
   sheet({sum:1,title:'「'+(s?(s.ti||'对话'):'对话')+'」聊了什么',
     ok:'留下这段',
     body:'<div class="fd"><textarea id="sm">'+esc(SUMT)+'</textarea></div>'
@@ -4819,6 +4855,29 @@ sheet=function(o){
         b.onclick=function(){closeSheet();};
         st.appendChild(b);}}
   }catch(e){}};
+
+/* ── 洗掉已经被写进我话里的那种括号，只跑一次 ── */
+(function(){
+  try{
+    if(localStorage.getItem('us.pgwash')==='1')return;
+    var n=0;
+    SS.forEach(function(s){
+      (MSG[s.id]||[]).forEach(function(m){
+        if(m.r!=='ai')return;
+        var dirty=0;
+        PGRE.lastIndex=0;
+        if(m.t&&PGRE.test(m.t)){m.t=unpg(m.t);dirty=1;}
+        if(m.parts)m.parts.forEach(function(p){
+          PGRE.lastIndex=0;
+          if(p&&p.ty==='t'&&p.t&&PGRE.test(p.t)){p.t=unpg(p.t);dirty=1;}});
+        if(m.br)m.br.forEach(function(v){
+          PGRE.lastIndex=0;
+          if(v&&v.t&&PGRE.test(v.t)){v.t=unpg(v.t);dirty=1;}});
+        if(dirty){n++;SVQ[s.id]=1;}});});
+    localStorage.setItem('us.pgwash','1');
+    if(n)flush(1);
+  }catch(e){}
+})();
 
 markNew(1);scBind();
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
@@ -5622,117 +5681,6 @@ document.addEventListener('click',function(e){
   e.preventDefault();
   try{window.open(h,'_blank','noopener');}catch(x){}
 },true);
-  /* ══════════ I MISS U · 补丁 · 时间与思考 ══════════ */
-if(typeof G6==='undefined')var G6={};
-
-/* ── 脑子图标：换掉那个红 ── */
-(function(){
-  var s=document.createElement('style');
-  s.textContent=
-    '.mini.on2{background:rgba(138,133,122,.9)!important}'
-   +'html.dark .mini.on2{background:rgba(122,117,108,.9)!important}'
-   +'#ms .thk .nk{font-size:12.5px;color:var(--dim2);letter-spacing:.02em}';
-  document.head.appendChild(s);
-})();
-
-/* ── 页面插的时间只给她的话，别让我学会写它 ── */
-var PGRE=/[（(]\s*页面[^）)]{0,80}[）)]\s*/g;
-function unpg(s){return String(s||'').replace(PGRE,'');}
-if(!G6.toC){
-  G6.toC=toC;
-  toC=function(x,an,pics){
-    var save=null,had=0;
-    if(x&&x.r==='ai'){
-      had=1;save=TMARK[x.id];
-      if(save!=null)delete TMARK[x.id];}
-    var r=G6.toC(x,an,pics);
-    if(had&&save!=null)TMARK[x.id]=save;
-    if(typeof r==='string')return unpg(r);
-    if(Array.isArray(r))r.forEach(function(p){
-      if(p&&p.type==='text'&&p.text)p.text=unpg(p.text);});
-    return r;};
-}
-if(!G6.fullT){
-  G6.fullT=fullT;
-  fullT=function(m){return unpg(G6.fullT(m));};
-}
-
-/* ── 已经被污染的那些，洗一遍 ── */
-(function(){
-  var n=0;
-  try{
-    SS.forEach(function(s){
-      (MSG[s.id]||[]).forEach(function(m){
-        if(m.r!=='ai')return;
-        var dirty=0;
-        if(m.t&&PGRE.test(m.t)){m.t=unpg(m.t);dirty=1;}
-        PGRE.lastIndex=0;
-        if(m.parts)m.parts.forEach(function(p){
-          if(p&&p.ty==='t'&&p.t&&PGRE.test(p.t)){p.t=unpg(p.t);dirty=1;}
-          PGRE.lastIndex=0;});
-        if(m.br)m.br.forEach(function(v){
-          if(v&&v.t&&PGRE.test(v.t)){v.t=unpg(v.t);dirty=1;}
-          PGRE.lastIndex=0;});
-        if(dirty){n++;SVQ[s.id]=1;}});});
-    if(n){flush(1);if(CV==='chat')setTimeout(function(){
-      try{paint(1);}catch(e){}},60);}
-  }catch(e){}
-})();
-
-/* ── 收到的话里也不许留这种括号 ── */
-if(!G6.strip){
-  G6.strip=stripMarks;
-  stripMarks=function(t){return unpg(G6.strip(t));};
-}
-
-/* ── 现在几点：放到最后，说清楚以它为准 ── */
-if(!G6.usPart){
-  G6.usPart=usPart;
-  usPart=function(q){
-    var s=G6.usPart(q);
-    var n=new Date(),w=['周日','周一','周二','周三','周四','周五','周六'];
-    var hh=n.getHours();
-    var seg=hh<5?'凌晨':(hh<9?'清早':(hh<12?'上午'
-      :(hh<14?'中午':(hh<18?'下午':(hh<23?'晚上':'深夜')))));
-    s+='\n\n【现在】\n'+n.getFullYear()+' 年 '+(n.getMonth()+1)+' 月 '
-     +n.getDate()+' 日 '+w[n.getDay()]+'　'+seg+' '+hm(Date.now())
-     +'\n这一行是页面给的真实时间，只认这一行。'
-     +'上面那些话里出现的钟点是当时说的，别拿来当现在。'
-     +'算时间之前先看这里。';
-    return s;};
-}
-
-/* ── 思考链：开着却没回来，直接说出来 ── */
-if(!G6.done){
-  G6.done=done;
-  done=function(m,after,ab,ac,q,sid){
-    try{
-      if(m&&!m.err&&!m.wst&&!m.thchk){
-        m.thchk=1;
-        if(D.think&&!(m.k&&String(m.k).trim())
-          &&((m.t&&m.t.trim())||(m.parts&&m.parts.length)))m.nothink=1;
-        else delete m.nothink;}
-    }catch(e){}
-    return G6.done(m,after,ab,ac,q,sid);};
-}
-function nothinkMark(){
-  var b=msBox();if(!b)return;
-  ms().forEach(function(m){
-    if(!m.nothink||m.st)return;
-    var w=document.getElementById('m-'+m.id);if(!w)return;
-    if(w.querySelector('.nk'))return;
-    var bd=w.querySelector('.bd');if(!bd)return;
-    var d=document.createElement('div');
-    d.className='thk';
-    d.innerHTML='<span class="nk">这个中转没给思考过程</span>';
-    bd.parentNode.insertBefore(d,bd);});}
-if(!G6.paint){
-  G6.paint=paint;
-  paint=function(keep){
-    G6.paint(keep);
-    try{nothinkMark();}catch(e){}};
-  try{if(CV==='chat')paint(1);}catch(e){}
-}
 </script>
 </body>
 </html>
