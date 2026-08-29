@@ -5838,12 +5838,9 @@ if(typeof G6==='undefined')var G6={};
   var s=document.createElement('style');
   var MIN='"Hiragino Mincho ProN","Yu Mincho","Songti SC",serif';
   s.textContent=
-    /* 命中与跳转：石板灰蓝，跟分类标签同色系 */
     ':root{--fl2:rgba(109,116,128,.16)!important}'
    +'html.dark{--fl2:rgba(148,158,174,.19)!important}'
-    /* 键盘位移：一个动画源，前段平缓，均摊到每一帧 */
-   +'@property --kb{syntax:"<length>";inherits:true;initial-value:0px}'
-   +'html{transition:--kb .26s cubic-bezier(.25,.46,.45,.94)}'
+    /* 动画源只留 rAF 一个，别的过渡全砍 */
    +'.ib,.selbar{transition:none!important}'
    +'#dn{transition:opacity .22s ease!important}'
    +'#ms.slide{transition:none!important}'
@@ -5862,20 +5859,19 @@ if(typeof G6==='undefined')var G6={};
    +'border-color:rgba(255,255,255,.1)}'
    +'#prb .ph{display:flex;align-items:baseline;gap:7px;'
    +'padding:9px 12px 7px;border-bottom:1px solid var(--ln2)}'
-   +'#prb .pl{flex:1;font-size:10.5px;letter-spacing:.22em;'
-   +'color:var(--dim)}'
-   +'#prb .pn{font-size:10.5px;letter-spacing:.08em;color:var(--dim2);'
+   +'#prb .pl{flex:1;font-size:10.5px;letter-spacing:.22em;color:var(--dim)}'
+   +'#prb .pn{font-size:10.5px;color:var(--dim2);'
    +'font-variant-numeric:tabular-nums}'
    +'#prb .pb{max-height:172px;overflow-y:auto;padding:5px 0;'
    +'-webkit-overflow-scrolling:touch;scrollbar-width:none}'
    +'#prb .pb::-webkit-scrollbar{width:0;display:none}'
    +'#prb .pr{display:flex;align-items:baseline;gap:6px;'
    +'padding:3px 12px;font-size:10px;line-height:1.5}'
-   +'#prb .pd{flex:none;width:42px;text-align:right;'
-   +'font-variant-numeric:tabular-nums;color:var(--ink2);'
+   +'#prb .pd{flex:none;width:42px;text-align:right;color:var(--ink2);'
+   +'font-variant-numeric:tabular-nums;'
    +'font-family:ui-monospace,Menlo,monospace}'
-   +'#prb .pw{flex:1;min-width:0;overflow:hidden;'
-   +'text-overflow:ellipsis;white-space:nowrap;color:var(--dim2)}'
+   +'#prb .pw{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;'
+   +'white-space:nowrap;color:var(--dim2)}'
    +'#prb .pr.nat .pd{color:var(--tag3t)}'
    +'#prb .pf{display:flex;border-top:1px solid var(--ln2)}'
    +'#prb .pf button{flex:1;padding:8px 0;font-size:10.5px;'
@@ -5945,47 +5941,236 @@ window.addEventListener('orientationchange',function(){
   setTimeout(function(){try{bgLock();bgSize();}catch(e){}},550);
 });
 
-/* ── 预锁宽限：键盘慢半拍也不许落回去 ── */
-var GUESSAT=0,GRACE=600,ZQ=0;
+/* ── 键盘：抬起自己走平缓的，收起立刻回位 ── */
+var GUESSAT=0,GRACE=650,KTGT=-1,KRAF=0;
 function pinRide(ms){
-  var t0=performance.now(),lim=ms||340;
+  var t0=performance.now(),lim=ms||160;
+  (function pinF(){
+    var b=msBox();
+    if(b&&SC.pin)toEnd(b);
+    if(performance.now()-t0<lim)requestAnimationFrame(pinF);
+  })();
+}
+function kbStop(){if(KRAF)cancelAnimationFrame(KRAF);KRAF=0;}
+function kbRun(to,ms){
+  to=Math.max(0,Math.round(to));
+  if(KTGT===to&&KRAF)return;
+  kbStop();
+  var from=(typeof KBCUR==='number'?KBCUR:0)||0;
+  KTGT=to;
+  if(Math.abs(to-from)<3){
+    try{G6.kbApply(to);}catch(e){}
+    pinRide(120);return;}
+  var t0=performance.now();
+  KRAF=requestAnimationFrame(function kbTween(now){
+    var p=Math.min(1,(now-t0)/ms);
+    var e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+    try{G6.kbApply(Math.round(from+(to-from)*e));}catch(err){}
+    var b=msBox();if(b&&SC.pin)toEnd(b);
+    if(p<1)KRAF=requestAnimationFrame(kbTween);
+    else{KRAF=0;pinRide(120);}
+  });
+}
+if(!G6.kbApply){
+  G6.kbApply=kbApply;
+  kbApply=function(gap){
+    gap=Math.max(0,Math.round(gap||0));
+    if(gap>60){
+      if(GUESSAT&&Date.now()-GUESSAT<GRACE&&KTGT>60
+         &&Math.abs(gap-KTGT)<90)return;
+      GUESSAT=0;
+      return kbRun(gap,280);}
+    if(GUESSAT&&Date.now()-GUESSAT<GRACE)return;
+    return kbRun(0,190);
+  };
+}
+document.addEventListener('focusin',function(e){
+  if(!e.isTrusted)return;
+  var t=e.target;
+  if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
+  if(kbH>60){GUESSAT=Date.now();kbRun(kbH,280);}
+},true);
+document.addEventListener('focusout',function(e){
+  if(!e.isTrusted)return;
+  setTimeout(function(){
+    var a=document.activeElement;
+    if(a&&/^(INPUT|TEXTAREA)$/.test(a.tagName))return;
+    GUESSAT=0;kbStop();KTGT=-1;kbRun(0,190);},0);
+},true);
+
+/* ── 那个二段滑动：不要了 ── */
+if(!G6.slideRun){
+  G6.slideRun=slideRun;
+  slideRun=function(){try{slideOff();}catch(e){}};
+}
+
+/* ── 搜索框：保住整段发你，**从横幅到最后一行都是新的**。删掉你末尾现在那个补丁块（`/* ══════════ I MISS U · 补丁 ══════════ */` 到 `</script>` 之前），整块换成这个。
+
+```javascript
+/* ══════════ I MISS U · 补丁 ══════════ */
+if(typeof G6==='undefined')var G6={};
+
+(function(){
+  var s=document.createElement('style');
+  var MIN='"Hiragino Mincho ProN","Yu Mincho","Songti SC",serif';
+  s.textContent=
+    ':root{--fl2:rgba(109,116,128,.16)!important}'
+   +'html.dark{--fl2:rgba(148,158,174,.19)!important}'
+   +'.ib,.selbar{transition:none!important}'
+   +'#dn{transition:opacity .22s ease!important}'
+   +'#ms.slide{transition:none!important}'
+   +'.hd{transform:none!important;will-change:auto!important}'
+   +'#prb{position:fixed;z-index:99998;'
+   +'top:calc(var(--st) + 58px);right:calc(12px + var(--sr));'
+   +'width:158px;border-radius:15px;overflow:hidden;'
+   +'background:rgba(252,251,248,.82);'
+   +'backdrop-filter:blur(14px) saturate(160%);'
+   +'-webkit-backdrop-filter:blur(14px) saturate(160%);'
+   +'border:1px solid rgba(255,255,255,.7);'
+   +'box-shadow:0 1px 2px var(--sd),0 12px 30px -18px var(--sd2);'
+   +'font-family:'+MIN+'}'
+   +'html.dark #prb{background:rgba(30,27,22,.84);'
+   +'border-color:rgba(255,255,255,.1)}'
+   +'#prb .ph{display:flex;align-items:baseline;gap:7px;'
+   +'padding:9px 12px 7px;border-bottom:1px solid var(--ln2)}'
+   +'#prb .pl{flex:1;font-size:10.5px;letter-spacing:.22em;color:var(--dim)}'
+   +'#prb .pn{font-size:10.5px;color:var(--dim2);'
+   +'font-variant-numeric:tabular-nums}'
+   +'#prb .pb{max-height:172px;overflow-y:auto;padding:5px 0;'
+   +'-webkit-overflow-scrolling:touch;scrollbar-width:none}'
+   +'#prb .pb::-webkit-scrollbar{width:0;display:none}'
+   +'#prb .pr{display:flex;align-items:baseline;gap:6px;'
+   +'padding:3px 12px;font-size:10px;line-height:1.5}'
+   +'#prb .pd{flex:none;width:42px;text-align:right;color:var(--ink2);'
+   +'font-variant-numeric:tabular-nums;'
+   +'font-family:ui-monospace,Menlo,monospace}'
+   +'#prb .pw{flex:1;min-width:0;overflow:hidden;'
+   +'text-overflow:ellipsis;white-space:nowrap;color:var(--dim2)}'
+   +'#prb .pr.nat .pd{color:var(--tag3t)}'
+   +'#prb .pf{display:flex;border-top:1px solid var(--ln2)}'
+   +'#prb .pf button{flex:1;padding:8px 0;font-size:10.5px;'
+   +'letter-spacing:.14em;color:var(--dim);font-family:'+MIN+'}'
+   +'#prb .pf button+button{border-left:1px solid var(--ln2);'
+   +'flex:0 0 46px;color:var(--dim2)}'
+   +'#prb.fold{width:auto}'
+   +'#prb.fold .pb,#prb.fold .pf{display:none}'
+   +'#prb.fold .ph{border-bottom:0;padding:8px 13px}';
+  document.head.appendChild(s);
+})();
+
+/* ── 光一个年份也能搜 ── */
+if(!G6.parseDate){
+  G6.parseDate=parseDate;
+  parseDate=function(s){
+    var r=G6.parseDate(s);
+    if(r)return r;
+    var m=String(s||'').replace(/\s/g,'').match(/^(\d{4})年?$/);
+    if(m){
+      var y=+m[1];
+      if(y>=2000&&y<=2100)
+        return{a:new Date(y,0,1).getTime(),
+               b:new Date(y+1,0,1).getTime(),lab:y+' 年'};}
+    return null;};
+}
+
+/* ── 壁纸：尺寸量死，键盘碰不到 ── */
+var BGW=0,BGH=0;
+function bgLock(){
+  var w=Math.max(window.innerWidth||0,320);
+  var h=Math.max(window.innerHeight||0,480);
+  try{
+    if(screen&&screen.width)w=Math.max(w,screen.width);
+    if(screen&&screen.height)h=Math.max(h,screen.height);
+  }catch(e){}
+  BGW=Math.round(w);BGH=Math.round(h);
+}
+function bgSize(){
+  if(!D.bgOn||!BGDATA)return;
+  if(!BGW)bgLock();
+  de.style.setProperty('background-size',
+    '100% 100%,100% 100%,'+BGW+'px '+BGH+'px','important');
+  de.style.setProperty('background-position',
+    'center top,center top,center top','important');
+  de.style.removeProperty('background-attachment');
+}
+if(!G6.bgPaint){
+  G6.bgPaint=bgPaint;
+  bgPaint=function(){
+    var f=document.getElementById('bgf');
+    if(f&&f.parentNode)f.parentNode.removeChild(f);
+    G6.bgPaint();
+    try{
+      if(!D.bgOn||!BGDATA){
+        de.style.removeProperty('background-size');
+        de.style.removeProperty('background-position');
+        de.style.removeProperty('background-attachment');
+        return;}
+      bgSize();
+    }catch(e){}
+  };
+  try{bgPaint();}catch(e){}
+}
+window.addEventListener('orientationchange',function(){
+  BGW=0;BGH=0;
+  setTimeout(function(){try{bgLock();bgSize();}catch(e){}},550);
+});
+
+/* ── 键盘：抬起自己走一条平缓的，收起立刻回位 ── */
+var GUESSAT=0,GRACE=650,KTGT=-1,KRAF=0;
+function pinRide(ms){
+  var t0=performance.now(),lim=ms||160;
   (function f(){
     var b=msBox();
     if(b&&SC.pin)toEnd(b);
     if(performance.now()-t0<lim)requestAnimationFrame(f);
   })();
 }
+function kbStop(){if(KRAF)cancelAnimationFrame(KRAF);KRAF=0;}
+function kbRun(to,ms){
+  to=Math.max(0,Math.round(to));
+  if(KTGT===to&&KRAF)return;
+  kbStop();
+  var from=(typeof KBCUR==='number'?KBCUR:0)||0;
+  KTGT=to;
+  if(Math.abs(to-from)<3){
+    try{G6.kbApply(to);}catch(e){}
+    pinRide(120);return;}
+  var t0=performance.now();
+  KRAF=requestAnimationFrame(function f(now){
+    var p=Math.min(1,(now-t0)/ms);
+    var e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+    try{G6.kbApply(Math.round(from+(to-from)*e));}catch(err){}
+    var b=msBox();if(b&&SC.pin)toEnd(b);
+    if(p<1)KRAF=requestAnimationFrame(f);
+    else{KRAF=0;pinRide(120);}
+  });
+}
 if(!G6.kbApply){
   G6.kbApply=kbApply;
   kbApply=function(gap){
     gap=Math.max(0,Math.round(gap||0));
-    if(!gap){
-      /* 刚预锁抬起，600ms 内一律不认「没键盘」 */
-      if(GUESSAT&&Date.now()-GUESSAT<GRACE)return;
-      /* 还在输入框里就要连续两次读到才落，防一帧抖动 */
-      var a=document.activeElement;
-      if(a&&/^(INPUT|TEXTAREA)$/.test(a.tagName)&&KBCUR>60){
-        var now=Date.now();
-        if(!ZQ){ZQ=now;return;}
-        if(now-ZQ<220)return;}
-      ZQ=0;
-    }else{GUESSAT=0;ZQ=0;}
-    var r=G6.kbApply(gap);
-    try{pinRide();}catch(e){}
-    return r;};
+    if(gap>60){
+      if(GUESSAT&&Date.now()-GUESSAT<GRACE&&KTGT>60
+         &&Math.abs(gap-KTGT)<90)return;
+      GUESSAT=0;
+      return kbRun(gap,280);}
+    if(GUESSAT&&Date.now()-GUESSAT<GRACE)return;
+    return kbRun(0,190);
+  };
 }
 document.addEventListener('focusin',function(e){
   if(!e.isTrusted)return;
   var t=e.target;
   if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
-  if(kbH>60)GUESSAT=Date.now();
-  ZQ=0;},true);
+  if(kbH>60){GUESSAT=Date.now();kbRun(kbH,280);}
+},true);
 document.addEventListener('focusout',function(e){
   if(!e.isTrusted)return;
   setTimeout(function(){
     var a=document.activeElement;
     if(a&&/^(INPUT|TEXTAREA)$/.test(a.tagName))return;
-    GUESSAT=0;ZQ=0;},0);},true);
+    GUESSAT=0;kbStop();KTGT=-1;kbRun(0,190);},0);
+},true);
 
 /* ── 那个二段滑动：不要了 ── */
 if(!G6.slideRun){
