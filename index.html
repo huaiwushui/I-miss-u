@@ -5841,10 +5841,11 @@ if(typeof G6==='undefined')var G6={};
     /* 命中与跳转：石板灰蓝，跟分类标签同色系 */
     ':root{--fl2:rgba(109,116,128,.16)!important}'
    +'html.dark{--fl2:rgba(148,158,174,.19)!important}'
-    /* 键盘位移：只留一个动画源，两半读同一个变量 */
+    /* 键盘位移：一个动画源，前段平缓，均摊到每一帧 */
    +'@property --kb{syntax:"<length>";inherits:true;initial-value:0px}'
-   +'html{transition:--kb .2s cubic-bezier(.33,1,.68,1)}'
+   +'html{transition:--kb .26s cubic-bezier(.25,.46,.45,.94)}'
    +'.ib,.selbar{transition:none!important}'
+   +'#dn{transition:opacity .22s ease!important}'
    +'#ms.slide{transition:none!important}'
    +'.hd{transform:none!important;will-change:auto!important}'
     /* ── 探针 ── */
@@ -5947,7 +5948,7 @@ window.addEventListener('orientationchange',function(){
 /* ── 预锁宽限：键盘慢半拍也不许落回去 ── */
 var GUESSAT=0,GRACE=600,ZQ=0;
 function pinRide(ms){
-  var t0=performance.now(),lim=ms||260;
+  var t0=performance.now(),lim=ms||340;
   (function f(){
     var b=msBox();
     if(b&&SC.pin)toEnd(b);
@@ -6029,11 +6030,11 @@ function pWho(st){
   for(i=1;i<ls.length;i++){
     s=ls[i].trim();
     if(!s)continue;
-    if(/pSet|pWho|Object\.set/.test(s))continue;
+    if(/pWho|pAdd|Object\.set/.test(s))continue;
     s=s.replace(/^at\s+/,'').replace(/\s*\(.*$/,'')
        .replace(/@.*$/,'').trim();
     if(s&&s.length<40)return s;}
-  return '?';}
+  return'?';}
 function pAdd(d,who,nat){
   PLOG.push({d:d,w:who,n:nat?1:0,t:Date.now()});
   if(PLOG.length>60)PLOG.shift();
@@ -6048,17 +6049,16 @@ if(!G6.hook){
         configurable:true,
         get:function(){return od.get.call(this);},
         set:function(v){
-          if(PRB&&this.id==='ms'){
-            var was=od.get.call(this);
-            od.set.call(this,v);
-            var now=od.get.call(this);
-            PLAST=now;
-            if(Math.abs(now-was)>=2){
-              var st='';
-              try{st=new Error().stack||'';}catch(e){}
-              pAdd(now-was,pWho(st),0);}
-            return;}
-          od.set.call(this,v);}});}
+          if(!PRB||this.id!=='ms'){od.set.call(this,v);return;}
+          var was=od.get.call(this);
+          od.set.call(this,v);
+          var now=od.get.call(this);
+          PLAST=now;
+          if(Math.abs(now-was)>=2){
+            var st='';
+            try{st=new Error().stack||'';}catch(e){}
+            pAdd(now-was,pWho(st),0);}
+        }});}
   }catch(e){}
 }
 function pWatch(){
@@ -6124,10 +6124,8 @@ function shPrb(){
   +'<span class="l">开着</span><span class="k'+(PRB?' on':'')
   +'"><i></i></span></div></div>'
   +'<div class="nt">开着的时候右上角挂一张小卡，记下聊天区每一次位移：'
-  +'谁动的、动了多少像素。<br>'
-  +'灰色是我们的代码干的，暖色是浏览器自己干的——这两种要分开治。<br>'
-  +'觉得屏幕抽了一下，就点「抄给我」把记录发我。<br>'
-  +'点标题能收成一小条，不挡视线。平时关着。</div>'});}
+  +'谁动的、动了多少像素。灰色是我们的代码，暖色是浏览器自己干的。'
+  +'觉得屏幕抽了一下就点「抄给我」发我。点标题能收起来。平时关着。</div>'});}
 try{NOTE['抽动探针']='';}catch(e){}
 if(!G6.vMore){
   G6.vMore=vMore;
