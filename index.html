@@ -3544,6 +3544,115 @@ function unstick(m,why){
   try{saveS(S().id);}catch(e){}
   if(CV==='chat'){paint();btn();}else btn();}
 setInterval(function(){
+
+  /* ── 四处修补 ── */
+
+/* 压图只压一次 */
+if(!G1.shrunkOnce){
+  G1.shrunkOnce=1;
+  var _shrink=shrink;
+  shrink=function(src,a,b,c){
+    var cb=(typeof a==='function')?a:c;
+    var wrap=function(u){
+      if(u&&typeof u==='string')PRESHRUNK[u.slice(-40)]=1;
+      if(typeof cb==='function')cb(u);
+    };
+    if(typeof a==='function')return _shrink(src,wrap);
+    return _shrink(src,a,b,wrap);
+  };
+}
+var PRESHRUNK={};
+if(!G1.dbPut2){
+  G1.dbPut2=dbPut;
+  dbPut=function(store,key,val){
+    if(store==='pic'&&val&&typeof val.d==='string'
+      &&PRESHRUNK[val.d.slice(-40)]){
+      return G1.dbPut(store,key,{d:val.d,ts:val.ts||Date.now()});
+    }
+    return G1.dbPut2(store,key,val);
+  };
+}
+setInterval(function(){
+  var ks=Object.keys(PRESHRUNK);
+  if(ks.length>40)ks.slice(0,ks.length-20)
+    .forEach(function(k){delete PRESHRUNK[k];});
+},60000);
+
+/* 回到底部：只在聊天页、没在选择模式时存在 */
+function dnBox(){
+  var b=document.getElementById('dn');
+  if(CV!=='chat'||SEL){if(b)b.remove();return null;}
+  var mw=document.querySelector('#pg .mw');
+  if(!mw){if(b)b.remove();return null;}
+  if(!b||b.parentNode!==mw){
+    if(b)b.remove();
+    b=document.createElement('button');b.id='dn';b.innerHTML=ARWD;
+    b.onclick=function(){
+      var box=msBox();if(!box)return;
+      SC.pin=1;SC.el=null;
+      try{box.scrollTo({top:scMax(box),behavior:'smooth'});}
+      catch(e){toEnd(box);}};
+    mw.appendChild(b);}
+  return b;}
+function dnSync(){
+  var box=msBox(),b=dnBox();
+  if(!box||!b)return;
+  b.classList.toggle('on',(scMax(box)-box.scrollTop)>400);}
+
+/* 看门狗：只管它当初盯上的那一条 */
+WD={t:0,len:-1,id:'',sid:''};
+function stuckOne(){
+  var i,j,arr,s;
+  for(j=0;j<SS.length;j++){
+    s=SS[j];arr=MSG[s.id]||[];
+    for(i=arr.length-1;i>=0;i--)
+      if(arr[i].st||arr[i].wst)return{m:arr[i],sid:s.id};}
+  return null;}
+function unstick(m,why,sid){
+  if(!m)return;
+  m.st=0;m.wst=0;delete m._ks;delete m.forced;
+  BUSY=false;
+  try{CURSAID='';ROUNDHINT='';PENDQ=[];}catch(e){}
+  if(ABORT){try{ABORT.abort();}catch(e){}ABORT=null;}
+  if(TMR){clearInterval(TMR);TMR=null;}
+  if(!(m.t&&m.t.trim())&&!(m.parts&&m.parts.length))m.err=why;
+  try{saveS(sid||S().id);}catch(e){}
+  if(CV==='chat'){paint();btn();}else btn();}
+
+/* 滑动期间别抢滚动位置 */
+if(!G1.paintGuard){
+  G1.paintGuard=1;
+  var _pnt=paint;
+  paint=function(keep){
+    if(KSL){
+      var b=msBox();
+      var was=b?b.scrollTop:0;
+      _pnt(keep);
+      var c=msBox();
+      if(c&&SC.pin)toEnd(c);
+      else if(c)c.scrollTop=Math.min(was,scMax(c));
+      return;}
+    return _pnt(keep);
+  };
+}
+
+  /* 看门狗循环：跟着新的 stuckOne 走 */
+(function(){
+  var t=setInterval(function(){
+    var hit=stuckOne();
+    if(!hit){WD.id='';WD.len=-1;WD.t=0;WD.sid='';return;}
+    var m=hit.m,now=Date.now();
+    var len=((m.t||'').length)+((m.parts||[]).length*7)+(m.wst?1:0);
+    if(m.id!==WD.id){WD.id=m.id;WD.sid=hit.sid;WD.len=len;WD.t=now;return;}
+    if(len!==WD.len){WD.len=len;WD.t=now;return;}
+    var idle=now-WD.t;
+    var mine=(S()&&S().id===hit.sid);
+    if(!BUSY&&idle>2500){unstick(m,'断了，再说一次吧。',hit.sid);return;}
+    if(idle>75000&&(!mine||BUSY))
+      unstick(m,'等太久了，没收到回应。',hit.sid);
+  },1500);
+  G1.wdTimer=t;
+})();
   var m=stuckOne();
   if(!m){WD.id='';WD.len=-1;WD.t=0;return;}
   var now=Date.now();
@@ -4882,6 +4991,85 @@ sheet=function(o){
 markNew(1);scBind();
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='mem'){try{drawMem();}catch(e){}}
+
+/* ── 四处修补 ── */
+
+/* 分支：先把当前这版存住，再拿新的 */
+function redo(id){
+  if(BUSY)return;
+  var s=S(),i=idxOf(id);if(i<0)return;
+  var a=ms(),m=a[i],br;
+  if(m.br&&m.br.length){
+    br=m.br.slice();
+    br[m.bi||0]=snap(m);
+  }else br=[snap(m)];
+  a.splice(i);saveS(s.id);paint();
+  ask(function(nm){
+    if(nm.err)return;
+    nm.br=br.concat([snap(nm)]);nm.bi=nm.br.length-1;
+    saveS(s.id);paint();});}
+
+/* 梗概：只标到真正读过的那一句 */
+function sumSheet(){
+  var s=sessById(EXSID);
+  sheet({sum:1,title:'「'+(s?(s.ti||'对话'):'对话')+'」聊了什么',
+    ok:'留下这段',
+    body:'<div class="fd"><textarea id="sm">'+esc(SUMT)+'</textarea></div>'
+  +'<div class="cd cd0"><div class="rw pz" onclick="exSkip()">'
+  +'<span class="l" style="color:var(--dim)">不留了，只标记看过</span>'
+  +I.chevD+'</div></div>'
+  +'<div class="nt">梗概只让我知道聊过什么，细节我自己翻。'
+  +'不占记忆库那 '+MEMCAP+' 格，只带最近 '+SUMKEEP+' 段给我。</div>',
+    onOk:function(){
+      var t=val('sm');
+      if(!t){toast('是空的');return false;}
+      var s2=sessById(EXSID);
+      if(!s2){toast('那段对话不在了');closeSheet(1);return'done';}
+      var nm=addMem(t.slice(0,400),SUMCAT,1,'ai',
+        {sid:s2.id,mid:'',ts:Date.now()});
+      if(nm)nm.sum=1;
+      if(SUMUPTO)s2.ex=SUMUPTO;
+      SUMT='';SUMUPTO=0;
+      saveD();saveS();closeSheet(1);
+      var left=exCount(s2);
+      if(CV==='mem')drawMem();else view('mem');
+      toast(left?('留下了，还剩 '+left+' 句'):'留下了');
+      return'done';}});}
+function exSkip(){
+  var s=sessById(EXSID);
+  if(s&&SUMUPTO)s.ex=SUMUPTO;
+  SUMT='';SUMUPTO=0;EXR=[];EXSEL={};closeSheet(1);
+  if(CV==='mem')drawMem();else view('mem');
+  toast('标记看过了');}
+
+/* 编号：像编号就只精确认，不猜 */
+function memByCode(code){
+  var raw=String(code||'').trim();
+  var c=raw.toLowerCase().replace(/[#\s]/g,'');
+  if(!c)return null;
+  var cs=memCodes(),id=cs.rev[c];
+  if(id)return memById(id);
+  var hit=null;
+  live().forEach(function(m){
+    if(!hit&&String(m.id||'').toLowerCase().slice(-c.length)===c)hit=m;});
+  if(hit)return hit;
+  if(/^[#A-Za-z0-9]+$/.test(raw))return null;
+  if(raw.length<6)return null;
+  var best=null,bs=0;
+  live().forEach(function(m){
+    var r=simRate(m.t,raw);
+    if(r>bs){bs=r;best=m;}});
+  return bs>=0.5?best:null;}
+
+/* 清空 / 删掉：梗概标记跟着归零 */
+if(!G2.clearChat){
+  G2.clearChat=clearChat;
+  clearChat=function(){
+    var s=S();
+    G2.clearChat();
+    try{if(s){s.ex=0;saveS(s.id);}}catch(e){}
+  };
+}
 if(CV==='chat')requestAnimationFrame(function(){stickHard();});
 /* ══════════ I MISS U · 第三段 · 视觉 ══════════ */
 if(typeof G3==='undefined')var G3={};
