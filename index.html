@@ -6331,9 +6331,27 @@ G7A.css=1;
   var s=document.createElement('style');
   var MIN='"Hiragino Mincho ProN","Yu Mincho","Songti SC",serif';
   s.textContent=
+    /* 光标：不要系统蓝，也不要那么高 */
+    '#sh .fd input,#sh .fd textarea,#ta,.sbox input{'
+   +'caret-color:var(--acc)!important}'
+   +'#sh .fd textarea{line-height:1.6!important;'
+   +'min-height:112px!important;padding:12px 15px!important}'
+   +'#sh .fd input{line-height:1.5!important;padding:12px 15px!important}'
+
+    /* 间距：全部 12，一个数管到底 */
+   +'#sh .bdy>*+*{margin-top:12px!important}'
+   +'#sh .bdy>.lbs+*{margin-top:12px!important}'
+   +'#sh .bdy>*+.lbs{margin-top:12px!important}'
+   +'#sh .bdy>*+.nt{margin-top:0!important}'
+   +'#sh .seg,#sh .segw{gap:10px!important;row-gap:10px!important}'
+
     /* 键盘不是为聊天开的，聊天区一动不动 */
-    'html.kbot #ms{padding-bottom:16px!important}'
+   +'html.kbot #ms{padding-bottom:16px!important}'
    +'html.kbot #dn{bottom:18px!important}'
+    /* 别的页面开键盘时，列表底部留出键盘的位置 */
+   +'html.kbon #mls,html.kbon #fres{'
+   +'padding-bottom:calc(var(--kb) + 20px)!important}'
+
     /* 太早的先不渲染 */
    +'#ms .m.far,#ms .gsep.far{display:none!important}'
    +'.mfar{display:block;width:100%;margin:2px 0 24px;padding:10px 0;'
@@ -6433,6 +6451,34 @@ if(!G7A.dupOf){
     D.mems=save;
     return r;};
 }
+
+/* ── 面板里点靠下的输入框，别被键盘盖住 ── */
+document.addEventListener('focusin',function(e){
+  if(!e.isTrusted)return;
+  var t=e.target;
+  if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
+  if(!t.closest)return;
+  var bd=t.closest('#sh .bdy');
+  if(!bd)return;
+  setTimeout(function(){
+    try{
+      var r=t.getBoundingClientRect(),br=bd.getBoundingClientRect();
+      if(r.bottom>br.bottom-10||r.top<br.top+10)
+        bd.scrollTop+=(r.top-br.top)-16;
+    }catch(x){}},380);
+},true);
+
+/* ── 输入框不要红波浪 ── */
+(function(){
+  function off(){
+    ['#ta','#sh .fd input','#sh .fd textarea','.sbox input']
+      .forEach(function(q){
+        [].forEach.call(document.querySelectorAll(q),function(el){
+          if(el.dataset.sp)return;
+          el.dataset.sp='1';
+          el.setAttribute('spellcheck','false');});});}
+  setInterval(off,1200);off();
+})();
 
 /* ── 挂了很久回来，键盘基准重新量 ── */
 document.addEventListener('visibilitychange',function(){
