@@ -5831,15 +5831,20 @@ document.addEventListener('click',function(e){
   e.preventDefault();
   try{window.open(h,'_blank','noopener');}catch(x){}
 },true);
-  /* ══════════ 补丁 · 壁纸钉死 / 命中色 / 年份 ══════════ */
+/* ══════════ I MISS U · 补丁 ══════════ */
 if(typeof G6==='undefined')var G6={};
 
-/* ── 命中与跳转：换成偏冷的石板灰蓝 ── */
 (function(){
   var s=document.createElement('style');
   s.textContent=
+    /* 命中与跳转：石板灰蓝，和分类标签同色系 */
     ':root{--fl2:rgba(109,116,128,.16)!important}'
-   +'html.dark{--fl2:rgba(148,158,174,.19)!important}';
+   +'html.dark{--fl2:rgba(148,158,174,.19)!important}'
+    /* 抬起去掉二段拉扯，收快一档 */
+   +'#ms.slide{transition:none!important}'
+   +'.ib,.selbar{transition:transform .17s cubic-bezier(.33,1,.68,1)!important}'
+    /* 顶栏钉死，键盘一概碰不到 */
+   +'.hd{transform:none!important;will-change:auto!important}';
   document.head.appendChild(s);
 })();
 
@@ -5859,130 +5864,82 @@ if(!G6.parseDate){
     return null;};
 }
 
-/* ── 壁纸：钉在屏幕上，键盘碰不到 ── */
-(function(){
-  var s=document.createElement('style');
-  s.textContent=
-    'html.hasbg{background-image:none!important;height:100%!important}'
-   +'#bgf{position:fixed;left:0;top:0;width:100vw;height:100vh;'
-   +'height:100lvh;z-index:-3;pointer-events:none;display:none;'
-   +'background-position:center;background-size:cover;'
-   +'background-repeat:no-repeat}'
-   +'html.hasbg #bgl,html.hasbg #bgv{display:none!important}'
-    /* 抬起收紧一点，去掉二段拉扯 */
-   +'#ms.slide{transition:none!important}'
-   +'.ib,.selbar{transition:transform .17s cubic-bezier(.33,1,.68,1)!important}';
-  document.head.appendChild(s);
-})();
-var BGF=null;
-function bgLayer(){
-  if(!BGF||!BGF.parentNode){
-    BGF=document.getElementById('bgf');
-    if(!BGF){
-      BGF=document.createElement('div');BGF.id='bgf';
-      document.body.insertBefore(BGF,document.body.firstChild);}}
-  return BGF;}
+/* ── 壁纸：还是画在 html 上，只把尺寸量死 ── */
+var BGW=0,BGH=0;
+function bgLock(){
+  var w=Math.max(window.innerWidth||0,320);
+  var h=Math.max(window.innerHeight||0,480);
+  try{
+    if(screen&&screen.width)w=Math.max(w,screen.width);
+    if(screen&&screen.height)h=Math.max(h,screen.height);
+  }catch(e){}
+  BGW=Math.round(w);BGH=Math.round(h);
+}
+function bgSize(){
+  if(!D.bgOn||!BGDATA)return;
+  if(!BGW)bgLock();
+  de.style.setProperty('background-size',
+    '100% 100%,100% 100%,'+BGW+'px '+BGH+'px','important');
+  de.style.setProperty('background-position',
+    'center top,center top,center top','important');
+  de.style.setProperty('background-attachment',
+    'scroll,scroll,fixed','important');
+}
 if(!G6.bgPaint){
   G6.bgPaint=bgPaint;
   bgPaint=function(){
+    var f=document.getElementById('bgf');
+    if(f&&f.parentNode)f.parentNode.removeChild(f);
+    G6.bgPaint();
     try{
-      var el=bgLayer();
-      de.style.setProperty('--edge',edgeColor());
-      de.style.backgroundImage='';
       if(!D.bgOn||!BGDATA){
-        de.classList.remove('hasbg');
-        de.style.backgroundColor='';
-        el.style.display='none';el.style.backgroundImage='';
+        de.style.removeProperty('background-size');
+        de.style.removeProperty('background-position');
+        de.style.removeProperty('background-attachment');
         return;}
-      var a=(D.bgv==null?45:D.bgv)/100;
-      var c=isDark()?'22,20,15':'248,246,242';
-      var v='rgba('+c+','+a+')',w='rgba('+c+',0.12)';
-      de.style.backgroundColor=edgeColor();
-      el.style.display='block';
-      el.style.backgroundImage='linear-gradient('+v+','+v+'),'
-       +'linear-gradient('+w+','+w+'),url("'+BGDATA+'")';
-      de.classList.add('hasbg');
+      bgSize();
     }catch(e){}
   };
   try{bgPaint();}catch(e){}
 }
+window.addEventListener('orientationchange',function(){
+  BGW=0;BGH=0;
+  setTimeout(function(){try{bgLock();bgSize();}catch(e){}},550);
+});
 
 /* ── 那个二段滑动：不要了 ── */
 if(!G6.slideRun){
   G6.slideRun=slideRun;
   slideRun=function(){try{slideOff();}catch(e){}};
 }
-  /* ══════════ 补丁 · 壁纸量死 / 搜索不丢焦点 ══════════ */
-if(typeof G7==='undefined')var G7={};
 
-/* ── 壁纸：开页量一次，之后死死钉住 ── */
-(function(){
-  var s=document.createElement('style');
-  s.textContent=
-    '#bgf{position:fixed!important;left:0!important;top:0!important;'
-   +'right:auto!important;bottom:auto!important;'
-   +'z-index:-3;pointer-events:none;'
-   +'background-position:center center!important;'
-   +'background-size:cover!important;background-repeat:no-repeat!important;'
-   +'transform:translateZ(0);will-change:auto;'
-   +'contain:strict}';
-  document.head.appendChild(s);
-})();
-var BGW=0,BGH=0;
-function bgFit(){
-  var w=Math.max(window.innerWidth||0,
-    (screen&&screen.width)||0,320);
-  var h=Math.max(window.innerHeight||0,
-    (screen&&screen.height)||0,480);
-  if(w===BGW&&h===BGH)return;
-  BGW=w;BGH=h;
-  var el=document.getElementById('bgf');
-  if(el){el.style.width=w+'px';el.style.height=h+'px';}
-}
-if(!G7.bgPaint){
-  G7.bgPaint=bgPaint;
-  bgPaint=function(){
-    G7.bgPaint();
-    try{bgFit();}catch(e){}
-  };
-  try{bgPaint();}catch(e){}
-}
-window.addEventListener('orientationchange',function(){
-  BGW=0;BGH=0;
-  setTimeout(function(){try{bgFit();}catch(e){}},550);
-});
-
-/* ── 搜索框：只在没有的时候造，别每次重建 ── */
-if(!G7.drawMem){
-  G7.drawMem=drawMem;
+/* ── 搜索框：保住焦点和光标，别每打一个字就收键盘 ── */
+if(!G6.drawMem){
+  G6.drawMem=drawMem;
   drawMem=function(){
     var old=document.getElementById('mq');
     var was=(old&&document.activeElement===old)?1:0;
-    var pos=was?old.selectionStart:0;
-    var keep=old?old.value:null;
-    G7.drawMem();
+    var pos=was?old.selectionStart:0,keep=old?old.value:null;
+    G6.drawMem();
     var nw=document.getElementById('mq');
-    if(nw&&keep!=null&&nw!==old){
+    if(nw&&nw!==old&&keep!=null){
       if(nw.value!==keep)nw.value=keep;
-      if(was){
-        try{nw.focus({preventScroll:true});
-          nw.setSelectionRange(pos,pos);}catch(e){}
-      }
+      if(was)try{nw.focus({preventScroll:true});
+        nw.setSelectionRange(pos,pos);}catch(e){}
     }
   };
 }
-if(!G7.runFind){
-  G7.runFind=runFind;
+if(!G6.runFind){
+  G6.runFind=runFind;
   runFind=function(){
     var old=document.getElementById('fq');
     var was=(old&&document.activeElement===old)?1:0;
     var pos=was?old.selectionStart:0;
-    G7.runFind();
+    G6.runFind();
     var nw=document.getElementById('fq');
-    if(was&&nw&&nw!==old){
+    if(was&&nw&&nw!==old)
       try{nw.focus({preventScroll:true});
         nw.setSelectionRange(pos,pos);}catch(e){}
-    }
   };
 }
 </script>
