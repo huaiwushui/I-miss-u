@@ -6535,6 +6535,131 @@ document.addEventListener('visibilitychange',function(){
   if(document.hidden)return;
   try{FULLH=0;FULLW=0;BGW=0;BGH=0;bgSize();}catch(e){}
 },false);
+  /* ══════════ I MISS U · 补丁 3 ══════════ */
+if(typeof G8A==='undefined')var G8A={};
+
+if(!G8A.css){
+G8A.css=1;
+(function(){
+  var s=document.createElement('style');
+  s.textContent='html.warned .hd{padding-top:9px!important}';
+  document.head.appendChild(s);
+})();
+}
+
+/* ── 键盘还在，就别把输入条放回去 ── */
+if(!G8A.kbot){
+  G8A.kbot=1;G8A.lastTa=1;
+  G8A.keepBot=function(){
+    if(G8A.lastTa)return;
+    var a=document.activeElement;
+    if(a&&a.id==='ta')return;
+    if(KBCUR>60)de.classList.add('kbot');};
+  document.addEventListener('focusin',function(e){
+    var t=e.target;
+    if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
+    G8A.lastTa=(t.id==='ta')?1:0;},true);
+  document.addEventListener('focusout',function(e){
+    if(!e.isTrusted)return;
+    setTimeout(G8A.keepBot,80);
+    setTimeout(G8A.keepBot,260);},true);
+}
+
+/* ── 她删掉的记忆：留个条，别再记回来 ── */
+var GONEDAYS=21,GONEMAX=10;
+function gones(){
+  if(!D.gone)D.gone=[];
+  var lim=Date.now()-GONEDAYS*MS;
+  D.gone=D.gone.filter(function(x){
+    return x&&x.t&&x.ts>lim;}).slice(-GONEMAX);
+  return D.gone;}
+function goneAdd(t){
+  gones().push({t:String(t||'').slice(0,120),ts:Date.now()});
+  gones();}
+function goneText(){
+  var ls=gones();
+  if(!ls.length)return'';
+  return ls.slice().reverse().map(function(x){
+    return'· '+dlab(x.ts)+' 「'+x.t+'」';}).join('\n');}
+function delMem(id){
+  var m=memById(id);if(!m)return;
+  sheet({title:'删掉这条',
+    body:'<div class="cd" style="font-size:14px;line-height:1.75">'
+      +esc(m.t)+'</div>',
+    ok:'删掉',
+    onOk:function(){
+      var mm=memById(id);
+      if(mm)goneAdd(mm.t);
+      D.mems=D.mems.filter(function(x){return x.id!==id;});
+      saveD();closeSheet(1);drawMem();toast('删掉了');
+      return'done';}});}
+
+/* ── 提示词：把不准的话改准 ── */
+if(!G8A.staticPart){
+  G8A.staticPart=staticPart;
+  staticPart=function(){
+    var s=G8A.staticPart();
+    s=s.replace('硬上限，每次说话都整份发给你，所以格子贵。',
+      '每轮最多带 '+MEMCAP+' 条给你，多出来的按相关度轮不到上场，所以格子贵。');
+    s=s.replace('满了以后新记一条就是挤掉一条，动手前想清楚值不值。',
+      '超过 '+MEMCAP+' 条之后，新记的只是挤掉别条上场的机会；'
+     +'页面不会自动删，真该删的用 [[忘掉:]] 自己删。');
+    s=s.replace('默认各五条；要更长写 [[展开:编号|条数]]',
+      '默认各五条；要更长写 [[展开:编号|条数]]。编号只在这一轮有效');
+    s=s.replace('第三人称写她，直接写事情本身。',
+      '第三人称写她，直接写事情本身。'
+     +'带〔她写的〕的是她亲手写的，只在内容过时的时候改，别去动她的措辞。');
+    s=s.replace('你最近动过的会列出来，删错了加回来，改坏了改回去。',
+      '你最近动过的、她删掉的都会列出来，删错了加回来，改坏了改回去。');
+    return s;};
+}
+if(!G8A.usPart){
+  G8A.usPart=usPart;
+  usPart=function(q){
+    var s=G8A.usPart(q);
+    try{
+      var cs=memCodes();
+      D.mems.forEach(function(m){
+        if(m.src!=='me'||!cs.map[m.id])return;
+        var k='· #'+cs.map[m.id]+' ';
+        s=s.replace(k,k+'〔她写的〕');});
+    }catch(e){}
+    try{
+      var g=goneText();
+      if(g)s=s.replace('\n\n【现在】\n',
+        '\n\n【她删掉的】\n'+g
+       +'\n（她不要这些了。别再记回来，除非她重新说起。）\n\n【现在】\n');
+    }catch(e){}
+    return s;};
+}
+
+/* ── 展开更早的：视线停在原地 ── */
+function farTrim(){
+  var b=msBox();if(!b)return;
+  var s=S(),sid=s?s.id:'';
+  var old=b.querySelector('.mfar');
+  if(old)old.remove();
+  var ls=[],ch=b.children,i,el,cl;
+  for(i=0;i<ch.length;i++){
+    el=ch[i];cl=el.classList;
+    if(!cl)continue;
+    cl.remove('far');
+    if(cl.contains('m')||cl.contains('gsep'))ls.push(el);}
+  if(RALL[sid]||ls.length<=RCAP)return;
+  var cut=ls.length-RCAP;
+  for(i=0;i<cut;i++)ls[i].classList.add('far');
+  var first=ls[cut],fid=first?first.id:'';
+  var bt=document.createElement('button');
+  bt.className='mfar pz';
+  bt.textContent='看更早的 '+cut+' 条';
+  bt.onclick=function(){
+    var box=msBox();
+    var off=(first&&box)?(first.offsetTop-box.scrollTop):0;
+    RALL[sid]=1;SC.pin=0;SC.el=null;
+    paint(1);
+    var b2=msBox(),e2=fid?document.getElementById(fid):null;
+    if(b2&&e2){b2.scrollTop=Math.max(0,e2.offsetTop-off);scAnchor();}};
+  b.insertBefore(bt,first);}
 </script>
 </body>
 </html>
