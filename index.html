@@ -6348,7 +6348,6 @@ G7A.css=1;
     /* 键盘不是为聊天开的，聊天区一动不动 */
    +'html.kbot #ms{padding-bottom:16px!important}'
    +'html.kbot #dn{bottom:18px!important}'
-    /* 别的页面开键盘时，列表底部留出键盘的位置 */
    +'html.kbon #mls,html.kbon #fres{'
    +'padding-bottom:calc(var(--kb) + 20px)!important}'
 
@@ -6361,6 +6360,54 @@ G7A.css=1;
 })();
 }
 
+/* ── 标记：扫描器，不再用正则啃 ── */
+var MKKEY=['查','展开','记住','锁住','改','忘掉'];
+var MKLONG={'记住':1,'锁住':1,'改':1};
+function scanMarks(t){
+  var s=String(t||''),out=[],i=0,n=s.length;
+  while(i<n){
+    var a=s.indexOf('[',i);
+    if(a<0)break;
+    var dbl=(s.charAt(a+1)==='[')?1:0;
+    var j=a+1+dbl,q,k='';
+    while(j<n&&/\s/.test(s.charAt(j)))j++;
+    for(q=0;q<MKKEY.length;q++)
+      if(s.substr(j,MKKEY[q].length)===MKKEY[q]){k=MKKEY[q];break;}
+    if(!k){i=a+1;continue;}
+    var p=j+k.length;
+    while(p<n&&/\s/.test(s.charAt(p)))p++;
+    var c=s.charAt(p);
+    if(c!==':'&&c!=='：'){i=a+1;continue;}
+    p++;
+    var e=s.indexOf(']]',p),b=-1,v='';
+    if(e>=0){v=s.slice(p,e);b=e+2;}
+    if(b<0){
+      var e1=s.indexOf(']',p);
+      if(e1>=0){
+        var cd=s.slice(p,e1);
+        if(!MKLONG[k]||(cd.length<=160&&cd.indexOf('\n')<0)){
+          v=cd;b=(s.charAt(e1+1)===']')?e1+2:e1+1;}}}
+    if(b<0){out.push({k:k,v:'',a:a,b:n,bad:1});break;}
+    v=v.trim();
+    if(v&&v.length<=3000)out.push({k:k,v:v,a:a,b:b});
+    i=b;}
+  return out;}
+function findMarks(t){
+  var o=[];
+  scanMarks(t).forEach(function(x){
+    if(x.bad||!x.v)return;
+    if(x.k==='展开'){
+      var g=x.v.match(/[|｜]\s*(\d{1,2})/);
+      OPENW=g?Math.max(1,Math.min(20,parseInt(g[1],10)||5)):5;}
+    o.push({k:x.k,v:x.v});});
+  return o;}
+function stripMarks(t){
+  var s=String(t||''),o='',pos=0;
+  scanMarks(s).forEach(function(x){o+=s.slice(pos,x.a);pos=x.b;});
+  o+=s.slice(pos);
+  o=unpg(o);
+  return o.replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();}
+
 /* ── 时间：只给绝对时刻，不给相对量 ── */
 function markTimes(list){
   TMARK={};
@@ -6368,8 +6415,7 @@ function markTimes(list){
   (list||[]).forEach(function(x,i){
     var ts=x.ts||0;
     if(x.r!=='ai'&&(i===n-1||(prev&&ts-prev>TGAP)))TMARK[x.id]=ts;
-    prev=ts;});
-}
+    prev=ts;});}
 function toC(x,an,pics){
   if(x.r==='quote')return'【我们以前说过的 · '+(x.from||'')+'】\n'+x.t;
   var p=[],np=(x.pics||[]).length;
@@ -6390,8 +6436,7 @@ function toC(x,an,pics){
   if(tx)p.push({type:'text',text:gm+tx});
   else if(gm)p.push({type:'text',text:gm+'…'});
   if(!p.length)p.push({type:'text',text:'…'});
-  return(p.length===1&&p[0].type==='text')?p[0].text:p;
-}
+  return(p.length===1&&p[0].type==='text')?p[0].text:p;}
 if(!G7A.usPart){
   G7A.usPart=usPart;
   usPart=function(q){
@@ -6402,6 +6447,15 @@ if(!G7A.usPart){
     s=s.replace(/（以这个为准）/,
       '（现在几点只看这一行。别拿消息上的时间去加减推算现在。）');
     return s;};
+}
+if(!G7A.staticPart){
+  G7A.staticPart=staticPart;
+  staticPart=function(){
+    var s=G7A.staticPart();
+    return s.replace('编号是记忆前面 # 开头的短码。',
+      '编号是记忆前面 # 开头的短码。'
+     +'标记一律用双方括号收尾；内容里可以有单个 ]，但不能出现 ]]。'
+     +'[[改:]] 要把整条新内容一次写完，写一半会把原来那条改坏。');};
 }
 
 /* ── 太早的消息先不渲染 ── */
@@ -6424,8 +6478,7 @@ function farTrim(){
   btn.className='mfar pz';
   btn.textContent='看更早的 '+cut+' 条';
   btn.onclick=function(){RALL[sid]=1;paint(1);};
-  b.insertBefore(btn,ls[cut]);
-}
+  b.insertBefore(btn,ls[cut]);}
 if(!G7A.paint){
   G7A.paint=paint;
   paint=function(keep){
@@ -6444,10 +6497,7 @@ if(!G7A.dupOf){
   G7A.dupOf=dupOf;
   dupOf=function(t,skip){
     var save=D.mems,r=null;
-    try{
-      D.mems=coreMems();
-      r=G7A.dupOf(t,skip);
-    }catch(e){}
+    try{D.mems=coreMems();r=G7A.dupOf(t,skip);}catch(e){}
     D.mems=save;
     return r;};
 }
