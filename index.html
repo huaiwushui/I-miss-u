@@ -6638,8 +6638,8 @@ if(!G8A.fetch){
         try{b=JSON.parse(o.body);}catch(e){return r;}
         var s=String(t),ch=0;
         if(Array.isArray(b.system)
-          &&/cache_control|system|unsupported|unrecognized|unexpected|extra/i
-            .test(s)){downFlat(b);APIDOWN.sys=1;ch=1;}
+          &&/cache_control|system|unsupported|unrecognized|unexpected|extra/i.test(s)){
+          downFlat(b);APIDOWN.sys=1;ch=1;}
         if(b.thinking&&/think|budget/i.test(s)){
           delete b.thinking;APIDOWN.think=1;ch=1;}
         if(b.temperature!=null&&b.temperature!==1
@@ -6678,6 +6678,49 @@ if(!G8A.shCtx){
        +'上一轮 · '+t+'</div>');
     }catch(e){}};
 }
+
+/* ── 中转：真去试一次，别光看密钥填了没 ── */
+function apiPing(){
+  if(!D.apiUrl||!D.apiKey){toast('地址和密钥都要填');return;}
+  toast('正在试…');
+  var an=D.fmt!=='openai';
+  fetch(D.apiUrl,{method:'POST',
+    headers:an
+      ?{'Content-Type':'application/json','x-api-key':D.apiKey,
+        'anthropic-version':'2023-06-01'}
+      :{'Content-Type':'application/json',
+        'Authorization':'Bearer '+D.apiKey},
+    body:JSON.stringify({model:D.model,max_tokens:1,
+      messages:[{role:'user',content:'hi'}]})})
+  .then(function(r){
+    if(r.ok){toast('连上了');return;}
+    return r.text().then(function(t){
+      var g=String(t).replace(/\s+/g,' ');
+      if(r.status===401||r.status===403)g='密钥不对';
+      else if(r.status===404)g='地址或模型名不对';
+      else if(r.status===429)g='被限流了，钥匙是好的';
+      else g=g.slice(0,52);
+      toast(r.status+'：'+g);},
+      function(){toast('没连上，返回 '+r.status);});
+  },function(){
+    toast('连不上。地址可能写错，或这家不许网页直连');});}
+function shApi(){
+  sheet({title:'中转设置',ok:'保存并试一下',
+    body:'<div class="seg"><button id="f-a" class="'
+  +(D.fmt!=='openai'?'on':'')
+  +'" onclick="pickFmt(\'anthropic\')">Anthropic</button>'
+  +'<button id="f-o" class="'+(D.fmt==='openai'?'on':'')
+  +'" onclick="pickFmt(\'openai\')">OpenAI 兼容</button></div>'
+  +'<div class="fd"><input id="k-u" placeholder="'
+  +(D.fmt==='openai'?'https://…/v1/chat/completions':'https://…/v1/messages')
+  +'" value="'+esc(D.apiUrl)+'"></div>'
+  +'<div class="fd"><input id="k-k" type="password" '
+  +'placeholder="密钥 sk-…" value="'+esc(D.apiKey)+'"></div>'
+  +'<div class="cd cd0"><div class="rw pz" onclick="apiPing()">'
+  +'<span class="l">再试一次</span>'+I.chevD+'</div></div>'
+  +'<div class="nt">地址要写全，写到 /v1 就停会报 404。</div>',
+    onOk:function(){
+      D.apiUrl=val('k-u');D.apiKey=val('k-k');saveD();
       apiPing();return'done';}});}
 try{NOTE['中转设置']='地址要写全，写到 /v1 就停会报 404。';}catch(e){}
 
