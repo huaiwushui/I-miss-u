@@ -6209,119 +6209,6 @@ if(!G6.runFind){
   };
 }
 
-/* ══════ 探针 · うごき ══════ */
-var PRB=0,PLOG=[],PLAST=-1,PRAF=0;
-try{PRB=(localStorage.getItem('us.prb')==='1')?1:0;}catch(e){}
-function pWho(st){
-  var ls=String(st||'').split('\n'),i,s;
-  for(i=1;i<ls.length;i++){
-    s=ls[i].trim();
-    if(!s)continue;
-    if(/pWho|pAdd|Object\.set/.test(s))continue;
-    s=s.replace(/^at\s+/,'').replace(/\s*\(.*$/,'')
-       .replace(/@.*$/,'').trim();
-    if(s&&s.length<40)return s;}
-  return'?';}
-function pAdd(d,who,nat){
-  PLOG.push({d:d,w:who,n:nat?1:0,t:Date.now()});
-  if(PLOG.length>60)PLOG.shift();
-  pDraw();}
-if(!G6.hook){
-  G6.hook=1;
-  try{
-    var od=Object.getOwnPropertyDescriptor(Element.prototype,'scrollTop');
-    if(od&&od.get&&od.set){
-      G6.od=od;
-      Object.defineProperty(Element.prototype,'scrollTop',{
-        configurable:true,
-        get:function(){return od.get.call(this);},
-        set:function(v){
-          if(!PRB||this.id!=='ms'){od.set.call(this,v);return;}
-          var was=od.get.call(this);
-          od.set.call(this,v);
-          var now=od.get.call(this);
-          PLAST=now;
-          if(Math.abs(now-was)>=2){
-            var st='';
-            try{st=new Error().stack||'';}catch(e){}
-            pAdd(now-was,pWho(st),0);}
-        }});}
-  }catch(e){}
-}
-function pWatch(){
-  if(PRAF)return;
-  PRAF=1;
-  (function f(){
-    if(!PRB){PRAF=0;return;}
-    var b=document.getElementById('ms');
-    if(b){
-      var v=G6.od?G6.od.get.call(b):b.scrollTop;
-      if(PLAST>=0&&Math.abs(v-PLAST)>=2)pAdd(v-PLAST,'浏览器',1);
-      PLAST=v;}
-    requestAnimationFrame(f);})();
-}
-function pBox(){
-  var el=document.getElementById('prb');
-  if(!PRB){if(el)el.remove();return null;}
-  if(!el){
-    el=document.createElement('div');el.id='prb';
-    el.innerHTML='<div class="ph" onclick="pFold()">'
-     +'<span class="pl">うごき</span><span class="pn">0</span></div>'
-     +'<div class="pb"></div>'
-     +'<div class="pf"><button onclick="pCopy()">抄给我</button>'
-     +'<button onclick="pOff()">止</button></div>';
-    document.body.appendChild(el);}
-  return el;}
-function pDraw(){
-  var el=pBox();if(!el)return;
-  var n=el.querySelector('.pn');
-  if(n)n.textContent=PLOG.length;
-  if(el.classList.contains('fold'))return;
-  var b=el.querySelector('.pb');if(!b)return;
-  var h='',ls=PLOG.slice(-14),i,x;
-  for(i=ls.length-1;i>=0;i--){
-    x=ls[i];
-    h+='<div class="pr'+(x.n?' nat':'')+'"><span class="pd">'
-     +(x.d>0?'+':'')+x.d+'</span><span class="pw">'+esc(x.w)+'</span></div>';}
-  b.innerHTML=h;}
-function pFold(){
-  var el=document.getElementById('prb');
-  if(el){el.classList.toggle('fold');pDraw();}}
-function pCopy(){
-  if(!PLOG.length){toast('还没记到');return;}
-  var t='うごき · '+PLOG.length+' 条\n\n'
-   +PLOG.slice(-40).map(function(x){
-      return hm(x.t)+'  '+(x.d>0?'+':'')+x.d+'  '+x.w;}).join('\n');
-  clip(t,function(){toast('抄好了，发我');});}
-function pOn(v){
-  PRB=v?1:0;
-  try{localStorage.setItem('us.prb',PRB?'1':'0');}catch(e){}
-  if(PRB){PLOG=[];PLAST=-1;pBox();pDraw();pWatch();}
-  else{var el=document.getElementById('prb');if(el)el.remove();}}
-function pOff(){pOn(0);toast('探针关了');}
-function pTg(el){
-  pOn(!PRB);
-  var k=el.querySelector('.k');
-  if(k)k.className='k'+(PRB?' on':'');
-  vib(8);}
-function shPrb(){
-  sheet({title:'抽动探针',
-    body:'<div class="cd cd0"><div class="sw" onclick="pTg(this)">'
-  +'<span class="l">开着</span><span class="k'+(PRB?' on':'')
-  +'"><i></i></span></div></div>'
-  +'<div class="nt">开着的时候右上角挂一张小卡，记下聊天区每一次位移。'
-  +'点标题能收起来。平时关着。</div>'});}
-try{NOTE['抽动探针']='';}catch(e){}
-if(!G6.vMore){
-  G6.vMore=vMore;
-  vMore=function(){
-    var h=G6.vMore(),mk='<div class="sc2">存了多少</div>';
-    var add='<div class="sc2">看动静</div><div class="cd cd0">'
-     +'<div class="rw pz" onclick="shPrb()">'
-     +'<span class="l">抽动探针</span>'+I.chevD+'</div></div>';
-    return h.indexOf(mk)>=0?h.replace(mk,add+mk):h;};
-}
-if(PRB){try{pBox();pDraw();pWatch();}catch(e){}}
 /* ══════════ I MISS U · 补丁 2 ══════════ */
 if(typeof G7A==='undefined')var G7A={};
 
@@ -6542,21 +6429,7 @@ if(!G8A.css){
 G8A.css=1;
 (function(){
   var s=document.createElement('style');
-  s.textContent=
-    /* 键盘开着时整页缩到看得见的那块，就没有多余的可拖 */
-    'html.kbon #root{height:calc(100% - var(--kb))!important}'
-   +'html.kbon .ib,html.kbon .selbar{transform:none!important}'
-   +'html.kbon #ms{padding-bottom:16px!important}'
-   +'html.kbon #dn{bottom:18px!important}'
-   +'html.kbon #mls,html.kbon #fres{padding-bottom:20px!important}'
-   +'html.kbon #sh,html.kbon #dw{'
-   +'height:calc(100% - var(--kb))!important}'
-   +'html.kbon #sh .pn,html.kbon #dw .pn{bottom:0!important}'
-   +'html.kbon #sh .pn{'
-   +'max-height:calc(100% - var(--st) - 18px)!important}'
-   +'html.kbon #sh.think .pn,html.kbon #sh.lk2 .pn,'
-   +'html.kbon #sh.sum .pn{max-height:100%!important}'
-   +'html.warned .hd{padding-top:9px!important}';
+  s.textContent='html.warned .hd{padding-top:9px!important}';
   document.head.appendChild(s);
 })();
 }
