@@ -6603,8 +6603,11 @@ function markTimes(list){
   (list||[]).forEach(function(x){
     if(x.r!=='ai'&&x.r!=='quote'&&x.ts)TMARK[x.id]=x.ts;});}
 
-/* ── 她删掉的记忆：留个条，别再记回来 ── */
-var GONEDAYS=21,GONEMAX=10;
+/* ── 她删掉的记忆：留三天，随时能手动清空 ── */
+var GONEDAYS=3,GONEMAX=10;
+var GONETXT='这些只有我看得见，我拿它提醒自己别再记回来。'
+ +'三天之后会自己消失——现在清空的话，就彻底没有了哦？';
+try{NOTE['删掉的记录']=GONETXT;}catch(e){}
 function gones(){
   if(!D.gone)D.gone=[];
   var lim=Date.now()-GONEDAYS*MS;
@@ -6619,6 +6622,21 @@ function goneText(){
   if(!ls.length)return'';
   return ls.slice().reverse().map(function(x){
     return'· '+dlab(x.ts)+' 「'+x.t+'」';}).join('\n');}
+function goneWipe(){
+  D.gone=[];saveD();closeSheet(1);
+  if(CV==='mem')drawMem();
+  toast('清空了');
+  return'done';}
+function goneSheet(){
+  var ls=gones();
+  if(!ls.length){toast('这里已经是空的');return;}
+  var h='';
+  ls.slice().reverse().forEach(function(x){
+    h+='<div class="mcd"><div class="t">'+esc(x.t)+'</div>'
+     +'<div class="f"><div class="ts">'+dlab(x.ts)+' 删掉的</div></div></div>';});
+  sheet({title:'删掉的记录',ok:'清空',
+    body:h+'<div class="nt">'+GONETXT+'</div>',
+    onOk:goneWipe});}
 function delMem(id){
   var m=memById(id);if(!m)return;
   sheet({title:'删掉这条',
@@ -6631,6 +6649,23 @@ function delMem(id){
       D.mems=D.mems.filter(function(x){return x.id!==id;});
       saveD();closeSheet(1);drawMem();toast('删掉了');
       return'done';}});}
+if(!G8A.drawMem){
+  G8A.drawMem=drawMem;
+  drawMem=function(){
+    G8A.drawMem();
+    try{
+      var box=document.getElementById('mls');if(!box)return;
+      var old=document.getElementById('gnb');
+      if(old)old.remove();
+      var n=gones().length;
+      if(!n)return;
+      var b=document.createElement('button');
+      b.id='gnb';b.className='mfar pz';
+      b.textContent='删掉的记录 '+n+' 条';
+      b.onclick=goneSheet;
+      box.appendChild(b);
+    }catch(e){}};
+}
 
 /* ── 提示词 ── */
 if(!G8A.staticPart){
@@ -6670,7 +6705,7 @@ if(!G8A.usPart){
       var g=goneText();
       if(g)s=s.replace('\n\n【现在】\n',
         '\n\n【她删掉的】\n'+g
-       +'\n（她不要这些了，别再记回来。）\n\n【现在】\n');
+       +'\n（她不要这些了，别再记回来。这几条三天后自己消失。）\n\n【现在】\n');
     }catch(e){}
     return s;};
 }
