@@ -6430,11 +6430,79 @@ G8A.css=1;
 (function(){
   var s=document.createElement('style');
   s.textContent=
-    /* 文档不许比屏幕高，高一点点系统就有得滚 */
-    'html,html.hasbg{height:100%!important}'
+    /* 文档不许比屏幕高；壁纸也不再画在这个盒子上 */
+    'html,html.hasbg{height:100%!important;'
+   +'background-image:none!important}'
+    /* 壁纸挪回固定层：它不属于文档，键盘顶不动它 */
+   +'html.hasbg #bgl,html.hasbg #bgv{display:block!important;'
+   +'position:fixed!important;left:0!important;top:0!important;'
+   +'right:0!important;bottom:0!important;'
+   +'width:100%!important;height:100%!important;'
+   +'background-repeat:no-repeat!important;'
+   +'background-position:center center!important;'
+   +'background-size:cover!important;pointer-events:none!important}'
+   +'html.hasbg #bgl{z-index:-2!important}'
+   +'html.hasbg #bgv{z-index:-1!important}'
+    /* 手指按下去那一下，抬得快一点 */
+   +'html.kbjump .ib,html.kbjump .selbar,html.kbjump #dn,'
+   +'html.kbjump #sh .pn,html.kbjump #dw .pn{'
+   +'transition-duration:.12s!important}'
    +'html.warned .hd{padding-top:9px!important}';
   document.head.appendChild(s);
 })();
+
+bgPaint=function(){
+  try{
+    de.style.setProperty('--edge',edgeColor());
+    de.style.removeProperty('background-size');
+    de.style.removeProperty('background-position');
+    de.style.removeProperty('background-image');
+    if(!D.bgOn||!BGDATA){
+      de.classList.remove('hasbg');
+      de.style.removeProperty('background-color');
+      if(BGL)BGL.style.backgroundImage='';
+      return;}
+    if(!BGL){BGL=document.createElement('div');BGL.id='bgl';
+      document.body.appendChild(BGL);}
+    if(!BGV){BGV=document.createElement('div');BGV.id='bgv';
+      document.body.appendChild(BGV);}
+    var a=(D.bgv==null?45:D.bgv)/100;
+    a=a+0.12*(1-a);
+    var c=isDark()?'22,20,15':'248,246,242';
+    de.style.backgroundColor=edgeColor();
+    BGL.style.backgroundImage='url("'+BGDATA+'")';
+    BGV.style.background='rgba('+c+','+a.toFixed(3)+')';
+    de.classList.add('hasbg');
+  }catch(e){}
+};
+try{bgPaint();}catch(e){}
+
+/* 手指还按着，就先把输入条抬到位 */
+var PRET=0;
+function preLift(){
+  if(!kbH||kbH<60)return;
+  if(KBCUR>60)return;
+  de.classList.add('kbjump');
+  KGUESS=1;
+  try{kbApply(kbH);}catch(e){}
+  clearTimeout(PRET);
+  PRET=setTimeout(function(){
+    de.classList.remove('kbjump');
+    var a=document.activeElement;
+    if(a&&/^(INPUT|TEXTAREA)$/.test(a.tagName))return;
+    KGUESS=0;
+    try{kbApply(0);}catch(e){}
+  },700);}
+document.addEventListener('touchstart',function(e){
+  var t=e.target;
+  if(!t)return;
+  if(t.id==='ta'||t.tagName==='TEXTAREA'||t.tagName==='INPUT')preLift();
+},{passive:true,capture:true});
+document.addEventListener('focusin',function(e){
+  if(!e.isTrusted)return;
+  var t=e.target;
+  if(t&&/^(INPUT|TEXTAREA)$/.test(t.tagName))preLift();
+},true);
 }
 
 /* ── 输入框自己不长，就别让它带着页面跑 ── */
