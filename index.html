@@ -6429,7 +6429,10 @@ if(!G8A.css){
 G8A.css=1;
 (function(){
   var s=document.createElement('style');
-  s.textContent='html.warned .hd{padding-top:9px!important}';
+  s.textContent=
+    /* 文档不许比屏幕高，高一点点系统就有得滚 */
+    'html,html.hasbg{height:100%!important}'
+   +'html.warned .hd{padding-top:9px!important}';
   document.head.appendChild(s);
 })();
 }
