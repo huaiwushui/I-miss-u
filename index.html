@@ -6737,6 +6737,33 @@ function farTrim(){
     var b2=msBox(),e2=fid?document.getElementById(fid):null;
     if(b2&&e2){b2.scrollTop=Math.max(0,e2.offsetTop-off);scAnchor();}};
   b.insertBefore(bt,first);}
+  /* ── 翻完一定要说话；空消息不许当成功 ── */
+function realT(m){
+  var s='';
+  if(m&&m.parts)m.parts.forEach(function(p){
+    if(p&&p.ty==='t'&&p.t&&String(p.t).trim())s+=p.t;});
+  if(m&&m.t&&String(m.t).trim())s+=m.t;
+  return s.trim();}
+if(!G8A.nextRound){
+  G8A.nextRound=nextRound;
+  nextRound=function(m,after,q,sid,hint){
+    if(!hint&&!realT(m))
+      hint='你到现在一个字都还没说，翻到的东西只有你自己看得见。'
+       +'这一轮必须开口回她，不许再只丢一个标记。';
+    return G8A.nextRound(m,after,q,sid,hint);};
+}
+if(!G8A.done){
+  G8A.done=done;
+  done=function(m,after,ab,ac,q,sid){
+    var r=G8A.done(m,after,ab,ac,q,sid);
+    try{
+      if(m&&!m.st&&!m.err&&!ab&&!realT(m)){
+        m.err='这一轮没说出话来。';
+        try{saveS(sid||S().id);}catch(e){}
+        if(CV==='chat'){paint();btn();}}
+    }catch(e){}
+    return r;};
+}
 </script>
 </body>
 </html>
