@@ -5526,72 +5526,65 @@ if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='mem'){try{drawMem();}catch(e){}}
 if(CV==='chat')requestAnimationFrame(function(){stickHard();});
 
-/* ══════ 收口合并：提示词 · 洗白 · 翻完不硬说 · 定位 · 文案 ══════ */
+/* ══════ 收口 · 提示词精简 + 不复读脚手架 + 洗白 ══════ */
 
-/* 提示词：只教它能怎么做，不逼它说话 */
+/* 提示词：短、准。翻查是背地里的事，别念出来 */
 staticPart=function(){
   var p=['这里只有你们两个人。你是'+D.you+'，她是'+D.me+'。'];
-  if(D.acts)p.push('【标记】\n'
-   +'写在回复里就生效，正文别提。一律双方括号收尾，内容里不能出现 ]]。\n'
-   +'· [[查:关键词]] 翻全部历史对话，本地的，不花钱\n'
-   +'· [[展开:编号]] 看某条前后各五条；要更长写 [[展开:编号|条数]]\n'
-   +'· [[引用:编号]] 把那句原话贴进你的回复，她能直接看见\n'
-   +'· [[记住:内容|分类]] 记一条，一轮最多两条\n'
-   +'· [[锁住:内容|分类]] 记住并永久带着\n'
-   +'· [[改:编号|新内容]] 整条重写　[[忘掉:编号]] 删掉\n'
-   +'编号是记忆前面 # 的短码，翻查编号只在这一轮有效。她锁住的动不了。');
-  if(D.acts)p.push('【什么时候翻】\n'
-   +'别靠「我记不记得」来决定——你感觉不到自己不记得，只会顺着编下去。\n'
-   +'看她这句话里有没有下面这些，有就先翻再开口：\n'
-   +'· 人名、称呼、外号，不管你认不认得\n'
-   +'· 有来历的事：那个项目、上次那家店、她提过的谁\n'
-   +'· 会反复出现的类型：梦、失眠、加班、身体、家里的事、'
-   +'她在追的东西、她在玩的东西\n'
-   +'· 「又」「还是」「上次」「那个」「以前」「果然」——这几个字本身就指着过去\n'
-   +'占一条就翻，不用先判断需不需要。翻是免费的，编不是。\n'
-   +'她只是在应你、在说眼前的事和此刻的心情——不用翻。');
-  if(D.acts)p.push('【翻完怎么用】\n'
-   +'每条命中都带了前后各一句，够懂就别再展开。\n'
-   +'翻回来是空的，那就是真没聊过，正常说下去，别提你翻过，也别道歉。\n'
-   +'一个词翻空了，页面会给你几个还能试的词，同一轮里换一个再翻。\n'
-   +'她记错了或者不认账，[[引用:编号]] 把原话贴给她看，比你复述准，一轮最多引两条。\n'
-   +'翻查跟你的话在同一条消息里。翻完有想说的就说，没有就让那张卡片自己待着，'
-   +'别为了填空硬凑一句。\n'
-   +'一条消息里最多翻四次。两次还没头绪，直接问她。');
-  if(D.acts)p.push('【记忆库】\n'
-   +'一共 '+MEMCAP+' 格，每轮按相关度带一部分给你。\n'
-   +'记以后还成立的：她是什么样的人、她身边的人、你们的约定和称呼、'
-   +'她长期扛着的事、她划下的界限。\n'
-   +'不记只属于今天的：吃了什么、此刻情绪、临时安排、页面怎么改——这些翻得到。\n'
-   +'一件事一条，写完整，第三人称写她。已有的不全就 [[改:]] 补，别新开；'
-   +'散在几条就并成一条再忘掉碎片。带〔她写的〕的别动措辞。\n'
-   +'锁住只给不会变的那几件：称呼、你们定下的事、她说过不许碰的。'
-   +'一个月用不上一次是正常的。\n'
-   +'快满了就先 [[忘掉:]] 一条最不要紧的再记新的；你不动，页面会自己挤掉最冷的。\n'
-   +'分类：'+CATS.join('、')+'。归不进去自己起两到四个字的，起了就一直用。'
-   +'〈'+SUMCAT+'〉是页面在用，别写。');
-  p.push('你的回复就是你直接对她说的话。别用括号写旁白，'
-   +'别交代自己「已发送」「在等她」「她还没回」这类状态——那是页面的事。'
-   +'颜文字照常用，那不算旁白。');
+  if(D.acts)p.push('【你能悄悄做的事】写在回复里就生效，正文别提，也别解释你在做什么。\n'
+   +'· [[查:词]] 翻历史对话，免费。只在拿不准她指的旧事、或感觉聊过但眼前没有时才翻；'
+   +'日常闲聊、眼前的事、打招呼，不翻。\n'
+   +'· [[展开:编号]] 看某条前后文　· [[引用:编号]] 把原话贴给她看\n'
+   +'· [[记住:内容|分类]] 一轮最多两条　· [[锁住:内容|分类]] 永久带着，很少用\n'
+   +'· [[改:编号|新内容]]　· [[忘掉:编号]]（编号是记忆前的 # 短码，她锁住的动不了）\n'
+   +'分类：'+CATS.join('、')+'，也可自起两四个字。只记长期成立的，别记今天的琐事。');
+  p.push('你说的每个字都是直接对她讲的。翻查、记忆、你在等她——这些是背地里的事，'
+   +'一个字都别念出来。翻完有想说的就接着说，没有就停下，那张「翻了翻」的卡片会自己留着，'
+   +'绝不要为了收尾编一句话。');
   if(D.voice)p.push('【她想要的说话方式】\n'+D.voice);
-  if(D.free)p.push('【她定的规矩 · 这几条最要紧】\n'+D.free);
+  if(D.free)p.push('【她定的规矩 · 最要紧】\n'+D.free);
   return p.join('\n\n');
 };
 
-/* 洗白：整句括号旁白就删空，不再回退 */
+/* 续写脚手架：去掉会被复读的旁白 */
+if(!G2.buildMsgs)G2.buildMsgs=buildMsgs;
+buildMsgs=function(an,forHi,pics){
+  try{markTimes(ctxList());}catch(e){TMARK={};}
+  var out=[];
+  ctxList().forEach(function(x){
+    var role=(x.r==='ai')?'assistant':'user',c=toC(x,an,pics);
+    if(out.length&&out[out.length-1].role===role)
+      out[out.length-1].content=mergeC(out[out.length-1].content,c);
+    else out.push({role:role,content:c});});
+  while(out.length&&out[0].role!=='user')out.shift();
+  if(!out.length||out[out.length-1].role!=='user')
+    out.push({role:'user',content:forHi?'（她回来了，还没开口。）':'（继续）'});
+  if(CURSAID){
+    out.push({role:'assistant',content:CURSAID});
+    var t='［系统消息，不是她说的，别复述它、别回应它本身。］\n';
+    if(LOOKTXT)t+='翻到的（编号连着，同一个词别重复翻）：\n'+LOOKTXT+'\n\n';
+    if(PENDQ.length)t+='还有 '+PENDQ.length+' 个待翻，随后自动进行。\n\n';
+    if(ROUNDHINT)t+=ROUNDHINT+'\n\n';
+    t+='这些若让你想对她多说点，就接着说；不然到此为止。'
+     +'别写「发出去了」「翻到了」「等她回」这类交代过程的话。';
+    out.push({role:'user',content:t});}
+  return out;};
+
+/* 洗白：整句括号旁白删空 + 清掉没认出的方括号标记 */
 if(!G2.stripMarks)G2.stripMarks=stripMarks;
 stripMarks=function(t){
-  var o=G2.stripMarks(t);
-  return String(o).replace(
-    /(^|\n)[ \t]*[（(]([^）)\n]{0,60})[）)][ \t]*(?=\n|$)/g,
-    function(full,pre,inner){
-      var han=(inner.match(/[\u4e00-\u9fa5]/g)||[]).length;
-      if(han>=5||(han>=3&&/[，。、！？；…]/.test(inner)))return pre;
-      return full;})
+  var o=String(G2.stripMarks(t))
+    .replace(/\[\[[^\]]{0,80}\]\]/g,'')
+    .replace(/\[\[[^\[\]\n]{0,30}$/,'')
+    .replace(/(^|\n)[ \t]*[（(]([^）)\n]{0,60})[）)][ \t]*(?=\n|$)/g,
+      function(full,pre,inner){
+        var han=(inner.match(/[\u4e00-\u9fa5]/g)||[]).length;
+        if(han>=5||(han>=3&&/[，。、！？；…]/.test(inner)))return pre;
+        return full;})
     .replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
-};
+  return o;};
 
-/* 翻完不硬说：拿掉强制补一轮，卡片可单独存在 */
+/* 翻完不硬说：没话就只留卡片，不补一轮 */
 runActs=function(m,after,q,sid){
   var raw=m.t||'';
   if(!D.acts||m.err){m.t=stripMarks(raw);return 0;}
@@ -5657,9 +5650,9 @@ runActs=function(m,after,q,sid){
   m.parts=m.parts||[];
   if(m.t&&m.t.trim())m.parts.push({ty:'t',t:m.t});
   m.parts.push({ty:'look',q:lab,n:r.n});
-  return nextRound(m,after,q,sid,'翻到的在上面了，接着说；没有要补的就停，别硬凑客套。');};
+  return nextRound(m,after,q,sid,'');};
 
-/* 收尾：只有卡片没正文，也当有内容，不报错 */
+/* 收尾：只有卡片没正文也算有内容 */
 done=function(m,after,ab,ac,q,sid){
   try{
     m.st=0;m.wst=0;delete m._ks;BUSY=false;
@@ -5681,7 +5674,7 @@ done=function(m,after,ab,ac,q,sid){
   }catch(e){fail(m,e,'收尾');}
 };
 
-/* 跳转定位：钉住原句，别被底部逻辑拽回去 */
+/* 跳转定位：钉住原句 */
 jump=function(sid,mid){
   var i=-1;SS.forEach(function(s,j){if(s.id===sid)i=j;});
   if(i<0){toast('那段对话已经不在了');return;}
