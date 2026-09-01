@@ -5051,13 +5051,25 @@ if(!G3.sheet)G3.sheet=sheet;
    +'--fl2:rgba(203,176,140,.17)}'
    +'html.hasbg{--ink2:#211D18;--dim:#7E7970;--dim2:#9C978D}'
    +'html.dark.hasbg{--ink2:#E6E0D4;--dim:#989286;--dim2:#7A756C}'
-    /* 壁纸铺到底，纱烧在底图里 */
-   +'html.hasbg{background-repeat:no-repeat;background-position:center;'
-   +'background-size:cover;height:calc(100% + 96px)}'
-   +'html.hasbg body{background:transparent!important;height:100%}'
+
+    /* ── 壁纸：文档不许比屏幕高，图挂在固定层上 ── */
+   +'html,html.hasbg{height:100%!important;'
+   +'background-image:none!important}'
+   +'html.hasbg body{height:100%}'
    +'html.hasbg #root,html.hasbg #pg,html.hasbg #ms{'
    +'background:transparent!important}'
-   +'html.hasbg #bgl,html.hasbg #bgv{display:none!important}'
+   +'html.hasbg .mw .fg{display:none!important}'
+   +'#bgl,#bgv{position:fixed!important;left:0!important;top:0!important;'
+   +'right:0!important;bottom:0!important;width:100%!important;'
+   +'height:100%!important;pointer-events:none!important;'
+   +'background-repeat:no-repeat!important;'
+   +'background-position:center center!important;'
+   +'background-size:cover!important;z-index:-2!important}'
+   +'#bgv{z-index:-1!important}'
+    /* 手指刚落到输入框那一下，抬升不要有过渡 */
+   +'html.kbjump .ib,html.kbjump .selbar,html.kbjump #dn,'
+   +'html.kbjump #sh .pn,html.kbjump #dw .pn{transition:none!important}'
+
     /* 卡片：半透明，不上模糊 */
    +CARD+'{background:var(--card)!important;'
    +'border:1px solid var(--ln2)!important;'
@@ -5083,11 +5095,13 @@ if(!G3.sheet)G3.sheet=sheet;
    +'.mini,.mchip{background:var(--sel2)}'
    +'.mini.on{background:var(--tag4t)}.mini.on2{background:var(--tag3t)}'
    +'.bd code,.att .a,.pic{background:var(--sel2)}'
+
     /* 命中与跳转：暖沙色 */
    +'@keyframes fl2{0%{background:var(--fl2)}100%{background:transparent}}'
    +'.m.flash .bd{animation:fl2 2.1s ease!important}'
    +'mark{background:var(--fl2);border-radius:3px;padding:0 1px}'
-    /* 面板与抽屉：实底 */
+
+    /* 面板与抽屉 */
    +'#sh .pn,#dw .pn{background:#F7F5F1!important;'
    +'backdrop-filter:none!important;'
    +'-webkit-backdrop-filter:none!important}'
@@ -5111,7 +5125,8 @@ if(!G3.sheet)G3.sheet=sheet;
    +'background:var(--ink2)!important;border-color:transparent!important}'
    +'#dw .nv a.on,#sls .it.on,#sls.edit .it{background:var(--sel)!important}'
    +'#dw .bt .nw{background:var(--ink2)!important}'
-    /* 灰字：全站统一 */
+
+    /* 灰字 */
    +'#sh .nt,.nt{font-size:12px;line-height:1.6;color:var(--dim2);'
    +'text-wrap:balance}'
    +'#sh .fd{margin-bottom:6px!important}'
@@ -5121,6 +5136,7 @@ if(!G3.sheet)G3.sheet=sheet;
    +'#sh .bdy{padding-bottom:max(14px,calc(var(--sb) - 8px))!important}'
    +'html.kbon #sh .bdy{padding-bottom:12px!important}'
    +'#sh .lbs{padding-bottom:6px!important}'
+
     /* 标题一律明朝体 */
    +'#pg .big,#pg .hdt,#pg .sc2{font-family:'+MIN+'!important;'
    +'font-weight:400!important}'
@@ -5129,7 +5145,7 @@ if(!G3.sheet)G3.sheet=sheet;
    +'#sh .st .tt{font-family:'+MIN+'!important;'
    +'font-weight:400!important;letter-spacing:.06em}'
 
-    /* ── 三块读的面板：一套长相 ── */
+    /* 三块读的面板 */
    +'#sh.think .pn,#sh.lk2 .pn,#sh.sum .pn{height:auto!important;'
    +'max-height:82%!important;padding-top:0!important}'
    +'#sh.think .gb,#sh.lk2 .gb,#sh.sum .gb{display:none!important}'
@@ -5155,11 +5171,9 @@ if(!G3.sheet)G3.sheet=sheet;
    +'max(18px,calc(var(--sb) + 2px)) calc(22px + var(--sl))!important}'
    +'html.kbon #sh.think .bdy,html.kbon #sh.lk2 .bdy,'
    +'html.kbon #sh.sum .bdy{padding-bottom:14px!important}'
-    /* 偷偷想的：一页纸 */
    +'.kb{font-size:14.5px!important;line-height:1.9!important;'
    +'letter-spacing:.01em;color:var(--dim)!important;'
    +'padding:0 0 8px!important;white-space:pre-wrap}'
-    /* 翻到的：一行一条 */
    +'#sh.lk2 .res{background:none!important;border:0!important;'
    +'border-bottom:1px solid var(--ln2)!important;box-shadow:none!important;'
    +'border-radius:0!important;padding:14px 0 13px!important;'
@@ -5179,7 +5193,6 @@ if(!G3.sheet)G3.sheet=sheet;
    +'border-bottom:1.4px solid var(--i3);'
    +'transform:translateY(-50%) rotate(-45deg)}'
    +'#sh.lk2 .empty{padding:8vh 0!important}'
-    /* 聊了什么：一页信纸 */
    +'#sh.sum .fd{margin-bottom:0!important}'
    +'#sh.sum .fd textarea{background:none!important;border:0!important;'
    +'padding:2px 0 14px!important;font-family:'+MIN+';'
@@ -5219,7 +5232,8 @@ if(!G3.sheet)G3.sheet=sheet;
    +'#pg .res .ra button:nth-child(2){color:var(--dim)!important;'
    +'font-weight:500!important}'
    +'#pg .res .rc{border-left-color:var(--dl)!important;opacity:.9}'
-    /* 气泡：深浅一套 */
+
+    /* 气泡 */
    +'#ms .m.me .bd{background:var(--bub)!important}'
    +'#ms .m.me{align-items:stretch!important;margin-bottom:16px!important}'
    +'#ms .m.me .in{display:block!important;width:100%!important;'
@@ -5241,6 +5255,7 @@ if(!G3.sheet)G3.sheet=sheet;
    +'#ms .act{margin-top:9px}'
    +'#ms .act .ai2{color:var(--dim);font-weight:500}'
    +'#ms .act .at{display:none}'
+
     /* 隔了多久 */
    +'#ms .gsep{margin:4px 0 26px!important;gap:12px!important}'
    +'#ms .gsep i{background:var(--dl)!important;opacity:.4}'
@@ -5250,6 +5265,7 @@ if(!G3.sheet)G3.sheet=sheet;
    +'#ms .gsep span b{font-weight:400;font-size:10.5px;letter-spacing:.1em;'
    +'font-variant-numeric:tabular-nums;color:var(--dim2)}'
    +'#ms .gsep span s{text-decoration:none!important;font-size:10.5px}'
+
     /* 翻查痕迹 */
    +'#ms .wbx{border-left-width:1px!important;'
    +'border-left-color:var(--dl)!important;padding-left:12px!important;'
@@ -5258,6 +5274,7 @@ if(!G3.sheet)G3.sheet=sheet;
    +'color:var(--dim2)!important;letter-spacing:.03em}'
    +'#ms .wbx .wh svg{opacity:.55}'
    +'#ms .wbx .wl{margin-top:6px!important;font-size:12px!important}'
+
     /* 间距 */
    +'.hd{padding-top:max(10px,calc(var(--st) - 3px))!important}'
    +'#dw .hh{padding-top:max(18px,calc(var(--st) + 14px))!important}'
@@ -5273,6 +5290,7 @@ if(!G3.sheet)G3.sheet=sheet;
    +'.chips{-webkit-mask-image:linear-gradient(90deg,#000 0,#000 '
    +'calc(100% - 20px),transparent);'
    +'mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 20px),transparent)}'
+
     /* 侧边栏 */
    +'#dw .hh .n{font-family:'+MIN+'!important;font-weight:400!important}'
    +'#dw .nv a{font-family:'+MIN+'!important;font-weight:400!important;'
@@ -5284,6 +5302,7 @@ if(!G3.sheet)G3.sheet=sheet;
    +'#sls .it.on{font-weight:400!important}'
    +'#dw .bt .ct,#dw .bt .nw{font-family:'+MIN+'!important;'
    +'font-weight:400!important}'
+
     /* 小窝 */
    +'.vt{writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;'
    +'text-orientation:upright;-webkit-text-orientation:upright;'
@@ -5325,6 +5344,7 @@ if(!G3.sheet)G3.sheet=sheet;
    +'html.dark .wall .bow{opacity:.7}'
    +'.hfoot{margin:22px 0 6px;text-align:center;font-size:10px;'
    +'letter-spacing:.34em;color:var(--dim2);font-family:'+MIN+'}'
+
     /* 锁屏 */
    +'html.hasbg #lk{background:transparent!important}'
    +'html.hasbg #lk:before{display:none!important}'
@@ -5358,21 +5378,34 @@ function dlab(ts){
   if(df===2)return'前天';
   return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';}
 
-/* ── 壁纸：纱铺满整个文档，键盘顶开也没边界 ── */
+/* ── 壁纸：画在固定层上，键盘碰不到它 ── */
 var VEIL=0.12;
 function bgPaint(){
-  de.style.setProperty('--edge',edgeColor());
-  if(!D.bgOn||!BGDATA){
-    de.classList.remove('hasbg');
-    de.style.backgroundImage='';de.style.backgroundColor='';
-    return;}
-  var a=(D.bgv==null?45:D.bgv)/100;
-  var c=isDark()?'22,20,15':'248,246,242';
-  var v='rgba('+c+','+a+')',w='rgba('+c+','+VEIL+')';
-  de.style.backgroundColor=edgeColor();
-  de.style.backgroundImage='linear-gradient('+w+','+w+'),'
-   +'linear-gradient('+v+','+v+'),url("'+BGDATA+'")';
-  de.classList.add('hasbg');}
+  try{
+    de.style.setProperty('--edge',edgeColor());
+    de.style.removeProperty('background-image');
+    de.style.removeProperty('background-color');
+    de.style.removeProperty('background-size');
+    de.style.removeProperty('background-position');
+    de.style.removeProperty('height');
+    if(!D.bgOn||!BGDATA){
+      de.classList.remove('hasbg');
+      if(BGL)BGL.style.backgroundImage='';
+      if(BGV)BGV.style.background='';
+      return;}
+    if(!BGL||!BGL.parentNode){
+      BGL=document.createElement('div');BGL.id='bgl';
+      document.body.appendChild(BGL);}
+    if(!BGV||!BGV.parentNode){
+      BGV=document.createElement('div');BGV.id='bgv';
+      document.body.appendChild(BGV);}
+    var a=(D.bgv==null?45:D.bgv)/100;
+    a=a+VEIL*(1-a);
+    var c=isDark()?'22,20,15':'248,246,242';
+    BGL.style.backgroundImage='url("'+BGDATA+'")';
+    BGV.style.background='rgba('+c+','+(Math.round(a*1000)/1000)+')';
+    de.classList.add('hasbg');
+  }catch(e){}}
 function bgSample(u,cb){
   var im=new Image();
   im.onerror=function(){cb(null);};
@@ -5410,6 +5443,22 @@ window.addEventListener('orientationchange',function(){
   setTimeout(bgReSample,650);});
 try{bgPaint();}catch(e){}
 setTimeout(bgReSample,300);
+
+/* ── 键盘要来之前，输入条先无过渡就位 ── */
+var KJT=0;
+document.addEventListener('focusin',function(e){
+  if(!e.isTrusted)return;
+  var t=e.target;
+  if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
+  de.classList.add('kbjump');
+  clearTimeout(KJT);
+  KJT=setTimeout(function(){de.classList.remove('kbjump');},420);
+},true);
+document.addEventListener('focusout',function(e){
+  if(!e.isTrusted)return;
+  clearTimeout(KJT);
+  de.classList.remove('kbjump');
+},true);
 
 /* ── 三块读的面板：都带一个右上角的叉 ── */
 sheet=function(o){
@@ -5458,7 +5507,7 @@ function lookSheet(q){
      +'<div class="rb">'+hi(cut(x.t||picWord(x.m),sp.kw),sp.kw)+'</div></div>';});
   sheet({lk2:1,title:'翻到的 · 「'+q+'」',body:h});}
 
-/* ── 梗概面板：一页信纸 ── */
+/* ── 梗概面板：一页信纸，只标到真正读过的那一句 ── */
 function sumSheet(){
   var s=sessById(EXSID);
   sheet({sum:1,title:'聊了什么 · '+(s?(s.ti||'对话'):'对话'),
@@ -5477,10 +5526,12 @@ function sumSheet(){
       var nm=addMem(t.slice(0,400),SUMCAT,1,'ai',
         {sid:s2.id,mid:'',ts:Date.now()});
       if(nm)nm.sum=1;
-      s2.ex=SUMUPTO||Date.now();SUMT='';
+      if(SUMUPTO)s2.ex=SUMUPTO;
+      SUMT='';SUMUPTO=0;
       saveD();saveS();closeSheet(1);
+      var left=exCount(s2);
       if(CV==='mem')drawMem();else view('mem');
-      toast('留下了');
+      toast(left?('留下了，还剩 '+left+' 句'):'留下了');
       return'done';}});}
 
 /* ── 编号：像编号就精确认，像句子才猜 ── */
