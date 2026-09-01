@@ -6278,6 +6278,49 @@ document.addEventListener('click',function(e){
     if(Math.round(vp.offsetTop||0)||window.scrollY)lock(600);
   },120);
 })();
+  /* ══════ 壁纸回到固定图层 ══════ */
+(function(){
+  var s=document.createElement('style');
+  s.textContent=
+    'html.hasbg{background-image:none!important}'
+   +'html.hasbg #bgl,html.hasbg #bgv,#bgl,#bgv{'
+   +'display:block!important;position:fixed!important;'
+   +'left:0!important;right:0!important;top:0!important;bottom:0!important;'
+   +'width:auto!important;height:auto!important;'
+   +'pointer-events:none!important;transform:none!important}'
+   +'#bgl{z-index:-2!important;background-position:center!important;'
+   +'background-size:cover!important;background-repeat:no-repeat!important;'
+   +'background-color:var(--edge)}'
+   +'#bgv{z-index:-1!important}';
+  document.head.appendChild(s);
+
+  bgPaint=function(){
+    try{
+      de.style.setProperty('--edge',edgeColor());
+      de.style.removeProperty('background-image');
+      de.style.removeProperty('background-color');
+      de.style.removeProperty('height');
+      if(!D.bgOn||!BGDATA){
+        de.classList.remove('hasbg');
+        if(BGL)BGL.style.backgroundImage='';
+        if(BGV)BGV.style.background='';
+        return;}
+      if(!BGL||!BGL.parentNode){
+        BGL=document.createElement('div');BGL.id='bgl';
+        document.body.appendChild(BGL);}
+      if(!BGV||!BGV.parentNode){
+        BGV=document.createElement('div');BGV.id='bgv';
+        document.body.appendChild(BGV);}
+      var a=(D.bgv==null?45:D.bgv)/100;
+      a=a+0.12*(1-a);
+      var c=isDark()?'22,20,15':'248,246,242';
+      BGL.style.backgroundImage='url("'+BGDATA+'")';
+      BGV.style.background='rgba('+c+','+(Math.round(a*1000)/1000)+')';
+      de.classList.add('hasbg');
+    }catch(e){}};
+
+  try{bgPaint();}catch(e){}
+})();
 </script>
 </body>
 </html>
