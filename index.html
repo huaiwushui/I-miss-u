@@ -5704,31 +5704,49 @@ if(!G2.vMore){G2.vMore=vMore;
     return G2.vMore().replace(
       '存在这台手机的本地数据库里。定期导出一份放进「文件」，才是真的存住了。',
       '这些都只在你这台手机里，偶尔导出一份收进「文件」就不怕丢。');};}
-  /* ══════ 搜索精修 + 记忆合并（相近并成一条，反馈从简）══════ */
+/* ══════ 搜索重写 + 记忆合并 ══════ */
 
-/* 功能词不算「实词命中」 */
-var STOPW={'我们':1,'你们':1,'这个':1,'那个':1,'一个':1,'什么':1,'怎么':1,
- '为什么':1,'说过':1,'觉得':1,'知道':1,'告诉':1,'记得':1,'应该':1,'可能':1,
- '就是':1,'这样':1,'那样':1,'然后':1,'所以':1,'但是':1,'而且':1,'还是':1,
- '或者':1,'的话':1,'一下':1,'时候':1,'自己':1,'现在':1,'已经':1,'真的':1};
+/* 同义词：只认整词，不再按「包含」牵连整组 */
+expand=function(w){
+  var o=[w];
+  SYN.forEach(function(g){if(g.indexOf(w)>=0)o=o.concat(g);});
+  return o.filter(function(x,i,a){return a.indexOf(x)===i;});};
+
+/* 长句切成实词：去掉功能字，留下真正在找的东西 */
+var CUTW=/[我你他她的了是说说过和也都很在给跟把被就还又没不要能会想让对啊吧呢吗嘛呀吧了着过之与]/;
+function qWords(s){
+  var out=[];
+  String(s||'').split(/[\s，。、！？!?,.~…「」『』（）()"'：:；;]+/).forEach(function(p){
+    if(!p)return;
+    if(p.length<=3&&!CUTW.test(p)){out.push(p);return;}
+    p.split(CUTW).forEach(function(x){
+      x=x.trim();
+      if(x.length>=2&&out.indexOf(x)<0)out.push(x);});});
+  return out.slice(0,4);}
+if(!G2.splitQ)G2.splitQ=splitQ;
+splitQ=function(q){
+  var r=G2.splitQ(q),out=[];
+  (r.kw||[]).forEach(function(w){
+    qWords(w).forEach(function(x){if(out.indexOf(x)<0)out.push(x);});});
+  return{dr:r.dr,kw:out.length?out.slice(0,4):(r.kw||[])};};
+
+/* 打分：精确命中最重，多词至少中一半且要有一个精确 */
 score=function(t,kw){
   if(!kw.length)return 1;
-  var low=(t||'').toLowerCase(),sc=0,need=0,got=0;
+  var low=(t||'').toLowerCase(),sc=0,need=kw.length,got=0,exact=0;
   kw.forEach(function(w){
     var W=w.toLowerCase(),hit=0;
-    if(low.indexOf(W)>=0)hit=(w.length>=2?10:2);
-    else if(w.length>=2)expand(w).forEach(function(x){
-      if(x!==w&&x.length>=2&&low.indexOf(x.toLowerCase())>=0)hit=Math.max(hit,4);});
-    if(w.length>=2&&!STOPW[w]){need++;if(hit)got++;}
+    if(low.indexOf(W)>=0){hit=10;exact++;}
+    else expand(w).forEach(function(x){
+      if(x!==w&&x.length>=2&&low.indexOf(x.toLowerCase())>=0)hit=Math.max(hit,3);});
+    if(hit)got++;
     sc+=hit;});
-  if(need){
-    if(!got)return 0;
-    var min=SOFTQ?Math.ceil(need/2):need;
-    if(got<min)return 0;
-    return sc+(got===need?6:0);}
-  return sc>0?sc:0;};
+  if(!got)return 0;
+  if(need>=2&&!exact)return 0;
+  if(got<Math.max(1,Math.ceil(need*0.5)))return 0;
+  return sc+(got===need?6:0);};
 
-/* 翻查命中：砍掉远低于榜首的尾巴 */
+/* 翻查：有好结果时，把勉强及格的全砍掉 */
 if(!G2.lookOnce)G2.lookOnce=lookOnce;
 lookOnce=function(q){
   var sp=splitQ(q),hits=[];
@@ -5742,7 +5760,7 @@ lookOnce=function(q){
   if(sp.kw.length){
     hits.sort(function(a,b){return b.sc-a.sc||b.ts-a.ts;});
     if(hits.length){
-      var gate=Math.max(6,hits[0].sc*0.55);
+      var gate=Math.max(8,hits[0].sc*0.7);
       hits=hits.filter(function(h){return h.sc>=gate;});}
   }else hits.sort(function(a,b){return b.ts-a.ts;});
   var per={},top=[],rest=[];
@@ -5751,17 +5769,16 @@ lookOnce=function(q){
     (per[h.sid]<=4?top:rest).push(h);});
   return top.concat(rest).slice(0,10);};
 
-/* 相近判定放宽：同一件事的不同说法能咬到一起 */
+/* 相近判定放宽：同一件事的不同说法能并到一起 */
 dupOf=function(t,skip){
   var best=null,bs=0,lt=String(t||'').length;
   coreMems().forEach(function(m){
     if(m.id===skip)return;
     var r=simRate(m.t,t);
     if(r>bs){bs=r;best=m;}});
-  var need=lt<12?0.66:0.5;
-  return bs>=need?{m:best,r:bs}:null;};
+  return bs>=(lt<12?0.66:0.5)?{m:best,r:bs}:null;};
 
-/* 记忆：新增 / 相近合并 / 忘掉。反馈只有「记下了」「忘了一条」 */
+/* 记忆：新增 / 相近合并 / 忘掉 */
 runActs=function(m,after,q,sid){
   var raw=m.t||'';
   if(!D.acts||m.err){m.t=stripMarks(raw);return 0;}
@@ -5805,8 +5822,7 @@ runActs=function(m,after,q,sid){
       var sc=splitCat(x.v);
       if(!sc.t)return;
       txt=sc.t;cat=(sc.c===SUMCAT?'':sc.c);
-      var core=txt.replace(/[\s，。、！？…~]/g,'');
-      if(core.length<4&&!lock)return;
+      if(txt.replace(/[\s，。、！？…~]/g,'').length<4&&!lock)return;
       tgt=(dupOf(txt)||{}).m||null;}
     if(tgt){
       if(txt.length>=(tgt.t||'').length)tgt.t=txt;
@@ -5837,13 +5853,13 @@ if(!G2.slimActs&&typeof slimActs==='function'){
   slimActs=function(){
     var b=msBox&&msBox();
     if(b)[].forEach.call(b.querySelectorAll('.m'),function(w){
-      var id=(w.id||'').slice(2),m=find(id);
-      if(m&&m.acts)m.acts.forEach(function(x){
+      var mm=find((w.id||'').slice(2));
+      if(mm&&mm.acts)mm.acts.forEach(function(x){
         if(x.s==='lock'||x.s==='edit'||x.s==='dup')x.s='mem';});});
     return G2.slimActs();};
 }
 
-/* 提示词：查词别塞整句；相近的自动并成一条 */
+/* 提示词 */
 (function(){
   var prev=staticPart;
   staticPart=function(){
@@ -5852,7 +5868,7 @@ if(!G2.slimActs&&typeof slimActs==='function'){
                '[[查:词]] 翻历史对话，免费。查一两个关键词，别塞整句。')
       .replace('只记长期成立的，别记今天的琐事。',
         '只记长期成立的，别记今天的琐事，一条写成完整一句。'
-       +'跟已有相近的会自动并成一条，不用你重记。');};
+       +'跟已有相近的会自动并成一条，不用重记。');};
 })();
 /* ══════════ I MISS U · 第三段 · 视觉 ══════════ */
 if(typeof G3==='undefined')var G3={};
