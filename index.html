@@ -3747,17 +3747,20 @@ var SUMCAT='聊过什么',SUMKEEP=3;
   var s=document.createElement('style');
   var MIN='"Hiragino Mincho ProN","Yu Mincho","Songti SC",serif';
   s.textContent=
-    '.mini.on2{background:rgba(138,133,122,.92)!important}'
+    'html{-webkit-text-size-adjust:100%;text-size-adjust:100%}'
+   +'.mini.on2{background:rgba(138,133,122,.92)!important}'
    +'html.dark .mini.on2{background:rgba(122,117,108,.92)!important}'
    +'#ms .thk .nk{font-size:12.5px;color:var(--dim2);letter-spacing:.02em}'
    +'#ms .m.far,#ms .gsep.far{display:none!important}'
+   +'#ms .m.ai .qt{margin:2px 0 14px}'
+   +'#ms .m.ai .qt .qh{opacity:.8}'
    +'.mfar{display:block;width:100%;margin:2px 0 24px;padding:10px 0;'
    +'font-size:11.5px;letter-spacing:.12em;color:var(--dim2);'
    +'font-family:'+MIN+';text-align:center}';
   document.head.appendChild(s);
 })();
 
-/* ── 搜索：先严后宽 ── */
+/* ── 搜索：只认整词和同义词，不玩碎片 ── */
 var SOFTQ=0;
 function score(t,kw){
   if(!kw.length)return 1;
@@ -3765,12 +3768,8 @@ function score(t,kw){
   kw.forEach(function(w){
     var W=w.toLowerCase(),s=0;
     if(low.indexOf(W)>=0)s=10;
-    if(!s)expand(w).forEach(function(x){
-      if(x!==w&&low.indexOf(x.toLowerCase())>=0)s=Math.max(s,4);});
-    if(!s&&W.length>=3){
-      var hit=0,tot=0;
-      for(var i=0;i<W.length-1;i++){tot++;if(low.indexOf(W.substr(i,2))>=0)hit++;}
-      if(tot&&hit/tot>=0.6)s=2;}
+    else expand(w).forEach(function(x){
+      if(x!==w&&x.length>=2&&low.indexOf(x.toLowerCase())>=0)s=Math.max(s,4);});
     if(s)hitn++;else all=0;
     sc+=s;});
   if(all)return sc+6;
@@ -4000,7 +3999,7 @@ function pickMems(q){
   return lk.concat(rest.slice(0,Math.max(0,MEMCAP-lk.length)));}
 
 /* ── 标记：扫描器，不用正则啃 ── */
-var MKKEY=['查','展开','记住','锁住','改','忘掉'];
+var MKKEY=['查','展开','引用','记住','锁住','改','忘掉'];
 var MKLONG={'记住':1,'锁住':1,'改':1};
 var OPENW=5;
 function scanMarks(t){
@@ -4069,7 +4068,7 @@ function dedupePara(m){
 
 /* ── 翻查内核 ── */
 var LOOKS=[],LOOKSEEN={},LOOKMAP={},LOOKNO=0;
-var ROUNDHINT='',CURSAID='',PENDQ=[],TURNMAX=4;
+var ROUNDHINT='',CURSAID='',PENDQ=[],TURNMAX=6;
 function lookReset(){
   LOOKS=[];LOOKSEEN={};LOOKMAP={};LOOKNO=0;
   LOOKTXT='';ROUNDHINT='';CURSAID='';PENDQ=[];}
@@ -4078,17 +4077,40 @@ function lookBuild(){
   LOOKTXT=LOOKS.map(function(x,i){
     return'〔第 '+(i+1)+' 次 · 「'+x.q+'」'
       +(x.n?' · '+x.n+' 条':' · 没找到')+'〕\n'+x.txt;}).join('\n\n');}
-function nearTxt(arr,i){
+
+/* 每条命中都带前后一句，省得再展开 */
+function sideOf(arr,i,dir){
   var j,t;
-  for(j=i-1;j>=0&&j>=i-3;j--){
-    if(!arr[j]||!alive(arr[j]))continue;
+  for(j=i+dir;j>=0&&j<arr.length&&Math.abs(j-i)<=3;j+=dir){
+    if(!arr[j]||!alive(arr[j])||arr[j].r==='gap')continue;
     t=String(fullT(arr[j])||'').replace(/\s+/g,' ').trim();
-    if(t)return{d:'前',t:t};}
-  for(j=i+1;j<arr.length&&j<=i+3;j++){
-    if(!arr[j]||!alive(arr[j]))continue;
-    t=String(fullT(arr[j])||'').replace(/\s+/g,' ').trim();
-    if(t)return{d:'后',t:t};}
-  return null;}
+    if(!t)t=picWord(arr[j]);
+    if(t)return(arr[j].r==='me'?D.me:D.you)+'：'+t.slice(0,46);}
+  return'';}
+function briefOf(sid,i){
+  var arr=MSG[sid]||[],a=sideOf(arr,i,-1),b=sideOf(arr,i,1),o=[];
+  if(a)o.push('前 '+a);
+  if(b)o.push('后 '+b);
+  return o.length?('\n　　（'+o.join('｜')+'）'):'';}
+
+/* 搜空了给几个还能试的词 */
+function altWords(q){
+  var used={},out=[];
+  String(q||'').trim().split(/\s+/).forEach(function(w){
+    used[w.toLowerCase()]=1;
+    expand(w).forEach(function(x){
+      if(x.length<2)return;
+      var k=x.toLowerCase();
+      if(used[k])return;
+      used[k]=1;out.push(x);});});
+  var last=lastQ()||'';
+  last.split(/[\s，。、！？!?,.~…「」『』（）()"'：:；;\n]+/).forEach(function(w){
+    w=String(w||'').trim();
+    if(w.length<2||w.length>8)return;
+    var k=w.toLowerCase();
+    if(used[k])return;
+    used[k]=1;out.push(w);});
+  return out.slice(0,6);}
 function lookOnce(q){
   var sp=splitQ(q),hits=[];
   SS.forEach(function(s){
@@ -4111,16 +4133,17 @@ function lookAdd(q){
     LOOKNO++;LOOKMAP[LOOKNO]={sid:h.sid,i:h.i};
     var t=String(fullT(h.m)||'').replace(/\s+/g,' ').slice(0,120);
     var ln='['+LOOKNO+'] '+dtl(h.m.ts)+'｜'+(h.s.ti||'对话')+'　'
-      +(h.m.r==='me'?D.me:D.you)+'：'+t+picWord(h.m);
-    if(!t&&((h.m.pics&&h.m.pics.length)||h.m.imgLost)){
-      var nb=nearTxt(MSG[h.sid]||[],h.i);
-      ln+=nb?('（这条只有图。'+nb.d+'一句是「'+nb.t.slice(0,60)+'」）')
-            :'（这条只有图，前后也没有字。）';}
-    return ln;});
-  LOOKS.push({q:q,n:hits.length,
-    txt:hits.length
-      ?((soft?'（严格匹配没有，放宽了）\n':'')+lines.join('\n'))
-      :'（没有找到。这件事可能真的没聊过——直接问她，别编。）'});
+      +(h.m.r==='me'?D.me:D.you)+'：'+(t||picWord(h.m));
+    return ln+briefOf(h.sid,h.i);});
+  var body;
+  if(hits.length)
+    body=(soft?'（严格匹配没有，放宽了）\n':'')+lines.join('\n');
+  else{
+    var al=altWords(q);
+    body='（没有找到。'
+     +(al.length?('还可以试试：'+al.join('、')+'——这一轮直接再翻一次。')
+                :'这件事可能真的没聊过，直接问她，别编。')+'）';}
+  LOOKS.push({q:q,n:hits.length,txt:body});
   LOOKSEEN[q.replace(/\s+/g,' ').toLowerCase()]=1;
   lookBuild();
   return{n:hits.length};}
@@ -4142,6 +4165,45 @@ function openAdd(n){
       +'\n（▸ 是第 '+n+' 条那一句。）'});
   lookBuild();
   return{n:ls.length};}
+
+/* ── 引用：把翻到的那句原样贴给她看 ── */
+function quotePart(v){
+  var n=parseInt(String(v).replace(/[^0-9]/g,''),10);
+  if(!n)return null;
+  var p=LOOKMAP[n];if(!p)return null;
+  var arr=MSG[p.sid]||[],s=sessById(p.sid),mm=arr[p.i];
+  if(!mm||!alive(mm))return null;
+  var a=Math.max(0,p.i-1),b=Math.min(arr.length-1,p.i+1),ls=[],j,x,t;
+  for(j=a;j<=b;j++){
+    x=arr[j];
+    if(!x||!alive(x)||x.r==='gap'||x.r==='quote')continue;
+    t=String(fullT(x)||'').replace(/\s+/g,' ').trim()||picWord(x);
+    if(!t)continue;
+    ls.push((x.r==='me'?D.me:D.you)+'：'+t.slice(0,240));}
+  if(!ls.length)return null;
+  return{ty:'q',sid:p.sid,mid:mm.id,
+    from:(s?(s.ti||'对话'):'对话')+' · '+dlab(mm.ts),
+    t:ls.join('\n')};}
+function applyQuotes(m,raw){
+  var qs=scanMarks(raw).filter(function(x){
+    return!x.bad&&x.k==='引用'&&x.v;});
+  if(!qs.length)return 0;
+  var pos=0,segs=[],n=0;
+  qs.forEach(function(x){
+    if(n>=2)return;
+    var q=quotePart(x.v);
+    if(!q)return;
+    n++;
+    segs.push({ty:'t',t:stripMarks(raw.slice(pos,x.a))});
+    segs.push(q);
+    pos=x.b;});
+  if(!n)return 0;
+  m.parts=m.parts||[];
+  segs.forEach(function(sg){
+    if(sg.ty==='t'&&!String(sg.t||'').trim())return;
+    m.parts.push(sg);});
+  m.t=stripMarks(raw.slice(pos));
+  return 1;}
 
 /* ── 上下文：她每句都带发出时刻 ── */
 var TMARK={};
@@ -4199,6 +4261,7 @@ function staticPart(){
    +'写在回复里就生效，正文别提。一律双方括号收尾，内容里不能出现 ]]。\n'
    +'· [[查:关键词]] 翻全部历史对话，本地的，不花钱\n'
    +'· [[展开:编号]] 看某条前后各五条；要更长写 [[展开:编号|条数]]\n'
+   +'· [[引用:编号]] 把那句原话贴进你的回复，她能直接看见\n'
    +'· [[记住:内容|分类]] 记一条　[[锁住:内容|分类]] 记住并永久带着，少用\n'
    +'· [[改:编号|新内容]] 整条重写　[[忘掉:编号]] 删掉\n'
    +'编号是记忆前面 # 的短码，翻查编号只在这一轮有效。她锁住的动不了。');
@@ -4213,12 +4276,15 @@ function staticPart(){
    +'分类：'+CATS.join('、')+'。归不进去自己起两到四个字的，起了就一直用。'
    +'〈'+SUMCAT+'〉是页面在用，别写。');
 
-  if(D.acts)p.push('【什么时候翻】\n'
+  if(D.acts)p.push('【翻和引】\n'
    +'她提到的事眼前上下文里没有、你正要说「不记得」——先翻再开口。\n'
-   +'答案就在眼前几句里就别翻。一轮最多 '+TURNMAX+' 次，每次都花钱，'
-   +'翻两次没头绪就直接问她。\n'
+   +'每条命中都带了前后各一句，够懂就别再展开。\n'
+   +'一个词翻空了，页面会给你几个还能试的词，同一轮里换一个再翻。\n'
+   +'她记错了、或者不认账，[[引用:编号]] 把原话贴出来给她看，比复述准。'
+   +'一轮最多引两条，别拿它凑数。\n'
    +'翻查在同一条消息里进行，翻完接着往下说，不是重新开始——'
-   +'而且每一轮都必须说话，不许只丢标记不出声。');
+   +'而且每一轮都必须说话，不许只丢标记不出声。\n'
+   +'够了就停。翻两次还没头绪，直接问她。');
 
   if(D.voice)p.push('【她想要的说话方式】\n'+D.voice);
   if(D.free)p.push('【她定的规矩 · 这几条最要紧】\n'+D.free);
@@ -4332,10 +4398,13 @@ function nextRound(m,after,q,sid,hint){
   return 1;}
 function runActs(m,after,q,sid){
   var raw=m.t||'';
-  m.t=stripMarks(raw);
-  if(!D.acts||m.err)return 0;
+  if(!D.acts||m.err){m.t=stripMarks(raw);return 0;}
+  var quoted=0;
+  try{quoted=applyQuotes(m,raw);}catch(e){keepErr('引用',e);quoted=0;}
+  if(!quoted)m.t=stripMarks(raw);
   var mk=findMarks(raw),acts=[],touched=0;
   mk.forEach(function(x){
+    if(x.k==='引用')return;
     if(x.k==='查'){
       var key=x.v.replace(/\s+/g,' ').toLowerCase();
       if(LOOKSEEN[key])return;
@@ -4561,7 +4630,7 @@ function maybeHi(){
    +'别写成播报，别复述隔了多久，别一上来连着发问。';
   go(m,null,'',S().id,1);}
 
-/* ── 画分段与翻查卡片 ── */
+/* ── 画分段、翻查卡片、引用块 ── */
 function lookOpenQ(e){
   try{lookSheet(decodeURIComponent(e));}catch(err){lookSheet(e);}}
 function drawParts(){
@@ -4573,6 +4642,12 @@ function drawParts(){
     var h='';
     m.parts.forEach(function(p){
       if(p.ty==='t'&&p.t){h+='<div class="sg">'+md(p.t)+'</div>';return;}
+      if(p.ty==='q'){
+        h+='<div class="qt pz" onclick="jump(\''+p.sid+'\',\''+p.mid+'\')">'
+         +'<div class="qh"><span>'+esc(p.from||'以前')+'</span>'
+         +I.chev+'</div>'
+         +'<div class="qb">'+esc(p.t)+'</div></div>';
+        return;}
       if(p.ty!=='look')return;
       var q=String(p.q||''),op=(q.indexOf('展开')!==0&&p.n>0);
       h+='<div class="wbx lk'+(op?' pz':'')+'"'
@@ -4614,6 +4689,7 @@ function slimActs(){
     if(c.locked)p.push('那条你锁着，我没动');
     if(c.miss)p.push('有条没找到');
     [].forEach.call(as,function(a,i){if(i)a.remove();});
+    if(!p.length){as[0].remove();return;}
     as[0].innerHTML='<span class="ai2">'+esc(p.join('　·　'))+'</span>';});}
 function gsepTime(){
   var b=msBox();if(!b)return;
@@ -6150,7 +6226,34 @@ document.addEventListener('click',function(e){
   e.preventDefault();
   try{window.open(h,'_blank','noopener');}catch(x){}
 },true);
-
+/* ══════ 探针 · 验完就删 ══════ */
+(function(){
+  var d=document.createElement('div');
+  d.style.cssText='position:fixed;left:8px;top:50%;'
+   +'transform:translateY(-50%);z-index:2147483647;'
+   +'background:rgba(0,0,0,.82);color:#4f8;'
+   +'font:11px/1.65 ui-monospace,Menlo,monospace;'
+   +'padding:8px 10px;border-radius:8px;'
+   +'pointer-events:none;white-space:pre';
+  document.body.appendChild(d);
+  var mx={ot:0,sy:0,hd:0};
+  setInterval(function(){
+    var v=window.visualViewport||{};
+    var ot=Math.round(v.offsetTop||0);
+    var sy=Math.round(window.scrollY||0);
+    var hd=document.querySelector('#pg .hd');
+    var ht=hd?Math.round(hd.getBoundingClientRect().top):-999;
+    if(ot>mx.ot)mx.ot=ot;
+    if(sy>mx.sy)mx.sy=sy;
+    if(ht<mx.hd)mx.hd=ht;
+    d.textContent=
+      'offTop  '+ot+'   峰 '+mx.ot+'\n'
+     +'scrollY '+sy+'   峰 '+mx.sy+'\n'
+     +'顶栏top '+ht+'   最低 '+mx.hd+'\n'
+     +'vv高    '+Math.round(v.height||0)+'\n'
+     +'inner高 '+window.innerHeight;
+  },100);
+})();
 </script>
 </body>
 </html>
