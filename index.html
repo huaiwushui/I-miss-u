@@ -6245,33 +6245,33 @@ document.addEventListener('click',function(e){
   e.preventDefault();
   try{window.open(h,'_blank','noopener');}catch(x){}
 },true);
-/* ══════ 探针 · 验完就删 ══════ */
+/* ══════ 顶栏别被键盘顶走 ══════ */
 (function(){
-  var d=document.createElement('div');
-  d.style.cssText='position:fixed;left:8px;top:50%;'
-   +'transform:translateY(-50%);z-index:2147483647;'
-   +'background:rgba(0,0,0,.82);color:#4f8;'
-   +'font:11px/1.65 ui-monospace,Menlo,monospace;'
-   +'padding:8px 10px;border-radius:8px;'
-   +'pointer-events:none;white-space:pre';
-  document.body.appendChild(d);
-  var mx={ot:0,sy:0,hd:0};
-  setInterval(function(){
-    var v=window.visualViewport||{};
-    var ot=Math.round(v.offsetTop||0);
-    var sy=Math.round(window.scrollY||0);
-    var hd=document.querySelector('#pg .hd');
-    var ht=hd?Math.round(hd.getBoundingClientRect().top):-999;
-    if(ot>mx.ot)mx.ot=ot;
-    if(sy>mx.sy)mx.sy=sy;
-    if(ht<mx.hd)mx.hd=ht;
-    d.textContent=
-      'offTop  '+ot+'   峰 '+mx.ot+'\n'
-     +'scrollY '+sy+'   峰 '+mx.sy+'\n'
-     +'顶栏top '+ht+'   最低 '+mx.hd+'\n'
-     +'vv高    '+Math.round(v.height||0)+'\n'
-     +'inner高 '+window.innerHeight;
-  },100);
+  var run=0,end=0;
+  function lock(ms){
+    end=Math.max(end,performance.now()+(ms||900));
+    if(run)return;
+    run=1;
+    (function f(){
+      var se=document.scrollingElement||document.documentElement;
+      if(window.scrollY||se.scrollTop){
+        try{window.scrollTo(0,0);}catch(e){}
+        try{se.scrollTop=0;}catch(e){}
+      }
+      if(performance.now()<end)requestAnimationFrame(f);
+      else run=0;
+    })();
+  }
+  document.addEventListener('focusin',function(e){
+    var t=e.target;
+    if(t&&/^(INPUT|TEXTAREA)$/.test(t.tagName))lock(1400);
+  },true);
+  document.addEventListener('focusout',function(){lock(900);},true);
+  if(window.visualViewport){
+    visualViewport.addEventListener('resize',function(){lock(1000);});
+    visualViewport.addEventListener('scroll',function(){lock(700);});
+  }
+  window.addEventListener('orientationchange',function(){lock(1200);});
 })();
 </script>
 </body>
