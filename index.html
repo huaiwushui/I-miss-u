@@ -5525,51 +5525,42 @@ markNew(1);scBind();
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='mem'){try{drawMem();}catch(e){}}
 if(CV==='chat')requestAnimationFrame(function(){stickHard();});
-/* ══════ 收口整合：提示词 · 翻查 · 记忆 · 搜索 · 定位 ══════ */
+/* ══════ 收口：提示词 · 翻查节制 · 记忆合并 · 搜索 ══════ */
+
+/* 一轮最多翻一次 */
+TURNMAX=1;
 
 /* ── 提示词 ── */
 staticPart=function(){
   var p=['这里只有你们两个人。你是'+D.you+'，她是'+D.me+'。'];
-  if(D.acts)p.push('【你能悄悄做的事】写在回复里就生效，正文别提，也别解释你在做什么。\n'
-   +'· [[查:词]] 翻历史对话，免费。查一两个关键词，别塞整句。'
-   +'只在拿不准她指的旧事、或感觉聊过但眼前没有时才翻；闲聊、眼前的事、打招呼，不翻。'
-   +'刚翻过的词别再翻，结果还在上面。\n'
+  if(D.acts)p.push('【你能悄悄做的事】写在回复里就生效，正文别提。\n'
+   +'· [[查:词]] 翻历史对话。一次回复最多翻一个词，翻完就接着说话。'
+   +'眼前这段对话里已经有的、她刚说过的、你答得上来的，都不用翻。'
+   +'只在她提起你完全没印象的旧事时才翻。\n'
    +'· [[展开:编号]] 看某条前后文　· [[引用:编号]] 把原话贴给她看\n'
-   +'· [[记住:内容|分类]] 一轮最多两条　· [[锁住:内容|分类]] 永久带着，很少用\n'
-   +'· [[改:编号|新内容]]　· [[忘掉:编号]]（编号是记忆前的 # 短码，她锁住的动不了）\n'
-   +'分类：'+CATS.join('、')+'，也可自起两四个字。只记长期成立的，别记今天的琐事，'
-   +'一条写成完整一句。跟已有相近的会自动并成一条，不用重记。');
-  p.push('你说的每个字都是直接对她讲的。翻查、记忆、你在等她——这些是背地里的事，'
-   +'一个字都别念出来，也别对页面给你的提示作答。'
-   +'不管翻没翻到，最后都要对她说话，哪怕只是一句。');
+   +'· [[记住:内容|分类]] 一轮最多两条　· [[锁住:内容|分类]] 永久带着\n'
+   +'· [[改:编号|新内容]]　· [[忘掉:编号]]（编号是记忆前的 # 短码）\n'
+   +'分类：'+CATS.join('、')+'。只记长期成立的，一条写成完整一句，'
+   +'跟已有相近的会自动并成一条。');
+  p.push('你说的每个字都是直接对她讲的。翻查、记忆、你在等她——这些别念出来，'
+   +'也别回应页面给你的提示。不管翻没翻到，最后都要对她说话。');
   if(D.voice)p.push('【她想要的说话方式】\n'+D.voice);
-  if(D.free)p.push('【她定的规矩 · 最要紧】\n'+D.free);
+  if(D.free)p.push('【她定的规矩】\n'+D.free);
   return p.join('\n\n');
 };
 
-/* ── 续写脚手架：别让它对着系统回话 ── */
+/* ── 续写时别对着系统回话 ── */
 if(!G2.buildMsgs)G2.buildMsgs=buildMsgs;
 buildMsgs=function(an,forHi,pics){
-  try{markTimes(ctxList());}catch(e){TMARK={};}
-  var out=[];
-  ctxList().forEach(function(x){
-    var role=(x.r==='ai')?'assistant':'user',c=toC(x,an,pics);
-    if(out.length&&out[out.length-1].role===role)
-      out[out.length-1].content=mergeC(out[out.length-1].content,c);
-    else out.push({role:role,content:c});});
-  while(out.length&&out[0].role!=='user')out.shift();
-  if(!out.length||out[out.length-1].role!=='user')
-    out.push({role:'user',content:forHi?'（她回来了，还没开口。）':'（继续）'});
-  if(CURSAID){
-    out.push({role:'assistant',content:CURSAID});
-    var t='［以下是页面数据，不是她说的话。别复述、别回应这段本身。］\n';
-    if(LOOKTXT)t+='翻到的：\n'+LOOKTXT+'\n\n';
-    if(ROUNDHINT)t+=ROUNDHINT+'\n\n';
-    t+='现在直接对她说话。';
-    out.push({role:'user',content:t});}
+  var out=G2.buildMsgs(an,forHi,pics);
+  if(CURSAID&&out.length){
+    var last=out[out.length-1];
+    if(last&&last.role==='user'&&typeof last.content==='string')
+      last.content='［页面数据，不是她说的。别复述、别回应这段。］\n'
+        +last.content+'\n\n现在直接对她说话。';}
   return out;};
 
-/* ── 洗白：括号旁白、漏出的方括号 ── */
+/* ── 洗白：括号旁白、漏出的标记 ── */
 if(!G2.stripMarks)G2.stripMarks=stripMarks;
 stripMarks=function(t){
   return String(G2.stripMarks(t))
@@ -5582,74 +5573,42 @@ stripMarks=function(t){
         return full;})
     .replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();};
 
-/* ── 搜索：同义词只认整词，长句切成实词 ── */
+/* ── 搜索：同义词只认整词，长句切实词，砍掉弱命中 ── */
 expand=function(w){
   var o=[w];
   SYN.forEach(function(g){if(g.indexOf(w)>=0)o=o.concat(g);});
   return o.filter(function(x,i,a){return a.indexOf(x)===i;});};
 var CUTW=/[我你他她的了是说和也都很在给跟把被就还又没不要能会想让对啊吧呢吗嘛呀着过与]/;
-function qWords(s){
-  var out=[];
-  String(s||'').split(/[\s，。、！？!?,.~…「」『』（）()"'：:；;]+/).forEach(function(p){
-    if(!p)return;
-    if(p.length<=3&&!CUTW.test(p)){out.push(p);return;}
-    p.split(CUTW).forEach(function(x){
-      x=x.trim();
-      if(x.length>=2&&out.indexOf(x)<0)out.push(x);});});
-  return out.slice(0,4);}
 if(!G2.splitQ)G2.splitQ=splitQ;
 splitQ=function(q){
   var r=G2.splitQ(q),out=[];
   (r.kw||[]).forEach(function(w){
-    qWords(w).forEach(function(x){if(out.indexOf(x)<0)out.push(x);});});
-  return{dr:r.dr,kw:out.length?out.slice(0,4):(r.kw||[])};};
+    if(w.length<=3&&!CUTW.test(w)){if(out.indexOf(w)<0)out.push(w);return;}
+    w.split(CUTW).forEach(function(x){
+      x=x.trim();
+      if(x.length>=2&&out.indexOf(x)<0)out.push(x);});});
+  return{dr:r.dr,kw:out.length?out.slice(0,3):(r.kw||[])};};
 score=function(t,kw){
   if(!kw.length)return 1;
   var low=(t||'').toLowerCase(),sc=0,need=kw.length,got=0,exact=0;
   kw.forEach(function(w){
-    var W=w.toLowerCase(),hit=0;
-    if(low.indexOf(W)>=0){hit=10;exact++;}
+    var hit=0;
+    if(low.indexOf(w.toLowerCase())>=0){hit=10;exact++;}
     else expand(w).forEach(function(x){
       if(x!==w&&x.length>=2&&low.indexOf(x.toLowerCase())>=0)hit=Math.max(hit,3);});
     if(hit)got++;
     sc+=hit;});
   if(!got)return 0;
   if(need>=2&&!exact)return 0;
-  if(got<Math.max(1,Math.ceil(need*0.5)))return 0;
+  if(got<Math.ceil(need*0.5))return 0;
   return sc+(got===need?6:0);};
 if(!G2.lookOnce)G2.lookOnce=lookOnce;
 lookOnce=function(q){
-  var sp=splitQ(q),hits=[];
-  SS.forEach(function(s){
-    (MSG[s.id]||[]).forEach(function(mm,ix){
-      if(!alive(mm)||mm.st||mm.err)return;
-      if(sp.dr&&!(mm.ts>=sp.dr.a&&mm.ts<sp.dr.b))return;
-      var sc=score(hay(mm),sp.kw);
-      if(sc<=0)return;
-      hits.push({sid:s.id,i:ix,sc:sc,ts:mm.ts,m:mm,s:s});});});
-  if(sp.kw.length){
-    hits.sort(function(a,b){return b.sc-a.sc||b.ts-a.ts;});
-    if(hits.length){
-      var gate=Math.max(8,hits[0].sc*0.7);
-      hits=hits.filter(function(h){return h.sc>=gate;});}
-  }else hits.sort(function(a,b){return b.ts-a.ts;});
-  var per={},top=[],rest=[];
-  hits.forEach(function(h){
-    per[h.sid]=(per[h.sid]||0)+1;
-    (per[h.sid]<=4?top:rest).push(h);});
-  return top.concat(rest).slice(0,10);};
-
-/* ── 翻过的词跨消息记住，二十分钟内不重翻 ── */
-var QLOG=[];
-function qnorm(s){
-  return String(s||'').toLowerCase()
-    .replace(/[\s，。、！？…~,.!?「」『』（）()"']/g,'');}
-function qseen(k){
-  var now=Date.now(),hit=null;
-  QLOG=QLOG.filter(function(e){return now-e.ts<20*60000;});
-  QLOG.forEach(function(e){
-    if(e.k.indexOf(k)>=0||k.indexOf(e.k)>=0)hit=e;});
-  return hit;}
+  var hits=G2.lookOnce(q);
+  if(hits.length>1){
+    var gate=hits[0].sc*0.7;
+    hits=hits.filter(function(h){return h.sc>=gate;});}
+  return hits.slice(0,8);};
 
 /* ── 相近记忆并成一条 ── */
 dupOf=function(t,skip){
@@ -5660,31 +5619,25 @@ dupOf=function(t,skip){
     if(r>bs){bs=r;best=m;}});
   return bs>=(lt<12?0.66:0.5)?{m:best,r:bs}:null;};
 
-/* ── 动作执行 ── */
+/* ── 动作执行：翻查节制 + 记忆合并 + 空话兜底 ── */
 runActs=function(m,after,q,sid){
   var raw=m.t||'';
   if(!D.acts||m.err){m.t=stripMarks(raw);return 0;}
   var quoted=0;
-  try{quoted=applyQuotes(m,raw);}catch(e){keepErr('引用',e);quoted=0;}
+  try{quoted=applyQuotes(m,raw);}catch(e){quoted=0;}
   if(!quoted)m.t=stripMarks(raw);
-  var mk=findMarks(raw),acts=[],touched=0,nMem=0,again=null;
+  var mk=findMarks(raw),acts=[],touched=0,nMem=0;
   mk.forEach(function(x){
     if(x.k==='引用')return;
-    if(x.k==='查'){
-      if(PENDQ.length>=2)return;
-      var key=qnorm(x.v);
-      if(!key)return;
-      var old=qseen(key);
-      if(old){again=old;return;}
-      var dq=0;
-      PENDQ.forEach(function(p){if(qnorm(p.v)===key)dq=1;});
-      if(dq)return;
-      PENDQ.push({k:'查',v:x.v});
-      return;}
-    if(x.k==='展开'){
-      if(PENDQ.length>=2)return;
-      var n=parseInt(x.v,10);
-      if(n>0)PENDQ.push({k:'展开',v:n});
+    if(x.k==='查'||x.k==='展开'){
+      if(PENDQ.length||(m.lkn||0)>=TURNMAX)return;
+      if(x.k==='查'){
+        var key=x.v.replace(/\s+/g,'').toLowerCase();
+        if(!key||LOOKSEEN[key])return;
+        PENDQ.push({k:'查',v:x.v});
+      }else{
+        var n=parseInt(x.v,10);
+        if(n>0)PENDQ.push({k:'展开',v:n});}
       return;}
     if(x.k==='忘掉'){
       var tg=memByCode(x.v);
@@ -5721,40 +5674,29 @@ runActs=function(m,after,q,sid){
   if(acts.length)m.acts=(m.acts||[]).concat(acts);
   if(touched)saveD();
   if(!PENDQ.length){
-    if(realT(m)||m.forced)return 0;
-    if(!again&&!(m.parts&&m.parts.length))return 0;
+    if(realT(m)||m.forced||!(m.parts&&m.parts.length))return 0;
     m.forced=1;m.t='';m.k='';CURSAID=fullT(m);
-    if(again){
-      LOOKTXT=again.txt||'';
-      ROUNDHINT='「'+again.q+'」刚翻过，就是上面这些，没有新的。'
-       +'别再翻，直接对她说话。';
-    }else{
-      ROUNDHINT='翻查结束，不用汇报也不用提它。'
-       +'有想说的就说，没有就简短回应她眼前这句。';}
+    ROUNDHINT='翻查结束了，别再翻，也不用提它。直接对她说话，一句也行。';
     m.st=1;BUSY=true;saveS(sid||S().id);paint();btn();
     go(m,after,q,sid);
     return 1;}
-  if((m.lkn||0)>=TURNMAX){PENDQ=[];return 0;}
   var job=PENDQ.shift(),r={n:0},lab='';
-  if(job.k==='查'){
-    lab=job.v;r=lookAdd(job.v);
-    QLOG.push({k:qnorm(job.v),q:job.v,txt:LOOKTXT||'',ts:Date.now()});
-    if(QLOG.length>12)QLOG.shift();
-  }else{lab='展开第 '+job.v+' 条';r=openAdd(job.v);}
+  if(job.k==='查'){lab=job.v;r=lookAdd(job.v);}
+  else{lab='展开第 '+job.v+' 条';r=openAdd(job.v);}
   m.lkn=(m.lkn||0)+1;
   m.parts=m.parts||[];
   if(m.t&&m.t.trim())m.parts.push({ty:'t',t:m.t});
   m.parts.push({ty:'look',q:lab,n:r.n});
   return nextRound(m,after,q,sid,'');};
 
-/* ── 收尾 ── */
+/* ── 收尾：只有卡片没正文也算数 ── */
 done=function(m,after,ab,ac,q,sid){
   try{
     m.st=0;m.wst=0;delete m._ks;BUSY=false;
     if(!ac||ABORT===ac)ABORT=null;
-    try{dedupePara(m);}catch(e){keepErr('去重',e);}
+    try{dedupePara(m);}catch(e){}
     var again=0;
-    try{again=runActs(m,after,q,sid);}catch(e){keepErr('动作',e);again=0;}
+    try{again=runActs(m,after,q,sid);}catch(e){again=0;}
     if(again)return;
     CURSAID='';ROUNDHINT='';PENDQ=[];delete m.forced;
     var has=realT(m)||(m.parts&&m.parts.length);
@@ -5785,8 +5727,7 @@ if(!G2.slimActs&&typeof slimActs==='function'){
 jump=function(sid,mid){
   var i=-1;SS.forEach(function(s,j){if(s.id===sid)i=j;});
   if(i<0){toast('那段对话已经不在了');return;}
-  RALL[sid]=1;
-  D.cur=i;saveD();closeSheet(1);
+  RALL[sid]=1;D.cur=i;saveD();closeSheet(1);
   try{view('chat');}catch(e){}
   SC.pin=0;SC.el=null;SC.hold=0;
   var tries=0;
@@ -5811,6 +5752,7 @@ if(!G2.vMore){G2.vMore=vMore;
     return G2.vMore().replace(
       '存在这台手机的本地数据库里。定期导出一份放进「文件」，才是真的存住了。',
       '这些都只在你这台手机里，偶尔导出一份收进「文件」就不怕丢。');};}
+
 /* ══════════ I MISS U · 第三段 · 视觉 ══════════ */
 if(typeof G3==='undefined')var G3={};
 if(!G3.sheet)G3.sheet=sheet;
