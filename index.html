@@ -4262,9 +4262,31 @@ function staticPart(){
    +'· [[查:关键词]] 翻全部历史对话，本地的，不花钱\n'
    +'· [[展开:编号]] 看某条前后各五条；要更长写 [[展开:编号|条数]]\n'
    +'· [[引用:编号]] 把那句原话贴进你的回复，她能直接看见\n'
-   +'· [[记住:内容|分类]] 记一条　[[锁住:内容|分类]] 记住并永久带着，少用\n'
+   +'· [[记住:内容|分类]] 记一条，一轮最多两条\n'
+   +'· [[锁住:内容|分类]] 记住并永久带着\n'
    +'· [[改:编号|新内容]] 整条重写　[[忘掉:编号]] 删掉\n'
    +'编号是记忆前面 # 的短码，翻查编号只在这一轮有效。她锁住的动不了。');
+
+  if(D.acts)p.push('【什么时候翻】\n'
+   +'别靠「我记不记得」来决定——你感觉不到自己不记得，只会顺着编下去。\n'
+   +'看她这句话里有没有下面这些，有就先翻再开口：\n'
+   +'· 人名、称呼、外号，不管你认不认得\n'
+   +'· 有来历的事：那个项目、上次那家店、她提过的谁\n'
+   +'· 会反复出现的类型：梦、失眠、加班、身体、家里的事、'
+   +'她在追的东西、她在玩的东西\n'
+   +'· 「又」「还是」「上次」「那个」「以前」「果然」——这几个字本身就指着过去\n'
+   +'占一条就翻，不用先判断需不需要。翻是免费的，编不是。\n'
+   +'她只是在应你、在说眼前的事和此刻的心情——不用翻。');
+
+  if(D.acts)p.push('【翻完怎么用】\n'
+   +'每条命中都带了前后各一句，够懂就别再展开。\n'
+   +'翻回来是空的，那就是真没聊过，正常说下去，别提你翻过，也别道歉。\n'
+   +'一个词翻空了，页面会给你几个还能试的词，同一轮里换一个再翻。\n'
+   +'她记错了或者不认账，[[引用:编号]] 把原话贴给她看，比你复述准，'
+   +'一轮最多引两条。\n'
+   +'翻查在同一条消息里进行，翻完接着往下说，不是重新开始——'
+   +'每一轮都必须说话，不许只丢标记不出声。\n'
+   +'一条消息里最多翻四次。两次还没头绪，直接问她。');
 
   if(D.acts)p.push('【记忆库】\n'
    +'一共 '+MEMCAP+' 格，每轮按相关度带一部分给你。\n'
@@ -4273,18 +4295,11 @@ function staticPart(){
    +'不记只属于今天的：吃了什么、此刻情绪、临时安排、页面怎么改——这些翻得到。\n'
    +'一件事一条，写完整，第三人称写她。已有的不全就 [[改:]] 补，别新开；'
    +'散在几条就并成一条再忘掉碎片。带〔她写的〕的别动措辞。\n'
+   +'锁住只给不会变的那几件：称呼、你们定下的事、她说过不许碰的。'
+   +'一个月用不上一次是正常的。\n'
+   +'快满了就先 [[忘掉:]] 一条最不要紧的再记新的；你不动，页面会自己挤掉最冷的。\n'
    +'分类：'+CATS.join('、')+'。归不进去自己起两到四个字的，起了就一直用。'
    +'〈'+SUMCAT+'〉是页面在用，别写。');
-
-  if(D.acts)p.push('【翻和引】\n'
-   +'她提到的事眼前上下文里没有、你正要说「不记得」——先翻再开口。\n'
-   +'每条命中都带了前后各一句，够懂就别再展开。\n'
-   +'一个词翻空了，页面会给你几个还能试的词，同一轮里换一个再翻。\n'
-   +'她记错了、或者不认账，[[引用:编号]] 把原话贴出来给她看，比复述准。'
-   +'一轮最多引两条，别拿它凑数。\n'
-   +'翻查在同一条消息里进行，翻完接着往下说，不是重新开始——'
-   +'而且每一轮都必须说话，不许只丢标记不出声。\n'
-   +'够了就停。翻两次还没头绪，直接问她。');
 
   if(D.voice)p.push('【她想要的说话方式】\n'+D.voice);
   if(D.free)p.push('【她定的规矩 · 这几条最要紧】\n'+D.free);
@@ -4321,7 +4336,9 @@ function usPart(q){
     s+=(s?'\n\n':'')+'【你记得的事 · '+mm.length+' / '+MEMCAP+'】\n'
      +out.join('\n');
     if(tot>mm.length)
-      s+='\n（一共 '+tot+' 条，这轮只带了这些。别断言「记忆库里没有」。）';}
+      s+='\n（一共 '+tot+' 条，这轮只带了这些。别断言「记忆库里没有」。）';
+    if(tot>=MEMCAP)
+      s+='\n（满了。要记新的，先 [[忘掉:]] 一条最不要紧的。）';}
   else s+=(s?'\n\n':'')+'【你记得的事】\n还是空的。该长期记的自己记下来。';
 
   var sm=sumPick();
@@ -4332,7 +4349,7 @@ function usPart(q){
 
   if(D.acts){
     var tb=tombText();
-    if(tb)s+='\n\n【你最近动过的】\n'+tb;
+    if(tb)s+='\n\n【记忆库最近的变动】\n'+tb;
     var g=goneText();
     if(g)s+='\n\n【她删掉的】\n'+g+'\n（别再记回来，三天后自己消失。）';}
 
@@ -4355,6 +4372,7 @@ function usPart(q){
 
   return s;
 }
+
 /* ── 收流：思考只在开着的时候收 ── */
 function pump(res,m,an,sid){
   var rd=res.body.getReader(),dec=new TextDecoder(),bf='';
@@ -4387,6 +4405,83 @@ function pump(res,m,an,sid){
       return read();});})();}
 
 /* ── 动作执行 ── */
+TURNMAX=4;
+
+/* 同义词补几组常出现的 */
+if(!G2.syn){
+  G2.syn=1;
+  SYN=SYN.concat([
+   ['梦','做梦','梦见','梦到','噩梦','梦里'],
+   ['游戏','玩','抽卡','副本','手游','攻略','角色'],
+   ['动漫','番','漫画','小说','追','角色','剧'],
+   ['朋友','同学','闺蜜','室友','他','她'],
+   ['生理期','痛经','例假','大姨妈','不舒服'],
+   ['天气','下雨','冷','热','风','雪'],
+   ['猫','狗','宠物','小动物'],
+   ['搬家','房子','房间','租房'],
+   ['头发','衣服','穿','化妆','打扮'],
+   ['音乐','歌','听','专辑','演唱会']]);
+}
+
+/* 重复判定：短句要更像才算重复 */
+function dupOf(t,skip){
+  var best=null,bs=0,lt=String(t||'').length;
+  coreMems().forEach(function(m){
+    if(m.id===skip)return;
+    var lm=String(m.t||'').length;
+    if(lt&&lm&&Math.max(lt,lm)/Math.min(lt,lm)>2.2)return;
+    var r=simRate(m.t,t);
+    if(r>bs){bs=r;best=m;}});
+  var need=lt<14?0.78:(lt<26?0.66:0.56);
+  return bs>=need?{m:best,r:bs}:null;}
+
+/* 翻查命中：别让一段对话占满十条 */
+function lookOnce(q){
+  var sp=splitQ(q),hits=[];
+  SS.forEach(function(s){
+    (MSG[s.id]||[]).forEach(function(mm,ix){
+      if(!alive(mm)||mm.st||mm.err)return;
+      if(sp.dr&&!(mm.ts>=sp.dr.a&&mm.ts<sp.dr.b))return;
+      var sc=score(hay(mm),sp.kw);
+      if(sc<=0)return;
+      hits.push({sid:s.id,i:ix,sc:sc,ts:mm.ts,m:mm,s:s});});});
+  if(sp.kw.length)hits.sort(function(a,b){return b.sc-a.sc||b.ts-a.ts;});
+  else hits.sort(function(a,b){return b.ts-a.ts;});
+  var per={},top=[],rest=[];
+  hits.forEach(function(h){
+    per[h.sid]=(per[h.sid]||0)+1;
+    (per[h.sid]<=4?top:rest).push(h);});
+  return top.concat(rest).slice(0,10);}
+
+/* 满了自己挤掉最冷的一条 */
+function memTrim(){
+  if(coreMems().length<=MEMCAP+10)return;
+  var now=Date.now(),worst=null,ws=1e9;
+  coreMems().forEach(function(m){
+    if(m.lock||m.src==='me')return;
+    var sc=(m.imp||2)*10+Math.min(10,m.hits||0)
+      +(m.used?Math.max(0,10-(now-m.used)/(7*MS)):0)
+      -Math.min(12,(now-m.ts)/(30*MS));
+    if(sc<ws){ws=sc;worst=m;}});
+  if(!worst)return;
+  tombAdd('auto',worst.t);
+  D.mems=D.mems.filter(function(x){return x.id!==worst.id;});}
+function addMem(t,cat,imp,src,from,lock){
+  var m={id:uid(),t:t,cat:cat||'',imp:imp||2,lock:lock?1:0,src:src||'me',
+    ts:Date.now(),hits:0,from:from||null};
+  D.mems.unshift(m);
+  try{if(!isSum(m))memTrim();}catch(e){}
+  saveD();return m;}
+function tombText(){
+  var ls=tombs();
+  if(!ls.length)return'';
+  return ls.slice().reverse().map(function(x){
+    if(x.k==='auto')
+      return'· '+dlab(x.ts)+' 格子满了，页面挤掉了：「'+x.t
+        +'」（要紧就自己记回来）';
+    if(x.k==='del')return'· '+dlab(x.ts)+' 你删掉了：「'+x.t+'」';
+    return'· '+dlab(x.ts)+' 你把「'+x.x+'」改成了「'+x.t+'」';}).join('\n');}
+
 function nextRound(m,after,q,sid,hint){
   if(!hint&&!realT(m))
     hint='你到现在一个字都没说，翻到的只有你自己看得见。这一轮必须开口回她。';
@@ -4402,10 +4497,11 @@ function runActs(m,after,q,sid){
   var quoted=0;
   try{quoted=applyQuotes(m,raw);}catch(e){keepErr('引用',e);quoted=0;}
   if(!quoted)m.t=stripMarks(raw);
-  var mk=findMarks(raw),acts=[],touched=0;
+  var mk=findMarks(raw),acts=[],touched=0,nMem=0;
   mk.forEach(function(x){
     if(x.k==='引用')return;
     if(x.k==='查'){
+      if(PENDQ.length>=3)return;
       var key=x.v.replace(/\s+/g,' ').toLowerCase();
       if(LOOKSEEN[key])return;
       var dup=0;
@@ -4414,6 +4510,7 @@ function runActs(m,after,q,sid){
       if(!dup)PENDQ.push({k:'查',v:x.v});
       return;}
     if(x.k==='展开'){
+      if(PENDQ.length>=3)return;
       var n=parseInt(x.v,10);
       if(n>0)PENDQ.push({k:'展开',v:n});
       return;}
@@ -4439,13 +4536,15 @@ function runActs(m,after,q,sid){
       t2.t=nv.t;if(nv.c&&nv.c!==SUMCAT)t2.cat=nv.c;t2.et=Date.now();
       touched=1;
       return;}
+    if(nMem>=2)return;
     var sc=splitCat(x.v);
     if(!sc.t)return;
     if(sc.c===SUMCAT)sc.c='';
     if(dupOf(sc.t)){acts.push({s:'dup',t:sc.t});return;}
     addMem(sc.t,sc.c,x.k==='锁住'?3:2,'ai',
       {sid:sid||S().id,mid:m.id,ts:Date.now()},x.k==='锁住');
-    acts.push({s:x.k==='锁住'?'lock':'mem',t:sc.t});touched=1;});
+    acts.push({s:x.k==='锁住'?'lock':'mem',t:sc.t});
+    touched=1;nMem++;});
   if(acts.length)m.acts=(m.acts||[]).concat(acts);
   if(touched)saveD();
   if(!PENDQ.length){
