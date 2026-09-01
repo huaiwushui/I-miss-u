@@ -5445,12 +5445,20 @@ if(!G3.sheet)G3.sheet=sheet;
    +'html.hasbg{--ink2:#211D18;--dim:#7E7970;--dim2:#9C978D}'
    +'html.dark.hasbg{--ink2:#E6E0D4;--dim:#989286;--dim2:#7A756C}'
     /* 壁纸铺到底，纱烧在底图里 */
-   +'html.hasbg{background-repeat:no-repeat;background-position:center;'
-   +'background-size:cover;height:calc(100% + 96px)}'
+      +'html,html.hasbg{height:100%!important;'
+   +'background-image:none!important}'
    +'html.hasbg body{background:transparent!important;height:100%}'
    +'html.hasbg #root,html.hasbg #pg,html.hasbg #ms{'
    +'background:transparent!important}'
-   +'html.hasbg #bgl,html.hasbg #bgv{display:none!important}'
+   +'#bgl,#bgv{position:fixed!important;left:0!important;top:0!important;'
+   +'right:0!important;bottom:auto!important;width:100%!important;'
+   +'height:100vh!important;pointer-events:none!important;'
+   +'background-repeat:no-repeat!important;'
+   +'background-position:center center!important;'
+   +'background-size:cover!important;z-index:-2!important}'
+   +'@supports(height:100lvh){#bgl,#bgv{height:100lvh!important}}'
+   +'#bgl{background-color:var(--edge)}'
+   +'#bgv{z-index:-1!important}'
     /* 卡片：半透明，不上模糊 */
    +CARD+'{background:var(--card)!important;'
    +'border:1px solid var(--ln2)!important;'
@@ -5751,21 +5759,32 @@ function dlab(ts){
   if(df===2)return'前天';
   return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';}
 
-/* ── 壁纸：纱铺满整个文档，键盘顶开也没边界 ── */
+/* ── 壁纸：挂在固定层上，文档不再被撑高 ── */
 var VEIL=0.12;
 function bgPaint(){
-  de.style.setProperty('--edge',edgeColor());
-  if(!D.bgOn||!BGDATA){
-    de.classList.remove('hasbg');
-    de.style.backgroundImage='';de.style.backgroundColor='';
-    return;}
-  var a=(D.bgv==null?45:D.bgv)/100;
-  var c=isDark()?'22,20,15':'248,246,242';
-  var v='rgba('+c+','+a+')',w='rgba('+c+','+VEIL+')';
-  de.style.backgroundColor=edgeColor();
-  de.style.backgroundImage='linear-gradient('+w+','+w+'),'
-   +'linear-gradient('+v+','+v+'),url("'+BGDATA+'")';
-  de.classList.add('hasbg');}
+  try{
+    de.style.setProperty('--edge',edgeColor());
+    de.style.removeProperty('background-image');
+    de.style.removeProperty('background-color');
+    de.style.removeProperty('height');
+    if(!D.bgOn||!BGDATA){
+      de.classList.remove('hasbg');
+      if(BGL)BGL.style.backgroundImage='';
+      if(BGV)BGV.style.background='';
+      return;}
+    if(!BGL||!BGL.parentNode){
+      BGL=document.createElement('div');BGL.id='bgl';
+      document.body.appendChild(BGL);}
+    if(!BGV||!BGV.parentNode){
+      BGV=document.createElement('div');BGV.id='bgv';
+      document.body.appendChild(BGV);}
+    var a=(D.bgv==null?45:D.bgv)/100;
+    a=a+VEIL*(1-a);
+    var c=isDark()?'22,20,15':'248,246,242';
+    BGL.style.backgroundImage='url("'+BGDATA+'")';
+    BGV.style.background='rgba('+c+','+(Math.round(a*1000)/1000)+')';
+    de.classList.add('hasbg');
+  }catch(e){}}
 function bgSample(u,cb){
   var im=new Image();
   im.onerror=function(){cb(null);};
