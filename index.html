@@ -5601,6 +5601,31 @@ if(!G2.vMore){
       '这些都只在你这台手机里，偶尔导出一份收进「文件」就不怕丢。');
   };
 }
+  /* ── 跳转定位：钉住原句，别被底部逻辑拽回去 ── */
+jump=function(sid,mid){
+  var i=-1;SS.forEach(function(s,j){if(s.id===sid)i=j;});
+  if(i<0){toast('那段对话已经不在了');return;}
+  RALL[sid]=1;
+  D.cur=i;saveD();closeSheet(1);
+  try{view('chat');}catch(e){}
+  SC.pin=0;SC.el=null;SC.hold=0;
+  var tries=0;
+  (function seek(){
+    var el=document.getElementById('m-'+mid),box=msBox();
+    if(el&&box){
+      SC.pin=0;SC.hold=0;
+      el.scrollIntoView({block:'center'});
+      el.classList.remove('flash');
+      void el.offsetWidth;
+      el.classList.add('flash');
+      SC.el=el;SC.off=el.offsetTop-box.scrollTop;
+      scAfter();
+      return;}
+    if(++tries<25)setTimeout(seek,80);
+    else toast('那条消息已经不在了');
+  })();
+};
+
 /* ══════════ I MISS U · 第三段 · 视觉 ══════════ */
 if(typeof G3==='undefined')var G3={};
 if(!G3.sheet)G3.sheet=sheet;
