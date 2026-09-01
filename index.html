@@ -5052,10 +5052,10 @@ if(!G3.sheet)G3.sheet=sheet;
    +'html.hasbg{--ink2:#211D18;--dim:#7E7970;--dim2:#9C978D}'
    +'html.dark.hasbg{--ink2:#E6E0D4;--dim:#989286;--dim2:#7A756C}'
 
-    /* ── 壁纸：文档不许比屏幕高；图挂固定层，高度由 JS 钉死 ── */
+    /* ── 壁纸：文档不许比屏幕高；图挂固定层，尺寸由 JS 钉死 ── */
    +'html,html.hasbg{height:100%!important;'
    +'background-image:none!important}'
-   +'html.hasbg body{height:100%}'
+   +'html.hasbg body{height:100%;background-color:transparent!important}'
    +'html.hasbg #root,html.hasbg #pg,html.hasbg #ms{'
    +'background:transparent!important}'
    +'html.hasbg .mw .fg{display:none!important}'
@@ -5066,9 +5066,6 @@ if(!G3.sheet)G3.sheet=sheet;
    +'background-size:cover!important;z-index:-2!important}'
    +'#bgl{background-color:var(--edge)}'
    +'#bgv{z-index:-1!important}'
-    /* 手指刚落到输入框那一下，抬升不要有过渡 */
-   +'html.kbjump .ib,html.kbjump .selbar,html.kbjump #dn,'
-   +'html.kbjump #sh .pn,html.kbjump #dw .pn{transition:none!important}'
 
     /* 卡片：半透明，不上模糊 */
    +CARD+'{background:var(--card)!important;'
@@ -5379,18 +5376,19 @@ function dlab(ts){
   return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';}
 
 /* ── 壁纸：高度按整屏钉死，键盘缩不动它 ── */
-var VEIL=0.12,BGFH=0;
-function bgLock(){
-  var h=Math.max(FULLH||0,window.innerHeight||0,480);
-  BGFH=Math.round(h)+2;}
-function bgFit(){
-  if(!BGL||!BGV)return;
-  if(!BGFH)bgLock();
-  BGL.style.height=BGFH+'px';
-  BGV.style.height=BGFH+'px';}
-function bgRelock(){
+var VEIL=0.12,BG3H=0;
+function bg3Lock(){
+  var h=0;
+  try{if(screen&&screen.height)h=screen.height;}catch(e){}
+  h=Math.max(h,window.innerHeight||0,480);
+  BG3H=Math.round(h)+2;}
+function bg3Fit(){
+  if(!BG3H)bg3Lock();
+  if(BGL)BGL.style.height=BG3H+'px';
+  if(BGV)BGV.style.height=BG3H+'px';}
+function bg3Relock(){
   try{if(typeof KBCUR!=='undefined'&&KBCUR>60)return;}catch(e){}
-  bgLock();bgFit();}
+  bg3Lock();bg3Fit();}
 function bgPaint(){
   try{
     de.style.setProperty('--edge',edgeColor());
@@ -5415,7 +5413,7 @@ function bgPaint(){
     var c=isDark()?'22,20,15':'248,246,242';
     BGL.style.backgroundImage='url("'+BGDATA+'")';
     BGV.style.background='rgba('+c+','+(Math.round(a*1000)/1000)+')';
-    bgLock();bgFit();
+    bg3Lock();bg3Fit();
     de.classList.add('hasbg');
   }catch(e){}}
 function bgSample(u,cb){
@@ -5424,7 +5422,7 @@ function bgSample(u,cb){
   im.onload=function(){
     try{
       var vw=Math.max(1,window.innerWidth||360);
-      var vh=Math.max(1,BGFH||window.innerHeight||640);
+      var vh=Math.max(1,BG3H||window.innerHeight||640);
       var ar=vw/vh,iw=im.width,ih=im.height;
       if(!iw||!ih){cb(null);return;}
       var iar=iw/ih,sx,sy,sw,sh;
@@ -5452,30 +5450,40 @@ function bgReSample(){
       &&Math.abs(o[1]-c[1])<3&&Math.abs(o[2]-c[2])<3)return;
     D.bgc=c;saveD();bgPaint();});}
 window.addEventListener('orientationchange',function(){
-  BGFH=0;
-  setTimeout(function(){bgRelock();bgReSample();},650);});
+  BG3H=0;
+  setTimeout(function(){bg3Relock();bgReSample();},650);});
 document.addEventListener('visibilitychange',function(){
-  if(!document.hidden)setTimeout(bgRelock,300);},false);
-window.addEventListener('resize',function(){
-  setTimeout(bgRelock,120);});
+  if(!document.hidden)setTimeout(bg3Relock,300);},false);
 try{bgPaint();}catch(e){}
-setTimeout(function(){bgRelock();bgReSample();},300);
+setTimeout(function(){bg3Relock();bgReSample();},300);
 
-/* ── 键盘要来之前，输入条先无过渡就位 ── */
-var KJT=0;
+/* ── 键盘把画面顶上去多少，就把界面往下推多少 ── */
+var VVT=0,VVN=0;
+function vvHold(){
+  if(!vv||!root)return;
+  var ot=Math.round(vv.offsetTop||0);
+  if(ot!==VVN){
+    VVN=ot;
+    root.style.transform=ot>0?('translate3d(0,'+ot+'px,0)'):'';
+    root.style.willChange=ot>0?'transform':'';}}
+function vvChase(ms){
+  clearTimeout(VVT);
+  var end=performance.now()+(ms||900);
+  (function f(){
+    vvHold();
+    if(performance.now()<end)requestAnimationFrame(f);
+  })();
+  VVT=setTimeout(vvHold,ms||900);}
+if(vv){
+  vv.addEventListener('scroll',function(){vvHold();},{passive:true});
+  vv.addEventListener('resize',function(){vvChase(700);},{passive:true});}
 document.addEventListener('focusin',function(e){
   if(!e.isTrusted)return;
   var t=e.target;
-  if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;
-  de.classList.add('kbjump');
-  clearTimeout(KJT);
-  KJT=setTimeout(function(){de.classList.remove('kbjump');},420);
-},true);
+  if(t&&/^(INPUT|TEXTAREA)$/.test(t.tagName))vvChase(1100);},true);
 document.addEventListener('focusout',function(e){
   if(!e.isTrusted)return;
-  clearTimeout(KJT);
-  de.classList.remove('kbjump');
-},true);
+  vvChase(800);},true);
 
 /* ── 三块读的面板：都带一个右上角的叉 ── */
 sheet=function(o){
