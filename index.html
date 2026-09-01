@@ -6605,6 +6605,159 @@ document.addEventListener('click',function(e){
     if(Math.round(vp.offsetTop||0)||window.scrollY)lock(600);
   },120);
 })();
+  /* ══════════ I MISS U · 代码块：高亮 · 复制 · 运行 ══════════ */
+if(typeof G6==='undefined')var G6={};
+(function(){
+if(G6.code)return;G6.code=1;
+
+var st=document.createElement('style');
+st.textContent=
+ '.ccd{margin:10px 0;border-radius:12px;overflow:hidden;background:var(--cbx)}'
++'.cch{display:flex;align-items:center;gap:16px;padding:8px 13px;font-size:11px;'
++'letter-spacing:.06em;color:rgba(255,255,255,.4);background:rgba(255,255,255,.055)}'
++'.cch b{flex:1;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
++'.cch span{flex:none;color:rgba(255,255,255,.62)}'
++'.cch span:active{opacity:.45}'
++'.bd .ccp{margin:0!important;border-radius:0!important;padding:12px 14px!important;'
++'font-size:12.5px!important;line-height:1.62!important}'
++'.bd .ccp.wr{white-space:pre-wrap!important;word-break:break-all!important}'
++'.ccp .ck{color:#C792EA}.ccp .cs{color:#C3E88D}'
++'.ccp .cc{color:#7C8493;font-style:italic}'
++'.ccp .cn{color:#F78C6C}.ccp .cf{color:#82AAFF}'
++'#crun{position:fixed;inset:0;z-index:9999;background:#000;'
++'display:flex;flex-direction:column}'
++'#crun .rh{flex:none;display:flex;align-items:center;gap:12px;color:#fff;'
++'font-size:13px;padding:calc(var(--st) + 10px) 16px 10px;background:#1A1A1A}'
++'#crun .rh b{flex:1;font-weight:400;opacity:.55;letter-spacing:.12em}'
++'#crun .rh button{color:#fff;font-size:14px;opacity:.8}'
++'#crun iframe{flex:1;width:100%;border:0;background:#fff}';
+document.head.appendChild(st);
+
+var KW=/\b(var|let|const|function|return|if|else|elif|for|while|new|this|try|catch|finally|throw|typeof|instanceof|class|extends|import|from|export|default|async|await|yield|switch|case|break|continue|delete|in|of|def|lambda|pass|with|as|not|and|or|is|None|True|False|print|null|true|false|undefined|self)\b/g;
+
+function pkey(n){var s='';n++;while(n>0){s+=String.fromCharCode(97+n%26);
+  n=Math.floor(n/26);}return s;}
+function hl(code){
+  var t=esc(code),map={},n=0;
+  function keep(c,s){var k='\u0001'+pkey(n++)+'\u0001';
+    map[k]='<i class="'+c+'">'+s+'</i>';return k;}
+  t=t.replace(/(&quot;|&#39;)(?:\\[\s\S]|(?!\1)[\s\S])*?\1/g,
+    function(m){return keep('cs',m);});
+  t=t.replace(/`[^`\n]*`/g,function(m){return keep('cs',m);});
+  t=t.replace(/\/\*[\s\S]*?\*\//g,function(m){return keep('cc',m);});
+  t=t.replace(/\/\/[^\n]*/g,function(m){return keep('cc',m);});
+  t=t.replace(/#[^\n]*/g,function(m){return keep('cc',m);});
+  t=t.replace(KW,'<i class="ck">$1</i>');
+  t=t.replace(/\b\d+(?:\.\d+)?\b/g,'<i class="cn">$&</i>');
+  t=t.replace(/([A-Za-z_$][\w$]*)(\s*\()/g,'<i class="cf">$1</i>$2');
+  return t.replace(/\u0001[a-z]+\u0001/g,function(k){return map[k]||k;});}
+var HC={},HQ=[];
+function hlc(c){
+  if(c.length>20000)return esc(c);
+  if(HC[c]!=null)return HC[c];
+  var r;
+  try{r=hl(c);}catch(e){r=esc(c);}
+  HC[c]=r;HQ.push(c);
+  if(HQ.length>12)delete HC[HQ.shift()];
+  return r;}
+
+var RUNOK=/^(html|htm|xml|svg|js|javascript|jsx|mjs)$/;
+function card(lang,code,open){
+  var L=String(lang||'').trim().toLowerCase();
+  var h='<div class="ccd"><div class="cch"><b>'+esc(L||'code')+'</b>';
+  if(!open){
+    if(RUNOK.test(L))h+='<span data-a="run">运行</span>';
+    h+='<span data-a="wrap">换行</span><span data-a="copy">复制</span>';}
+  return h+'</div><pre class="cbx ccp"><code>'
+    +(open?esc(code):hlc(code))+'</code></pre></div>';}
+
+/* md：语言名当标签，不再混进正文 */
+if(!G6.md){
+  G6.md=md;
+  md=function(t){
+    var src=String(t==null?'':t),out='',last=0,m,pv=0;
+    var re=/```([A-Za-z0-9+#._-]*)[ \t]*\r?\n([\s\S]*?)```/g;
+    function txt(s,a,b){
+      if(a)s=s.replace(/^[ \t]*\r?\n/,'');
+      if(b)s=s.replace(/\r?\n[ \t]*$/,'');
+      return s?G6.md(s):'';}
+    while((m=re.exec(src))){
+      out+=txt(src.slice(last,m.index),pv,1);
+      out+=card(m[1],String(m[2]||'').replace(/\s+$/,''),0);
+      last=re.lastIndex;pv=1;}
+    var tail=src.slice(last),op=tail.indexOf('```');
+    if(op>=0){
+      var rest=tail.slice(op+3),nl=rest.indexOf('\n');
+      var lg=(nl<0?rest:rest.slice(0,nl)).trim();
+      if(/^[A-Za-z0-9+#._-]*$/.test(lg))
+        return out+txt(tail.slice(0,op),pv,1)
+          +card(lg,nl<0?'':rest.slice(nl+1),1);}
+    return out+txt(tail,pv,0);};
+}
+
+/* 三个按钮 */
+document.addEventListener('click',function(e){
+  var b=e.target&&e.target.closest&&e.target.closest('.cch span[data-a]');
+  if(!b)return;
+  e.preventDefault();e.stopPropagation();
+  var w=b.closest('.ccd'),pre=w&&w.querySelector('.ccp');
+  if(!pre)return;
+  var code=pre.textContent||'',a=b.dataset.a;
+  if(a==='copy'){
+    clip(code,function(){
+      b.textContent='好了';
+      setTimeout(function(){if(b.parentNode)b.textContent='复制';},1400);});
+    return;}
+  if(a==='wrap'){
+    b.textContent=pre.classList.toggle('wr')?'不换':'换行';return;}
+  if(a==='run')runCode(code,(w.querySelector('b')||{}).textContent||'');
+},true);
+
+/* 横向滑代码时别被整页的防弹回吃掉 */
+document.addEventListener('touchmove',function(e){
+  var t=e.target;
+  if(t&&t.closest&&t.closest('.ccp'))e.stopPropagation();
+},{passive:true,capture:true});
+
+/* 沙箱里跑：拿不到我们的数据 */
+function runCode(code,lang){
+  var L=String(lang||'').toLowerCase(),html;
+  if(/^(html|htm|xml|svg)$/.test(L))html=code;
+  else html='<!doctype html>'
+   +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+   +'<style>body{margin:12px;color:#222;'
+   +'font:13px/1.65 ui-monospace,Menlo,monospace}'
+   +'pre{margin:0;white-space:pre-wrap;word-break:break-all}</style>'
+   +'<pre id="o"></pre>'
+   +'<scr'+'ipt>(function(){var o=document.getElementById("o");'
+   +'function p(){o.textContent+=[].slice.call(arguments).map(function(x){'
+   +'try{return(x&&typeof x==="object")?JSON.stringify(x):String(x);}'
+   +'catch(e){return String(x);}}).join(" ")+"\\n";}'
+   +'console.log=console.info=console.warn=p;'
+   +'console.error=function(){p.apply(null,["!"].concat('
+   +'[].slice.call(arguments)));};'
+   +'window.onerror=function(m){p("! "+m);};'
+   +'try{\n'+code+'\n}catch(e){p("! "+(e&&e.message||e));}})();'
+   +'</scr'+'ipt>';
+  var old=document.getElementById('crun');
+  if(old)old.remove();
+  var box=document.createElement('div');
+  box.id='crun';
+  box.innerHTML='<div class="rh"><b>预览</b><button>关闭</button></div>'
+   +'<iframe sandbox="allow-scripts allow-modals"></iframe>';
+  document.body.appendChild(box);
+  box.querySelector('button').onclick=function(){box.remove();};
+  box.querySelector('iframe').srcdoc=html;}
+
+/* 顺手修：翻过的词其实没记住，同一个词能被重复翻 */
+if(!G6.lookAdd){
+  G6.lookAdd=lookAdd;
+  lookAdd=function(q){
+    var r=G6.lookAdd(q);
+    try{LOOKSEEN[String(q).replace(/\s+/g,'').toLowerCase()]=1;}catch(e){}
+    return r;};
+}
+})();
 </script>
 </body>
 </html>
