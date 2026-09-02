@@ -6758,6 +6758,68 @@ if(!G6.lookAdd){
     return r;};
 }
 })();
+  /* ══════════ I MISS U · 记忆节流 ══════════ */
+if(typeof G7==='undefined')var G7={};
+(function(){
+if(G7.slow)return;G7.slow=1;
+
+var MEMGAP=6,MEMHR=3;
+
+/* 她开口要求的，不拦 */
+function memAsked(){
+  var q='';
+  try{q=lastQ()||'';}catch(e){}
+  return /记住|记一下|记下来|记着|别忘|忘掉|锁住|改一下记忆|记进/.test(q);}
+
+function memAllow(){
+  if(memAsked())return 1;
+  var now=Date.now();
+  var log=(D.memlog||[]).filter(function(t){return now-t<3600000;});
+  D.memlog=log;
+  if(log.length>=MEMHR)return 0;
+  var a=[],n=0,i;
+  try{a=ms();}catch(e){return 1;}
+  for(i=a.length-1;i>=0;i--){
+    if(a[i].r!=='me'&&a[i].r!=='ai')continue;
+    n++;
+    if(a[i].memk)return n>MEMGAP?1:0;}
+  return 1;}
+
+/* 冷却期内，把记忆类标记从原文里剥掉，翻查照旧 */
+if(!G7.runActs){
+  G7.runActs=runActs;
+  runActs=function(m,after,q,sid){
+    try{
+      if(!memAllow()&&m&&m.t){
+        var raw=m.t,out='',pos=0,cut=0;
+        scanMarks(raw).forEach(function(x){
+          if(x.k!=='记住'&&x.k!=='锁住'&&x.k!=='改'&&x.k!=='忘掉')return;
+          out+=raw.slice(pos,x.a);pos=x.b;cut=1;});
+        if(cut)m.t=out+raw.slice(pos);}
+    }catch(e){}
+    var r=G7.runActs(m,after,q,sid);
+    try{
+      if(m&&m.acts&&m.acts.length&&!m.memk){
+        m.memk=1;
+        (D.memlog=D.memlog||[]).push(Date.now());
+        saveD();}
+    }catch(e){}
+    return r;};
+}
+
+/* 提示词：把「少记」说死 */
+if(!G7.staticPart){
+  G7.staticPart=staticPart;
+  staticPart=function(){
+    return G7.staticPart().replace(
+      '跟已有相近的会自动并成一条。',
+      '跟已有相近的会自动并成一条。\n'
+     +'记忆是稀有动作：一次对话里能记一两条就够了。'
+     +'刚记过就别再记，隔几轮再说。'
+     +'她此刻的心情、今天做了什么、正在改的东西——都不记，翻得到。'
+     +'拿不准就不记，真要紧的她会开口让你记。');};
+}
+})();
 </script>
 </body>
 </html>
