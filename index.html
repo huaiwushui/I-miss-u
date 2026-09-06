@@ -5793,117 +5793,41 @@ dropPics=function(list){
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 })();
 
- /* ══════════ I MISS U · 搜索归一 ══════════ */
-if(typeof GB==='undefined')var GB={};
+/* ══════════ I MISS U · 句首翻查 ══════════ */
+if(typeof GD==='undefined')var GD={};
 (function(){
-if(GB.on)return;GB.on=1;
+if(GD.on)return;GD.on=1;
 
-TURNMAX=2;
-
+var QMAX=5;
 var PUNC=/[\s\u3000，。、！？；：…~,.!?;:「」『』（）()"'’“”\[\]【】\-—_·]/g;
 function nrm(s){return String(s||'').toLowerCase().replace(PUNC,'');}
-var STOP=/[我你他她的了是和也都在给跟把被就还又没不要能会想让对啊吧呢吗嘛呀着过与]/;
-
-/* ── 词不再被切碎 ── */
-splitQ=function(q){
-  var s=String(q||'').trim();
-  if(!s)return{dr:null,kw:[]};
-  var whole=parseDate(s);
-  if(whole)return{dr:whole,kw:[]};
-  var dr=null,raw=[];
-  s.split(/\s+/).filter(Boolean).forEach(function(p){
-    var d=parseDate(p);
-    if(d&&!dr)dr=d;else raw.push(p);});
-  return{dr:dr,kw:raw.slice(0,4)};};
-
-/* ── 匹配前两边都去掉空格标点 ── */
-score=function(t,kw){
-  if(!kw.length)return 1;
-  var low=nrm(t),sc=0,got=0,exact=0;
-  kw.forEach(function(w){
-    var nw=nrm(w);
-    if(!nw)return;
-    var hit=0;
-    if(low.indexOf(nw)>=0){hit=10;exact++;}
-    else{
-      expand(w).forEach(function(x){
-        var nx=nrm(x);
-        if(nx!==nw&&nx.length>=2&&low.indexOf(nx)>=0)hit=Math.max(hit,4);});
-      if(!hit&&nw.length>=4)
-        nw.split(STOP).forEach(function(f){
-          if(f.length>=2&&low.indexOf(f)>=0)hit=Math.max(hit,3);});}
-    if(hit)got++;
-    sc+=hit;});
-  if(!got)return 0;
-  if(SOFTQ)return sc;
-  if(got<kw.length)return 0;
-  return sc+(exact===kw.length?6:0);};
-
-/* ── 搜过什么按词记着，不看时间 ── */
-lkTrim=function(){
-  if(LKMEM.length>3)LKMEM=LKMEM.slice(-3);
-  return LKMEM;};
-qseen=function(){return'';};
-
-GB.lookAdd=lookAdd;
-lookAdd=function(q){
-  var k=nrm(q),hit=null;
-  LKMEM.forEach(function(x){if(nrm(x.q)===k)hit=x;});
-  if(hit){
-    LOOKS.push({q:q,n:hit.n,
-      txt:hit.txt+'\n（这个词刚翻过，结果没变。换个词或者直接说。）'});
-    LOOKSEEN[k]=1;
-    try{lookBuild();}catch(e){}
-    return{n:hit.n};}
-  var r=GB.lookAdd(q);
-  try{
-    var last=LKMEM[LKMEM.length-1];
-    if(last)last.q=q;
-    lkTrim();
-  }catch(e){}
-  return r;};
-
-if(CV==='chat'){try{paint(1);btn();}catch(e){}}
-})();
-  
-  /* ══════════ I MISS U · 长句抽词 ══════════ */
-if(typeof GC==='undefined')var GC={};
-(function(){
-if(GC.on)return;GC.on=1;
-
-var PUNC=/[\s\u3000，。、！？；：…~,.!?;:「」『』（）()"'’“”\[\]【】\-—_·]/g;
-function nrm(s){return String(s||'').toLowerCase().replace(PUNC,'');}
-
-/* 提问的壳子，不是要搜的内容 */
-var FRAME=/(之前|以前|上次|上回|有没有|有没|是不是|算不算|记不记得|还记得|记得吗|我们|咱们|你我|说过|聊过|提过|提到|讲过|谈过|讨论过|讨论|争论|吵过|什么时候|那时候|的时候|为什么|怎么样|怎么|哪次|那次|这次|关于|有关|相关|一下|过没|吗|呢|吧|啊|的)/g;
+var FRAME=/(之前|以前|上次|上回|有没有|有没|是不是|算不算|记不记得|还记得|记得吗|我们|咱们|说过|聊过|提过|提到|讲过|谈过|讨论过|讨论|争论|吵过|什么时候|那时候|的时候|为什么|怎么样|怎么|哪次|那次|这次|关于|有关|相关|一下|吗|呢|吧|啊)/g;
 var CUT=/[我你他她了是和也都在给跟把被就还又没不要能会想让对着与之其所以但而且或者因为如果这那些个种样点儿]/;
-
-var KWLOOSE=0,KWSHOW='';
+var KWSHOW='';
 
 function grab(s){
   var out=[],raw=String(s||'');
   raw.replace(/[「『"'“”]([^」』"'“”\n]{1,20})[」』"'“”]/g,
     function(m,inner){
       inner=inner.trim();
-      if(inner.length>=1&&out.indexOf(inner)<0)out.push(inner);
+      if(inner&&out.indexOf(inner)<0)out.push(inner);
       return'';});
-  var body=raw
-    .replace(/[「『"'“”][^」』"'“”\n]{1,20}[」』"'“”]/g,' ')
-    .replace(FRAME,' ');
-  body.split(PUNC).forEach(function(seg){
-    seg=seg.trim();
-    if(!seg)return;
-    if(seg.length<=4){
-      if(seg.length>=2&&out.indexOf(seg)<0)out.push(seg);
-      return;}
-    seg.split(CUT).forEach(function(f){
-      f=f.trim();
-      if(f.length>=2&&out.indexOf(f)<0)out.push(f);});});
+  raw.replace(/[「『"'“”][^」』"'“”\n]{1,20}[」』"'“”]/g,' ')
+    .replace(FRAME,' ')
+    .split(PUNC).forEach(function(seg){
+      seg=seg.trim();
+      if(!seg)return;
+      if(seg.length<=4){
+        if(seg.length>=2&&out.indexOf(seg)<0)out.push(seg);
+        return;}
+      seg.split(CUT).forEach(function(f){
+        f=f.trim();
+        if(f.length>=2&&out.indexOf(f)<0)out.push(f);});});
   out.sort(function(a,b){return b.length-a.length;});
   return out.slice(0,3);}
 
 splitQ=function(q){
-  KWLOOSE=0;KWSHOW='';
+  KWSHOW='';
   var s=String(q||'').trim();
   if(!s)return{dr:null,kw:[]};
   var whole=parseDate(s);
@@ -5914,13 +5838,13 @@ splitQ=function(q){
     if(d&&!dr)dr=d;else raw.push(p);});
   if(!raw.length)return{dr:dr,kw:[]};
   var body=raw.join(' ');
-  var longish=(nrm(body).length>8);
-  var framed=FRAME.test(body);
   FRAME.lastIndex=0;
-  if(!longish&&!framed)return{dr:dr,kw:raw.slice(0,4)};
+  var need=(nrm(body).length>8)||FRAME.test(body);
+  FRAME.lastIndex=0;
+  if(!need)return{dr:dr,kw:raw.slice(0,4)};
   var kw=grab(body);
   if(!kw.length)return{dr:dr,kw:raw.slice(0,4)};
-  KWLOOSE=1;KWSHOW=kw.join(' ');
+  KWSHOW=kw.join(' ');
   return{dr:dr,kw:kw};};
 
 score=function(t,kw){
@@ -5938,23 +5862,129 @@ score=function(t,kw){
     sc+=hit;});
   if(!got)return 0;
   if(SOFTQ)return sc+got*3;
-  if(!KWLOOSE&&got<kw.length)return 0;
+  if(!KWSHOW&&got<kw.length)return 0;
   return sc+got*4+(exact===kw.length?6:0);};
 
-/* 卡片上写真正搜的词 */
-GC.lookAdd=lookAdd;
-lookAdd=function(q){
-  var r=GC.lookAdd(q);
+lkTrim=function(){
+  if(LKMEM.length>4)LKMEM=LKMEM.slice(-4);
+  return LKMEM;};
+qseen=function(){return'';};
+
+/* ── 翻一次，返回真正搜的词 ── */
+GD.lookAdd=lookAdd;
+function doLook(q){
+  var k=nrm(q),hit=null;
+  LKMEM.forEach(function(x){if(nrm(x.q)===k)hit=x;});
+  if(hit){
+    LOOKS.push({q:hit.q,n:hit.n,
+      txt:hit.txt+'\n（这个词刚翻过，结果没变。）'});
+    LOOKSEEN[k]=1;
+    try{lookBuild();}catch(e){}
+    return{n:hit.n,lab:hit.q};}
+  KWSHOW='';
+  var r=GD.lookAdd(q);
+  var lab=(KWSHOW&&nrm(KWSHOW)!==nrm(q))?KWSHOW:q;
   try{
-    if(KWSHOW&&nrm(KWSHOW)!==nrm(q)){
-      var lab=KWSHOW;
-      var a=LOOKS[LOOKS.length-1];
-      if(a)a.q=lab;
-      var b=LKMEM[LKMEM.length-1];
-      if(b)b.q=lab;
-      lookBuild();}
+    var a=LOOKS[LOOKS.length-1];if(a)a.q=lab;
+    var b=LKMEM[LKMEM.length-1];if(b)b.q=lab;
+    lookBuild();lkTrim();
   }catch(e){}
-  return r;};
+  return{n:r.n,lab:lab};}
+
+/* ── 提示词：翻在开头，一次翻完 ── */
+GD.staticPart=staticPart;
+staticPart=function(){
+  return GD.staticPart().replace(
+    '一条消息只翻一次，翻完立刻接着说话。翻过的词别再翻，结果还在上面。',
+    '要翻就写在回复最开头，一次把要翻的都写完，最多五个，然后停笔别说话。\n'
+   +'结果回来之后你再开口——那一轮不许再翻。\n'
+   +'一个词一个 [[查:]]，写你真正要找的那几个字，别写整句问话。');};
+
+/* ── 动作：句首一次翻完 ── */
+runActs=function(m,after,q,sid){
+  var raw=m.t||'';
+  if(!D.acts||m.err){m.t=stripMarks(raw);return 0;}
+  var quoted=0;
+  try{quoted=applyQuotes(m,raw);}catch(e){keepErr('引用',e);quoted=0;}
+  if(!quoted)m.t=stripMarks(raw);
+  var mk=findMarks(raw),acts=[],touched=0,nMem=0;
+  var jobs=[],first=!(m.lkn||0),canMem=memAllow();
+  mk.forEach(function(x){
+    if(x.k==='引用')return;
+    if(x.k==='查'||x.k==='展开'){
+      if(!first||jobs.length>=QMAX)return;
+      if(x.k==='查'){
+        var k=nrm(x.v),dup=0;
+        if(!k)return;
+        jobs.forEach(function(j){if(j.k==='查'&&nrm(j.v)===k)dup=1;});
+        if(!dup)jobs.push({k:'查',v:x.v});
+      }else{
+        var n=parseInt(x.v,10);
+        if(n>0)jobs.push({k:'展开',v:n});}
+      return;}
+    if(!canMem)return;
+    if(x.k==='忘掉'){
+      var tg=memByCode(x.v);
+      if(!tg||tg.lock)return;
+      D.mems=D.mems.filter(function(y){return y.id!==tg.id;});
+      acts.push({s:'forget',t:tg.t});touched=1;
+      return;}
+    if(nMem>=2)return;
+    var lock=(x.k==='锁住'),isEd=(x.k==='改');
+    var tgt=null,txt='',cat='';
+    if(isEd){
+      var em=String(x.v).match(
+        /^\s*[#]?([A-Za-z0-9]{2,12})\s*[|｜:：]\s*([\s\S]+)$/);
+      if(!em)return;
+      tgt=memByCode(em[1]);
+      if(!tgt||tgt.lock)return;
+      var nv=splitCat(String(em[2]).trim());
+      if(!nv.t)return;
+      txt=nv.t;cat=(nv.c===SUMCAT?'':nv.c);
+    }else{
+      var sc=splitCat(x.v);
+      if(!sc.t)return;
+      txt=sc.t;cat=(sc.c===SUMCAT?'':sc.c);
+      if(txt.replace(/[\s，。、！？…~]/g,'').length<4&&!lock)return;
+      tgt=(dupOf(txt)||{}).m||null;}
+    if(tgt){
+      var oldT=tgt.t||'';
+      if(txt.length>=oldT.length)tgt.t=txt;
+      if(lock)tgt.lock=1;
+      if((lock?3:2)>(tgt.imp||2))tgt.imp=lock?3:2;
+      if(cat&&CATS.indexOf(cat)>=0)tgt.cat=cat;
+      tgt.et=Date.now();
+      if(isEd&&tgt.t!==oldT)tombAdd('edit',tgt.t,oldT);
+      acts.push({s:'mem',t:tgt.t});touched=1;nMem++;
+      return;}
+    addMem(txt,cat,lock?3:2,'ai',
+      {sid:sid||S().id,mid:m.id,ts:Date.now()},lock);
+    acts.push({s:'mem',t:txt});touched=1;nMem++;});
+  if(acts.length){
+    m.acts=(m.acts||[]).concat(acts);
+    if(!m.memk){m.memk=1;(D.memlog=D.memlog||[]).push(Date.now());}}
+  if(touched)saveD();
+  PENDQ=[];
+  if(!jobs.length){
+    if(realT(m))return 0;
+    if((m.fx||0)>=1)return 0;
+    if(!(m.parts&&m.parts.length))return 0;
+    m.fx=1;
+    return nextRound(m,after,q,sid,
+      '翻完了，别再翻也别提它。直接对她说话。');}
+  m.parts=m.parts||[];
+  if(m.t&&m.t.trim())m.parts.push({ty:'t',t:m.t});
+  var got=0;
+  jobs.forEach(function(job){
+    var r,lab;
+    if(job.k==='查'){r=doLook(job.v);lab=r.lab;}
+    else{lab='展开第 '+job.v+' 条';r=openAdd(job.v);}
+    got+=(r.n||0);
+    m.parts.push({ty:'look',q:lab,n:r.n});});
+  m.lkn=1;
+  return nextRound(m,after,q,sid,
+    (got?'翻到的都在上面了。':'什么都没翻到，别编，直接问她。')
+    +'这一轮不许再翻，就用手里这些对她说话。');};
 
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 })();
