@@ -5560,6 +5560,239 @@ window.runCode=runCode;
 
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 })();
+
+  /* ══════════ I MISS U · 发文件 ══════════ */
+if(typeof GA==='undefined')var GA={};
+(function(){
+if(GA.on)return;GA.on=1;
+
+var FMAX=400000,FCTX=24000,FKEEP=3;
+var LANG={html:'html',htm:'html',xml:'xml',svg:'svg',css:'css',
+js:'javascript',mjs:'javascript',jsx:'javascript',ts:'typescript',
+json:'json',md:'markdown',txt:'',log:'',py:'python',sh:'bash',
+yml:'yaml',yaml:'yaml',csv:'csv',sql:'sql',java:'java',c:'c',cpp:'cpp',
+go:'go',rs:'rust',rb:'ruby',php:'php',swift:'swift',kt:'kotlin',vue:'html'};
+function extOf(n){
+  var m=String(n||'').toLowerCase().match(/\.([a-z0-9]+)$/);
+  return m?m[1]:'';}
+function langOf(n){var e=extOf(n);return LANG[e]!=null?LANG[e]:'';}
+function isTextFile(f){
+  if(!f)return 0;
+  if(/^image\//.test(f.type||''))return 0;
+  if(/^(text\/|application\/(json|xml|javascript|x-javascript))/.test(f.type||''))return 1;
+  return LANG[extOf(f.name)]!=null?1:0;}
+function fSize(b){
+  if(b<1024)return b+' B';
+  if(b<1048576)return Math.round(b/1024)+' KB';
+  return(b/1048576).toFixed(1)+' MB';}
+
+var st=document.createElement('style');
+st.textContent=
+ '.fcd{display:flex;align-items:center;gap:11px;margin:0 0 9px;padding:11px 13px;'
++'border-radius:13px;background:var(--sel2);max-width:100%}'
++'.m.me .fcd{margin-left:auto}'
++'.fcd .fi{flex:none;width:26px;height:26px;border-radius:7px;'
++'background:var(--cbx);color:var(--cbxt);font:600 9px/26px ui-monospace,Menlo,monospace;'
++'text-align:center;letter-spacing:.02em;overflow:hidden}'
++'.fcd .fx{flex:1;min-width:0}'
++'.fcd .fx b{display:block;font-size:13px;font-weight:500;color:var(--ink2);'
++'overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
++'.fcd .fx s{display:block;text-decoration:none;margin-top:2px;'
++'font-size:10.5px;color:var(--dim2);letter-spacing:.04em}'
++'.att .a.af{width:auto;min-width:112px;max-width:170px;height:58px;'
++'display:flex;align-items:center;gap:9px;padding:0 11px;background:var(--sel2)}'
++'.att .a.af .fx{flex:1;min-width:0}'
++'.att .a.af b{display:block;font-size:12px;font-weight:500;'
++'overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
++'.att .a.af s{display:block;text-decoration:none;font-size:10px;'
++'color:var(--dim2);margin-top:2px}';
+document.head.appendChild(st);
+
+/* ── 选文件：图片走老路，文本走新路 ── */
+pickImg=function(){
+  if(ATT.length>=3){toast('一次最多三个');return;}
+  var f=document.createElement('input');
+  f.type='file';
+  f.accept='image/*,text/*,.html,.htm,.css,.js,.mjs,.jsx,.ts,.json,.md,'
+    +'.txt,.log,.py,.sh,.yml,.yaml,.csv,.sql,.xml,.svg,.vue';
+  f.onchange=function(){
+    var fl=f.files&&f.files[0];if(!fl)return;
+    if(isTextFile(fl)){
+      if(fl.size>FMAX){toast('这个文件太大了');return;}
+      var r=new FileReader();
+      r.onerror=function(){toast('这个文件读不出来');};
+      r.onload=function(){
+        var t=String(r.result||'');
+        if(!t.trim()){toast('文件是空的');return;}
+        ATT.push({ty:'f',name:fl.name||'文件',text:t,size:t.length});
+        drawAtt();btn();};
+      r.readAsText(fl);
+      return;}
+    shrink(fl,1280,0.82,function(x){
+      if(!x){toast('这个读不出来');return;}
+      ATT.push(x);drawAtt();btn();});};
+  f.click();};
+
+drawAtt=function(){
+  var e=document.getElementById('att');if(!e)return;
+  e.innerHTML=ATT.map(function(u,i){
+    if(u&&u.ty==='f')
+      return'<div class="a af"><div class="fx"><b>'+esc(u.name)+'</b>'
+        +'<s>'+fSize(u.size)+'</s></div>'
+        +'<button onclick="rmAtt('+i+')">×</button></div>';
+    return'<div class="a"><img src="'+u+'"><button onclick="rmAtt('+i
+      +')">×</button></div>';}).join('');
+  e.style.display=ATT.length?'flex':'none';};
+
+/* ── 发送 ── */
+send=function(){
+  var ta=document.getElementById('ta');if(!ta)return;
+  var t=ta.value.trim();
+  if(!t&&!ATT.length){toast('还没写呢');return;}
+  SC.pin=1;SC.el=null;SC.hold=0;
+  var s=S(),pics=[],files=[],jobs=[];
+  ATT.forEach(function(u){
+    var id=uid();
+    if(u&&u.ty==='f'){
+      files.push({fid:id,name:u.name,size:u.size,lang:langOf(u.name)});
+      jobs.push(dbPut('pic','f:'+id,{d:u.text,ts:Date.now()}));
+      return;}
+    pics.push(id);PICQ[id]=u;
+    jobs.push(dbPut('pic',id,{d:u,ts:Date.now()}));});
+  var m={id:uid(),r:'me',t:t,pics:pics,ts:Date.now()};
+  if(files.length)m.files=files;
+  ms().push(m);
+  if(!s.ti||s.ti==='新的对话')
+    s.ti=(t||(files[0]&&files[0].name)||'一张图片').slice(0,18);
+  s.at=Date.now();D.seen=Date.now();
+  ta.value='';DRAFT='';ATT=[];drawAtt();fitTa(ta);
+  try{localStorage.removeItem('us.draft');}catch(e){}
+  saveD();saveS(s.id);
+  Promise.all(jobs).catch(function(){toast('没存上');});
+  ask();
+  try{keepBottom(1100);}catch(e){}};
+
+/* ── 上下文：最近三个文件带全文 ── */
+GA.needPics=needPics;
+needPics=function(list){
+  return GA.needPics(list).then(function(o){
+    var want=[],i,x,n=0;
+    for(i=list.length-1;i>=0;i--){
+      x=list[i];
+      if(!x.files||!x.files.length)continue;
+      if(n>=FKEEP){o['fskip:'+x.id]=1;continue;}
+      n++;
+      x.files.forEach(function(f){want.push(f.fid);});}
+    if(!want.length)return o;
+    return Promise.all(want.map(function(id){
+      return dbGet('pic','f:'+id).then(function(v){
+        return[id,v&&v.d];},function(){return[id,null];});
+    })).then(function(rs){
+      rs.forEach(function(r){if(r[1])o['f:'+r[0]]=r[1];});
+      return o;});});};
+
+GA.toC=toC;
+toC=function(x,an,pics){
+  var c=GA.toC(x,an,pics);
+  if(!x.files||!x.files.length)return c;
+  var add='';
+  x.files.forEach(function(f){
+    var body=pics?pics['f:'+f.fid]:null;
+    if(pics&&pics['fskip:'+x.id]){
+      add+='\n\n［她发过文件 '+f.name+'（'+fSize(f.size)
+        +'），这轮没带上来。需要就让她重发。］';
+      return;}
+    if(body==null){
+      add+='\n\n［文件 '+f.name+' 读不出来了。］';
+      return;}
+    var cut=body.length>FCTX;
+    add+='\n\n［她发来的文件 '+f.name+'（'+fSize(f.size)+'）'
+      +(cut?'，太长只带了前面一部分':'')+'］\n'
+      +'```'+(f.lang||'')+'\n'
+      +(cut?body.slice(0,FCTX)+'\n…（后面截断了）':body)+'\n```';});
+  if(!add)return c;
+  if(typeof c==='string')return c+add;
+  if(Array.isArray(c)){
+    var last=c[c.length-1];
+    if(last&&last.type==='text')last.text+=add;
+    else c.push({type:'text',text:add.replace(/^\n+/,'')});
+    return c;}
+  return c;};
+
+/* ── 显示 ── */
+function fileSheet(fid,name,lang){
+  dbGet('pic','f:'+fid).then(function(v){
+    if(!v||!v.d){toast('这个文件不在了');return;}
+    sheet({full:1,title:name,
+      body:'<div class="bd" style="font-size:15px">'
+        +md('```'+(lang||'')+'\n'+v.d+'\n```')+'</div>'});
+  },function(){toast('读不出来');});}
+window.fileSheet=fileSheet;
+function drawFiles(){
+  var b=msBox();if(!b)return;
+  ms().forEach(function(m){
+    if(!m.files||!m.files.length)return;
+    var w=document.getElementById('m-'+m.id);if(!w)return;
+    if(w.dataset.fc)return;
+    w.dataset.fc='1';
+    var box=w.querySelector('.in');if(!box)return;
+    var bd=box.querySelector('.bd'),h='';
+    m.files.forEach(function(f){
+      var e=(extOf(f.name)||'txt').slice(0,4).toUpperCase();
+      h+='<div class="fcd pz" onclick="fileSheet(&#39;'+f.fid+'&#39;,&#39;'
+       +esc(f.name).replace(/'/g,'&#39;')+'&#39;,&#39;'+(f.lang||'')+'&#39;)">'
+       +'<div class="fi">'+e+'</div>'
+       +'<div class="fx"><b>'+esc(f.name)+'</b><s>'+fSize(f.size)+'</s></div>'
+       +I.chev+'</div>';});
+    if(!h)return;
+    if(bd)bd.insertAdjacentHTML('beforebegin',h);
+    else box.insertAdjacentHTML('afterbegin',h);});}
+GA.paint=paint;
+paint=function(keep){
+  var r=GA.paint(keep);
+  try{drawFiles();}catch(e){}
+  return r;};
+
+/* ── 有文件的消息不算空 ── */
+GA.alive=alive;
+alive=function(m){
+  return!!(GA.alive(m)||(m&&m.files&&m.files.length));};
+GA.hay=hay;
+hay=function(m){
+  var s=GA.hay(m);
+  if(m&&m.files)m.files.forEach(function(f){s+=' '+f.name;});
+  return s;};
+GA.picWord=picWord;
+picWord=function(m){
+  var s=GA.picWord(m);
+  if(m&&m.files&&m.files.length)
+    s+='［文件 '+m.files.map(function(f){return f.name;}).join('、')+'］';
+  return s;};
+
+/* ── 清理时别把文件当孤儿删了 ── */
+GA.picRefs=picRefs;
+picRefs=function(){
+  var u=GA.picRefs();
+  function scan(list){
+    (list||[]).forEach(function(m){
+      if(m.files)m.files.forEach(function(f){u['f:'+f.fid]=1;});
+      if(m.eb)m.eb.forEach(function(b){scan(b.tail);});});}
+  SS.forEach(function(s){scan(MSG[s.id]);});
+  return u;};
+GA.dropPics=dropPics;
+dropPics=function(list){
+  GA.dropPics(list);
+  var used=picRefs();
+  function walk(l){
+    (l||[]).forEach(function(m){
+      if(m.files)m.files.forEach(function(f){
+        if(!used['f:'+f.fid])dbDel('pic','f:'+f.fid);});
+      if(m.eb)m.eb.forEach(function(b){walk(b.tail);});});}
+  walk(list);};
+
+if(CV==='chat'){try{paint(1);btn();}catch(e){}}
+})();
+
  /* ══════════ I MISS U · 搜索归一 ══════════ */
 if(typeof GB==='undefined')var GB={};
 (function(){
@@ -5627,6 +5860,99 @@ lookAdd=function(q){
     var last=LKMEM[LKMEM.length-1];
     if(last)last.q=q;
     lkTrim();
+  }catch(e){}
+  return r;};
+
+if(CV==='chat'){try{paint(1);btn();}catch(e){}}
+})();
+  
+  /* ══════════ I MISS U · 长句抽词 ══════════ */
+if(typeof GC==='undefined')var GC={};
+(function(){
+if(GC.on)return;GC.on=1;
+
+var PUNC=/[\s\u3000，。、！？；：…~,.!?;:「」『』（）()"'’“”\[\]【】\-—_·]/g;
+function nrm(s){return String(s||'').toLowerCase().replace(PUNC,'');}
+
+/* 提问的壳子，不是要搜的内容 */
+var FRAME=/(之前|以前|上次|上回|有没有|有没|是不是|算不算|记不记得|还记得|记得吗|我们|咱们|你我|说过|聊过|提过|提到|讲过|谈过|讨论过|讨论|争论|吵过|什么时候|那时候|的时候|为什么|怎么样|怎么|哪次|那次|这次|关于|有关|相关|一下|过没|吗|呢|吧|啊|的)/g;
+var CUT=/[我你他她了是和也都在给跟把被就还又没不要能会想让对着与之其所以但而且或者因为如果这那些个种样点儿]/;
+
+var KWLOOSE=0,KWSHOW='';
+
+function grab(s){
+  var out=[],raw=String(s||'');
+  raw.replace(/[「『"'“”]([^」』"'“”\n]{1,20})[」』"'“”]/g,
+    function(m,inner){
+      inner=inner.trim();
+      if(inner.length>=1&&out.indexOf(inner)<0)out.push(inner);
+      return'';});
+  var body=raw
+    .replace(/[「『"'“”][^」』"'“”\n]{1,20}[」』"'“”]/g,' ')
+    .replace(FRAME,' ');
+  body.split(PUNC).forEach(function(seg){
+    seg=seg.trim();
+    if(!seg)return;
+    if(seg.length<=4){
+      if(seg.length>=2&&out.indexOf(seg)<0)out.push(seg);
+      return;}
+    seg.split(CUT).forEach(function(f){
+      f=f.trim();
+      if(f.length>=2&&out.indexOf(f)<0)out.push(f);});});
+  out.sort(function(a,b){return b.length-a.length;});
+  return out.slice(0,3);}
+
+splitQ=function(q){
+  KWLOOSE=0;KWSHOW='';
+  var s=String(q||'').trim();
+  if(!s)return{dr:null,kw:[]};
+  var whole=parseDate(s);
+  if(whole)return{dr:whole,kw:[]};
+  var dr=null,raw=[];
+  s.split(/\s+/).filter(Boolean).forEach(function(p){
+    var d=parseDate(p);
+    if(d&&!dr)dr=d;else raw.push(p);});
+  if(!raw.length)return{dr:dr,kw:[]};
+  var body=raw.join(' ');
+  var longish=(nrm(body).length>8);
+  var framed=FRAME.test(body);
+  FRAME.lastIndex=0;
+  if(!longish&&!framed)return{dr:dr,kw:raw.slice(0,4)};
+  var kw=grab(body);
+  if(!kw.length)return{dr:dr,kw:raw.slice(0,4)};
+  KWLOOSE=1;KWSHOW=kw.join(' ');
+  return{dr:dr,kw:kw};};
+
+score=function(t,kw){
+  if(!kw.length)return 1;
+  var low=nrm(t),sc=0,got=0,exact=0;
+  kw.forEach(function(w){
+    var nw=nrm(w);
+    if(!nw)return;
+    var hit=0;
+    if(low.indexOf(nw)>=0){hit=10;exact++;}
+    else expand(w).forEach(function(x){
+      var nx=nrm(x);
+      if(nx!==nw&&nx.length>=2&&low.indexOf(nx)>=0)hit=Math.max(hit,4);});
+    if(hit)got++;
+    sc+=hit;});
+  if(!got)return 0;
+  if(SOFTQ)return sc+got*3;
+  if(!KWLOOSE&&got<kw.length)return 0;
+  return sc+got*4+(exact===kw.length?6:0);};
+
+/* 卡片上写真正搜的词 */
+GC.lookAdd=lookAdd;
+lookAdd=function(q){
+  var r=GC.lookAdd(q);
+  try{
+    if(KWSHOW&&nrm(KWSHOW)!==nrm(q)){
+      var lab=KWSHOW;
+      var a=LOOKS[LOOKS.length-1];
+      if(a)a.q=lab;
+      var b=LKMEM[LKMEM.length-1];
+      if(b)b.q=lab;
+      lookBuild();}
   }catch(e){}
   return r;};
 
