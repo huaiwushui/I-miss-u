@@ -5988,6 +5988,92 @@ runActs=function(m,after,q,sid){
 
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 })();
+  /* ══════════ I MISS U · 按时间翻 ══════════ */
+if(typeof GE==='undefined')var GE={};
+(function(){
+if(GE.on)return;GE.on=1;
+
+var CAP=30;
+var PUNC=/[\s\u3000，。、！？；：…~,.!?;:「」『』（）()"'’“”\[\]【】\-—_·]/g;
+function nrm(s){return String(s||'').toLowerCase().replace(PUNC,'');}
+
+/* 句子里夹着的日期 */
+var DRE=/(前天|昨天|今天|这几天|前几天|最近|近来|刚才|刚刚|这周|本周|上周|这个月|本月|上个月|上月|\d+\s*天前|\d{4}\s*[-\/年]\s*\d{1,2}\s*[-\/月]\s*\d{1,2}\s*日?|\d{4}\s*[-\/年]\s*\d{1,2}\s*月?|\d{1,2}\s*[-\/月]\s*\d{1,2}\s*日?|\d{1,2}\s*月|\d{4}\s*年)/;
+/* 「聊了什么」这类壳子，剥掉就只剩时间 */
+var TALK=/(聊了些什么|聊了什么|说了些什么|说了什么|讲了些什么|讲了什么|干了什么|做了什么|发生了什么|发生什么|聊过什么|聊些什么|聊什么|说什么|都聊了|都说了|聊的|说的|的事情|的事|回顾|总结|什么|哪些|有啥|啥|吗|呢|吧|啊|我们|咱们|之前|以前|上次|一下|都|过)/g;
+
+GE.parseDate=parseDate;
+parseDate=function(s){
+  var r=GE.parseDate(s);
+  if(r)return r;
+  var x=String(s||'').replace(/\s/g,''),t=today();
+  if(/^(最近|近来|这几天)$/.test(x))
+    return{a:d0(t)-2*MS,b:d0(t)+MS,lab:'最近几天'};
+  if(/^前几天$/.test(x))
+    return{a:d0(t)-6*MS,b:d0(t),lab:'前几天'};
+  if(/^(刚才|刚刚)$/.test(x))
+    return{a:Date.now()-3*3600000,b:Date.now()+60000,lab:'刚才'};
+  return null;};
+
+GE.splitQ=splitQ;
+splitQ=function(q){
+  var s=String(q||'').trim();
+  if(!s)return{dr:null,kw:[]};
+  var whole=parseDate(s);
+  if(whole)return{dr:whole,kw:[]};
+  var dr=null,rest=s,m=s.match(DRE);
+  if(m){
+    var d=parseDate(m[0]);
+    if(d){dr=d;rest=s.replace(m[0],' ');}}
+  if(dr){
+    TALK.lastIndex=0;
+    var left=rest.replace(TALK,'').replace(PUNC,'').trim();
+    if(left.length<2)return{dr:dr,kw:[]};}
+  var r=GE.splitQ(rest);
+  return{dr:dr||r.dr,kw:r.kw};};
+
+/* 只给时间，就把那段时间摊开 */
+var oldAdd=GD.lookAdd;
+GD.lookAdd=function(q){
+  var sp=splitQ(q);
+  if(!sp.dr||sp.kw.length)return oldAdd(q);
+  var hits=[];
+  SS.forEach(function(s){
+    (MSG[s.id]||[]).forEach(function(mm,ix){
+      if(!alive(mm)||mm.st||mm.err)return;
+      if(mm.ts<sp.dr.a||mm.ts>=sp.dr.b)return;
+      hits.push({sid:s.id,i:ix,ts:mm.ts,m:mm,s:s});});});
+  hits.sort(function(a,b){return a.ts-b.ts;});
+  var total=hits.length,body;
+  if(!total)body='（'+sp.dr.lab+'没说过话。）';
+  else{
+    if(total>CAP){
+      var step=total/CAP,pick=[],i;
+      for(i=0;i<CAP;i++)pick.push(hits[Math.floor(i*step)]);
+      hits=pick;}
+    var lines=[],day='',sid='';
+    hits.forEach(function(h){
+      var dd=dlab(h.m.ts);
+      if(dd!==day){lines.push('—— '+dd);day=dd;sid='';}
+      if(h.sid!==sid){lines.push('　〈'+(h.s.ti||'对话')+'〉');sid=h.sid;}
+      LOOKNO++;LOOKMAP[LOOKNO]={sid:h.sid,i:h.i};
+      var t=String(fullT(h.m)||'').replace(/\s+/g,' ').slice(0,70)
+        ||picWord(h.m);
+      lines.push('['+LOOKNO+'] '+hm(h.m.ts)+' '
+        +(h.m.r==='me'?D.me:D.you)+'：'+t);});
+    body=lines.join('\n')
+      +(total>hits.length
+        ?('\n（这段时间一共 '+total+' 条，均匀挑了 '+hits.length+' 条。）')
+        :'')
+      +'\n（要看某条前后文用 [[展开:编号]]。）';}
+  LOOKS.push({q:sp.dr.lab,n:total,txt:body});
+  LOOKSEEN[nrm(q)]=1;
+  LKMEM.push({q:sp.dr.lab,n:total,txt:body,ts:Date.now()});
+  try{lkTrim();lookBuild();}catch(e){}
+  return{n:total};};
+
+if(CV==='chat'){try{paint(1);btn();}catch(e){}}
+})();
 </script>
 </body>
 </html>
