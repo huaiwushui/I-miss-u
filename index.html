@@ -5876,8 +5876,7 @@ function doLook(q){
   var k=nrm(q),hit=null;
   LKMEM.forEach(function(x){if(nrm(x.q)===k)hit=x;});
   if(hit){
-    LOOKS.push({q:hit.q,n:hit.n,
-      txt:hit.txt+'\n（这个词刚翻过，结果没变。）'});
+    LOOKS.push({q:hit.q,n:hit.n,txt:hit.txt});
     LOOKSEEN[k]=1;
     try{lookBuild();}catch(e){}
     return{n:hit.n,lab:hit.q};}
@@ -5891,16 +5890,20 @@ function doLook(q){
   }catch(e){}
   return{n:r.n,lab:lab};}
 
-/* ── 提示词：翻在开头，一次翻完 ── */
+/* ── 提示词：翻查不再有代价 ── */
 GD.staticPart=staticPart;
 staticPart=function(){
-  return GD.staticPart().replace(
-    '一条消息只翻一次，翻完立刻接着说话。翻过的词别再翻，结果还在上面。',
-    '要翻就写在回复最开头，一次把要翻的都写完，最多五个，然后停笔别说话。\n'
-   +'结果回来之后你再开口——那一轮不许再翻。\n'
-   +'一个词一个 [[查:]]，写你真正要找的那几个字，别写整句问话。');};
+  return GD.staticPart()
+    .replace('她提起你确实没印象的人或旧事——翻。\n'
+      +'眼前对话里有的、她刚说过的、你答得上来的——不翻。\n'
+      +'一条消息只翻一次，翻完立刻接着说话。翻过的词别再翻，结果还在上面。',
+      '话照常说，想翻就把标记写在末尾。翻不花时间也不打断你，'
+     +'她看到的还是你这段话。\n'
+     +'所以别权衡值不值——有一点不确定就翻，翻空了也没损失。\n'
+     +'眼前对话里就有的、她刚说过的，不用翻。\n'
+     +'一个 [[查:]] 一个词，写要找的那几个字，别写整句问话，一条最多五个。');};
 
-/* ── 动作：句首一次翻完 ── */
+/* ── 动作：说话和翻查同时进行 ── */
 runActs=function(m,after,q,sid){
   var raw=m.t||'';
   if(!D.acts||m.err){m.t=stripMarks(raw);return 0;}
@@ -5970,11 +5973,10 @@ runActs=function(m,after,q,sid){
     if((m.fx||0)>=1)return 0;
     if(!(m.parts&&m.parts.length))return 0;
     m.fx=1;
-    return nextRound(m,after,q,sid,
-      '翻完了，别再翻也别提它。直接对她说话。');}
+    return nextRound(m,after,q,sid,'翻完了。直接对她说话。');}
   m.parts=m.parts||[];
   if(m.t&&m.t.trim())m.parts.push({ty:'t',t:m.t});
-  var got=0;
+  var said=realT(m),got=0;
   jobs.forEach(function(job){
     var r,lab;
     if(job.k==='查'){r=doLook(job.v);lab=r.lab;}
@@ -5983,11 +5985,12 @@ runActs=function(m,after,q,sid){
     m.parts.push({ty:'look',q:lab,n:r.n});});
   m.lkn=1;
   return nextRound(m,after,q,sid,
-    (got?'翻到的都在上面了。':'什么都没翻到，别编，直接问她。')
-    +'这一轮不许再翻，就用手里这些对她说话。');};
+    (got?'翻到的在上面。':'没翻到。别编，不知道就直接问她。')
+    +(said?'接着往下说。':'你还没开口，这轮说点什么。'));};
 
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 })();
+
   /* ══════════ I MISS U · 按时间翻 ══════════ */
 if(typeof GE==='undefined')var GE={};
 (function(){
