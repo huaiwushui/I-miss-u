@@ -5805,6 +5805,37 @@ var FRAME=/(之前|以前|上次|上回|有没有|有没|是不是|算不算|记
 var CUT=/[我你他她了是和也都在给跟把被就还又没不要能会想让对着与之其所以但而且或者因为如果这那些个种样点儿]/;
 var KWSHOW='';
 
+/* ── 标记：找最近的收尾，绝不越界 ── */
+scanMarks=function(t){
+  var s=String(t||''),out=[],i=0,n=s.length;
+  while(i<n){
+    var a=s.indexOf('[',i);
+    if(a<0)break;
+    var dbl=(s.charAt(a+1)==='[')?1:0;
+    var j=a+1+dbl,k='',q;
+    while(j<n&&/\s/.test(s.charAt(j)))j++;
+    for(q=0;q<MKKEY.length;q++)
+      if(s.substr(j,MKKEY[q].length)===MKKEY[q]){k=MKKEY[q];break;}
+    if(!k){i=a+1;continue;}
+    var p=j+k.length;
+    while(p<n&&/\s/.test(s.charAt(p)))p++;
+    var c=s.charAt(p);
+    if(c!==':'&&c!=='：'){i=a+1;continue;}
+    p++;
+    var e=s.indexOf(']',p),b,v;
+    if(e<0){
+      var nl=s.indexOf('\n',p);
+      b=(nl<0?n:nl);
+      v=s.slice(p,b);
+    }else{
+      v=s.slice(p,e);
+      b=(s.charAt(e+1)===']')?e+2:e+1;}
+    v=v.trim();
+    if(v&&v.length<=3000)out.push({k:k,v:v,a:a,b:b});
+    else out.push({k:k,v:'',a:a,b:b});
+    i=b;}
+  return out;};
+
 function grab(s){
   var out=[],raw=String(s||'');
   raw.replace(/[「『"'“”]([^」』"'“”\n]{1,20})[」』"'“”]/g,
@@ -5870,7 +5901,6 @@ lkTrim=function(){
   return LKMEM;};
 qseen=function(){return'';};
 
-/* ── 翻一次，返回真正搜的词 ── */
 GD.lookAdd=lookAdd;
 function doLook(q){
   var k=nrm(q),hit=null;
@@ -5890,15 +5920,14 @@ function doLook(q){
   }catch(e){}
   return{n:r.n,lab:lab};}
 
-/* ── 提示词：不让他算账 ── */
+/* ── 提示词 ── */
 GD.staticPart=staticPart;
 staticPart=function(){
   return GD.staticPart()
     .replace('她提起你确实没印象的人或旧事——翻。\n'
       +'眼前对话里有的、她刚说过的、你答得上来的——不翻。\n'
       +'一条消息只翻一次，翻完立刻接着说话。翻过的词别再翻，结果还在上面。',
-      '话照常说，想翻就把标记写在末尾。翻不花时间也不打断你，'
-     +'她看到的还是你这段话。\n'
+      '话照常说，想翻就把标记写在末尾。翻不打断你，她看到的还是你这段话。\n'
      +'所以别权衡值不值——有一点不确定就翻，翻空了也没损失。\n'
      +'眼前对话里就有的、她刚说过的，不用翻。\n'
      +'一个 [[查:]] 一个词，写要找的那几个字，别写整句问话，一条最多五个。')
@@ -5907,19 +5936,21 @@ staticPart=function(){
      +'记：她是什么样的人、她身边的人、你们定下的事、她长期在意或扛着的东西。\n'
      +'不记：今天的心情、这会儿在做什么、马上就过去的事——那些翻得到。\n'
      +'她说「记住」就一定记。\n'
-     +'发现记岔了或过时了，[[改:短码|新内容]] 直接覆盖；不成立了 [[忘掉:短码]]。\n'
-     +'改和忘随时可以，不占记新的额度。\n'
-     +'写成一句完整的话，第三人称写她。分类：');};
+     +'记岔了或过时了，[[改:短码|新内容]] 整条覆盖；不成立了 [[忘掉:短码]]。\n'
+     +'写成一句完整的话，第三人称写她。相近的会自动并成一条。分类：')
+    .replace('你说的每个字都是直接对她讲的。',
+      '标记要写进回复正文里才生效，只在心里想不算数。括号要配对。\n'
+     +'你说的每个字都是直接对她讲的。');};
 
-/* ── 动作：说话和翻查同时进行 ── */
+/* ── 动作 ── */
 runActs=function(m,after,q,sid){
   var raw=m.t||'';
   if(!D.acts||m.err){m.t=stripMarks(raw);return 0;}
   var quoted=0;
   try{quoted=applyQuotes(m,raw);}catch(e){keepErr('引用',e);quoted=0;}
   if(!quoted)m.t=stripMarks(raw);
-  var mk=findMarks(raw),acts=[],touched=0,nAdd=0,nEd=0,addedNew=0;
-  var jobs=[],first=!(m.lkn||0),canAdd=memAllow();
+  var mk=findMarks(raw),acts=[],touched=0,nEd=0,jobs=[];
+  var first=!(m.lkn||0);
   function okCat(c){
     if(!c||c===SUMCAT)return'';
     if(/["'\\<>]/.test(c))return'';
@@ -5938,7 +5969,6 @@ runActs=function(m,after,q,sid){
         if(n>0)jobs.push({k:'展开',v:n});}
       return;}
 
-    /* 忘掉：纠错优先，不受节流 */
     if(x.k==='忘掉'){
       if(nEd>=3)return;
       var tg=memByCode(x.v);
@@ -5948,7 +5978,6 @@ runActs=function(m,after,q,sid){
       acts.push({s:'forget',t:tg.t});touched=1;nEd++;
       return;}
 
-    /* 改：整条覆盖，长短不论，不受节流 */
     if(x.k==='改'){
       if(nEd>=3)return;
       var em=String(x.v).match(
@@ -5964,16 +5993,14 @@ runActs=function(m,after,q,sid){
       if(c2){t2.cat=c2;delete t2.sum;}
       t2.et=Date.now();
       if(t2.t!==was)tombAdd('edit',t2.t,was);
-      acts.push({s:'edit',t:t2.t,old:was});touched=1;nEd++;
+      acts.push({s:'edit',t:t2.t});touched=1;nEd++;
       return;}
 
-    /* 新记 / 锁住：受节流 */
-    if(!canAdd||nAdd>=2)return;
+    /* 记住 / 锁住：写了就存 */
     var lock=(x.k==='锁住');
     var sc=splitCat(x.v);
     if(!sc.t)return;
     var txt=sc.t,cat=okCat(sc.c);
-    if(txt.replace(/[\s，。、！？…~]/g,'').length<4&&!lock)return;
     var tgt=(dupOf(txt)||{}).m||null;
     if(tgt){
       var oldT=tgt.t||'';
@@ -5984,16 +6011,13 @@ runActs=function(m,after,q,sid){
       if((lock?3:2)>(tgt.imp||2))tgt.imp=lock?3:2;
       if(cat)tgt.cat=cat;
       tgt.ts=Date.now();tgt.et=Date.now();
-      acts.push({s:'mem',t:tgt.t});touched=1;nAdd++;addedNew=1;
+      acts.push({s:'mem',t:tgt.t});touched=1;
       return;}
     addMem(txt,cat,lock?3:2,'ai',
       {sid:sid||S().id,mid:m.id,ts:Date.now()},lock);
-    acts.push({s:'mem',t:txt});touched=1;nAdd++;addedNew=1;});
+    acts.push({s:'mem',t:txt});touched=1;});
 
-  if(acts.length){
-    m.acts=(m.acts||[]).concat(acts);
-    if(addedNew&&!m.memk){
-      m.memk=1;(D.memlog=D.memlog||[]).push(Date.now());}}
+  if(acts.length)m.acts=(m.acts||[]).concat(acts);
   if(touched)saveD();
   PENDQ=[];
   if(!jobs.length){
@@ -6016,7 +6040,7 @@ runActs=function(m,after,q,sid){
     (got?'翻到的在上面。':'没翻到。别编，不知道就直接问她。')
     +(said?'接着往下说。':'你还没开口，这轮说点什么。'));};
 
-/* ── 小字：记下 / 改了 / 忘了 分开说 ── */
+/* ── 小字：记下 / 改了 / 忘了 ── */
 slimActs=function(){
   var b=msBox();if(!b)return;
   [].forEach.call(b.querySelectorAll('.m'),function(w){
