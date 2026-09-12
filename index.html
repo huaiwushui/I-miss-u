@@ -6074,6 +6074,145 @@ GD.lookAdd=function(q){
 
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 })();
+  /* ══════════ I MISS U · 缓存读数 + 兼容 ══════════ */
+if(typeof GF==='undefined')var GF={};
+(function(){
+if(GF.on)return;GF.on=1;
+
+/* 老的读数器停掉，换成自己的 */
+cachePeek=function(){};
+
+function allUsage(s){
+  var out=[],i=0,n=s.length;
+  while(i<n){
+    var a=s.indexOf('"usage"',i);
+    if(a<0)break;
+    var p=a+7;
+    while(p<n&&/[\s:]/.test(s.charAt(p)))p++;
+    if(s.charAt(p)!=='{'){i=a+7;continue;}
+    var d=0,k=p,ok=0;
+    for(;k<n;k++){
+      var ch=s.charAt(k);
+      if(ch==='{')d++;
+      else if(ch==='}'){d--;if(!d){ok=1;break;}}}
+    if(!ok)break;
+    try{out.push(JSON.parse(s.slice(p,k+1)));}catch(e){}
+    i=k+1;}
+  return out;}
+
+function take(s){
+  var us=allUsage(s),r=0,w=0,i=0;
+  if(!us.length){CACHE.pend=0;return;}
+  us.forEach(function(u){
+    if(u.cache_read_input_tokens!=null)
+      r=Math.max(r,u.cache_read_input_tokens);
+    if(u.prompt_cache_hit_tokens!=null)
+      r=Math.max(r,u.prompt_cache_hit_tokens);
+    if(u.cache_creation_input_tokens!=null)
+      w=Math.max(w,u.cache_creation_input_tokens);
+    if(u.input_tokens!=null)i=Math.max(i,u.input_tokens);
+    else if(u.prompt_cache_miss_tokens!=null)
+      i=Math.max(i,u.prompt_cache_miss_tokens);
+    else if(u.prompt_tokens!=null)i=Math.max(i,u.prompt_tokens);});
+  CACHE={r:r,w:w,i:i,ts:Date.now(),pend:0};}
+
+function peek(res){
+  var c;
+  try{c=res.clone();}catch(e){return;}
+  if(!c.body){
+    try{c.text().then(take,function(){});}catch(e){}
+    return;}
+  var rd,dec=new TextDecoder(),bf='';
+  try{rd=c.body.getReader();}catch(e){return;}
+  (function go(){
+    rd.read().then(function(r){
+      if(r.done){take(bf);return;}
+      bf+=dec.decode(r.value,{stream:true});
+      if(bf.length>400000)bf=bf.slice(-150000);
+      go();
+    },function(){take(bf);});})();}
+
+/* ── 图片：对面不吃就换成文字 ── */
+var NOIMG=/deepseek|moonshot|minimax|baichuan/i;
+function flatImg(b){
+  if(!Array.isArray(b.messages))return 0;
+  var ch=0;
+  b.messages.forEach(function(m){
+    if(!Array.isArray(m.content))return;
+    var txt='',n=0;
+    m.content.forEach(function(p){
+      if(p&&p.type==='image_url')n++;
+      else if(p&&p.type==='text')txt+=(txt?'\n':'')+(p.text||'');});
+    if(!n)return;
+    m.content=(n?'［她发了 '+n+' 张图片，这个模型看不了。想知道是什么就问她。］'
+      +(txt?'\n'+txt:''):txt);
+    ch=1;});
+  return ch;}
+
+GF.fetch=window.fetch.bind(window);
+window.fetch=function(u,o){
+  var url=String(u||''),chat=0,b=null;
+  if(D.apiUrl&&url===D.apiUrl&&o&&o.method==='POST'
+    &&typeof o.body==='string'){
+    try{b=JSON.parse(o.body);}catch(e){}
+    if(b&&b.stream===true&&Array.isArray(b.messages)){
+      chat=1;
+      var dirty=0;
+      if(!b.system){
+        if(!APIDOWN.su&&!b.stream_options){
+          b.stream_options={include_usage:true};dirty=1;}
+        if(NOIMG.test(url)||NOIMG.test(String(b.model||''))){
+          if(flatImg(b))dirty=1;}}
+      if(dirty){
+        var oa={};for(var k1 in o)oa[k1]=o[k1];
+        oa.body=JSON.stringify(b);o=oa;}
+      CACHE={r:0,w:0,i:0,ts:0,pend:1};}}
+  var p=GF.fetch(u,o);
+  if(!chat)return p;
+  return p.then(function(r){
+    if(r.ok){try{peek(r);}catch(e){}return r;}
+    if((r.status===400||r.status===422)&&b&&b.stream_options){
+      return r.clone().text().then(function(t){
+        if(!/stream_options|unsupported|unrecognized|unexpected|extra|invalid/i
+          .test(String(t))){CACHE.pend=0;return r;}
+        APIDOWN.su=1;
+        try{localStorage.setItem('us.apidown',JSON.stringify(APIDOWN));}
+        catch(e){}
+        delete b.stream_options;
+        var o3={};for(var k2 in o)o3[k2]=o[k2];
+        o3.body=JSON.stringify(b);
+        return GF.fetch(u,o3).then(function(r2){
+          if(r2.ok){try{peek(r2);}catch(e){}}
+          else CACHE.pend=0;
+          return r2;});
+      },function(){CACHE.pend=0;return r;});}
+    CACHE.pend=0;
+    return r;});};
+
+/* ── 面板：读不到就说读不到 ── */
+GF.shCtx=shCtx;
+shCtx=function(){
+  GF.shCtx();
+  try{
+    var bd=document.querySelector('#sh .bdy');if(!bd)return;
+    var cd=bd.querySelector('.cd');if(!cd)return;
+    [].forEach.call(cd.querySelectorAll('.cch2'),function(e){e.remove();});
+    var old=cd.lastElementChild;
+    if(old&&/上一轮 ·/.test(old.textContent||''))old.remove();
+    var t;
+    if(CACHE.pend)t='正在算';
+    else if(!CACHE.ts)t='这个中转不报用量';
+    else{
+      var k=function(n){
+        return n>=1000?(Math.round(n/100)/10+'k'):String(n);};
+      t=CACHE.r?('缓存省下 '+k(CACHE.r)+'　新读 '+k(CACHE.i))
+        :(CACHE.w?('缓存刚存下 '+k(CACHE.w)+'，下轮开始省')
+                 :('没走缓存，读了 '+k(CACHE.i)));}
+    cd.insertAdjacentHTML('beforeend',
+      '<div class="cch2" style="margin-top:9px;font-size:12.5px;'
+     +'color:var(--dim2)">上一轮 · '+t+'</div>');
+  }catch(e){}};
+})();
 </script>
 </body>
 </html>
