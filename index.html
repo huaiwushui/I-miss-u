@@ -6322,6 +6322,290 @@ lkTrim=function(){
 
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 })();
+  /* ══════════ I MISS U · 缓存前缀 + 引用换行 ══════════ */
+if(typeof GG==='undefined')var GG={};
+(function(){
+if(GG.on)return;GG.on=1;
+
+/* ── 横滑：引用和长串一律折行 ── */
+var s=document.createElement('style');
+s.textContent=
+ '#ms{overflow-x:hidden}'
++'#ms .m .in,#ms .m.ai .in{min-width:0;max-width:100%}'
++'#ms .qt{max-width:100%;box-sizing:border-box;overflow:hidden}'
++'#ms .qt .qb,#sh .qt .qb{white-space:pre-wrap;overflow-wrap:anywhere;'
++'word-break:break-word;max-width:100%}'
++'#ms .qt .qh span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'
++'min-width:0}'
++'#ms .sg,#ms .m.ai .bd{overflow-wrap:anywhere}'
++'#ms .wbx{overflow:hidden}'
++'#ms .wbx .wh span{overflow:hidden;text-overflow:ellipsis;'
++'white-space:nowrap;min-width:0}';
+document.head.appendChild(s);
+
+/* ── system 只留稳定的那段 ── */
+sysBlocks=function(){
+  return[{type:'text',text:staticPart(),
+    cache_control:{type:'ephemeral'}}];};
+sysText=function(){return staticPart();};
+
+/* ── 会变的挪到消息最后，前面打第二个书签 ── */
+var NOCC=0;
+try{NOCC=(APIDOWN.u===D.apiUrl&&APIDOWN.cc)?1:0;}catch(e){}
+
+GG.buildMsgs=buildMsgs;
+buildMsgs=function(an,forHi,pics){
+  var out=GG.buildMsgs(an,forHi,pics);
+  if(!out.length)return out;
+  var vol='［页面数据，不是她说的。别复述，别回应这一段。］\n'
+    +usPart(forHi?'':lastQ());
+  var last=out[out.length-1];
+  if(last.role!=='user'){
+    out.push({role:'user',content:vol});
+    return out;}
+  var c=last.content;
+  if(!Array.isArray(c))c=[{type:'text',text:String(c||'…')}];
+  if(an&&!NOCC&&c.length){
+    var tail=c[c.length-1];
+    if(tail&&tail.type==='text')
+      tail.cache_control={type:'ephemeral'};}
+  c.push({type:'text',text:vol});
+  last.content=c;
+  return out;};
+
+/* ── 中转不认书签就摘掉，只摘一次 ── */
+function stripCC(b){
+  var n=0;
+  if(Array.isArray(b.system))b.system.forEach(function(x){
+    if(x&&x.cache_control){delete x.cache_control;n++;}});
+  (b.messages||[]).forEach(function(m){
+    if(!Array.isArray(m.content))return;
+    m.content.forEach(function(p){
+      if(p&&p.cache_control){delete p.cache_control;n++;}});});
+  return n;}
+
+GG.fetch=window.fetch.bind(window);
+window.fetch=function(u,o){
+  if(!D.apiUrl||String(u||'')!==D.apiUrl||!o||o.method!=='POST'
+    ||typeof o.body!=='string')return GG.fetch(u,o);
+  return GG.fetch(u,o).then(function(r){
+    if(r.ok||(r.status!==400&&r.status!==422))return r;
+    var b=null;
+    try{b=JSON.parse(o.body);}catch(e){}
+    if(!b)return r;
+    return r.clone().text().then(function(t){
+      if(!/cache_control|ephemeral/i.test(String(t)))return r;
+      if(!stripCC(b))return r;
+      NOCC=1;APIDOWN.u=D.apiUrl;APIDOWN.cc=1;
+      try{localStorage.setItem('us.apidown',JSON.stringify(APIDOWN));}catch(e){}
+      var o2={};for(var k in o)o2[k]=o[k];
+      o2.body=JSON.stringify(b);
+      return GG.fetch(u,o2);
+    },function(){return r;});});};
+
+if(CV==='chat'){try{paint(1);btn();}catch(e){}}
+})();
+/* ══════════ I MISS U · 缓存与报错 ══════════ */
+if(typeof GH==='undefined')var GH={};
+(function(){
+if(GH.on)return;GH.on=1;
+
+/* ── 缓存留一小时，不是五分钟 ── */
+var TTL1H=0;
+try{TTL1H=(APIDOWN.u===D.apiUrl&&APIDOWN.ttl)?1:0;}catch(e){}
+function ttlOf(){return TTL1H?{type:'ephemeral'}:{type:'ephemeral',ttl:'1h'};}
+
+GH.sysBlocks=sysBlocks;
+sysBlocks=function(q){
+  var b=GH.sysBlocks(q);
+  b.forEach(function(x){if(x&&x.cache_control)x.cache_control=ttlOf();});
+  return b;};
+GH.buildMsgs=buildMsgs;
+buildMsgs=function(an,forHi,pics){
+  var out=GH.buildMsgs(an,forHi,pics);
+  out.forEach(function(m){
+    if(!Array.isArray(m.content))return;
+    m.content.forEach(function(p){
+      if(p&&p.cache_control)p.cache_control=ttlOf();});});
+  return out;};
+
+/* ── 前缀指纹：改了风格就知道缓存要重写 ── */
+var PFX={sha:'',ch:0};
+function fp(s){
+  var h=5381,i;
+  for(i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;
+  return String(h>>>0)+'.'+s.length;}
+function pfxCheck(){
+  var f;
+  try{f=fp(staticPart());}catch(e){return;}
+  if(PFX.sha&&PFX.sha!==f)PFX.ch=1;
+  PFX.sha=f;}
+
+/* ── 用量按模型分开记 ── */
+var UZ={m:'',in:0,hit:0,w:0,n:0,bad:0,pend:0};
+function uzReset(m){UZ={m:m,in:0,hit:0,w:0,n:0,bad:0,pend:0};}
+
+function grabUsage(s){
+  var out=[],i=0,n=s.length;
+  while(i<n){
+    var a=s.indexOf('"usage"',i);
+    if(a<0)break;
+    var p=a+7;
+    while(p<n&&/[\s:]/.test(s.charAt(p)))p++;
+    if(s.charAt(p)!=='{'){i=a+7;continue;}
+    var d=0,k=p,ok=0;
+    for(;k<n;k++){
+      var c=s.charAt(k);
+      if(c==='{')d++;
+      else if(c==='}'){d--;if(!d){ok=1;break;}}}
+    if(!ok)break;
+    try{out.push(JSON.parse(s.slice(p,k+1)));}catch(e){}
+    i=k+1;}
+  return out;}
+
+function eatUsage(txt){
+  var us=grabUsage(txt),r=0,w=0,i=0,got=0;
+  us.forEach(function(u){
+    if(u.cache_read_input_tokens!=null){r=Math.max(r,u.cache_read_input_tokens);got=1;}
+    if(u.prompt_cache_hit_tokens!=null){r=Math.max(r,u.prompt_cache_hit_tokens);got=1;}
+    if(u.cache_creation_input_tokens!=null){w=Math.max(w,u.cache_creation_input_tokens);got=1;}
+    if(u.input_tokens!=null){i=Math.max(i,u.input_tokens);got=1;}
+    else if(u.prompt_cache_miss_tokens!=null){i=Math.max(i,u.prompt_cache_miss_tokens);got=1;}
+    else if(u.prompt_tokens!=null){i=Math.max(i,u.prompt_tokens);got=1;}});
+  UZ.pend=0;
+  /* 假的零：前缀这么长，读入不可能是 0 */
+  if(!got||(i+r+w)===0){UZ.bad=1;return;}
+  UZ.in+=i+r;UZ.hit+=r;UZ.w+=w;UZ.n++;UZ.bad=0;
+  if(r>0)PFX.ch=0;
+  CACHE={r:r,w:w,i:i,ts:Date.now(),pend:0};}
+
+/* ── 流里夹着的报错：抓出来说清楚 ── */
+function inlineErr(raw){
+  var s=String(raw||''),m=s.match(/"error"\s*:\s*\{([\s\S]{0,500}?)\}/);
+  if(m){
+    var t=m[1].match(/"type"\s*:\s*"([^"]{0,60})"/);
+    var g=m[1].match(/"message"\s*:\s*"([^"]{0,200})"/);
+    var ty=t?t[1]:'',ms=g?g[1]:'';
+    if(/overload|unavailable|capacity|busy/i.test(ty+ms))
+      return'上游正忙，过一会儿再说一次。';
+    if(/rate.?limit|too.?many|429/i.test(ty+ms))
+      return'被限流了，等一下再试。';
+    if(/quota|balance|insufficient|额度|余额/i.test(ty+ms))
+      return'这个 key 的额度不够了。';
+    return'上游报错：'+(ms||ty||'没说原因').slice(0,80);}
+  if(/"id"\s*:\s*"msg_err_/.test(s))return'上游返回了一个错误响应。';
+  return'';}
+
+GH.pump=pump;
+pump=function(res,m,an,sid){
+  var seen='',rr=null;
+  try{
+    var c=res.clone();
+    if(c.body){
+      var rd=c.body.getReader(),dec=new TextDecoder();
+      rr=rd;
+      (function go(){
+        rd.read().then(function(x){
+          if(x.done){
+            eatUsage(seen);
+            if(!String(m.t||'').trim()&&!m.err){
+              var e=inlineErr(seen);
+              if(e)m.err=e;}
+            return;}
+          seen+=dec.decode(x.value,{stream:true});
+          if(seen.length>500000)seen=seen.slice(-200000);
+          if(!m.err){
+            var e2=inlineErr(seen);
+            if(e2)m.err=e2;}
+          go();
+        },function(){eatUsage(seen);});})();}
+    else{
+      UZ.pend=0;
+      c.text().then(function(t){eatUsage(t);},function(){});}
+  }catch(e){UZ.pend=0;}
+  return GH.pump(res,m,an,sid);};
+
+/* ── 发请求前：清零、量指纹 ── */
+GH.go=go;
+go=function(m,after,q,sid,forHi){
+  try{
+    if(UZ.m!==D.model)uzReset(D.model);
+    pfxCheck();
+    UZ.pend=1;
+    CACHE={r:0,w:0,i:0,ts:0,pend:1};
+  }catch(e){}
+  return GH.go(m,after,q,sid,forHi);};
+
+/* ── 400 撞书签或 TTL：摘掉重发，记住 ── */
+function stripTTL(b){
+  var n=0;
+  function walk(x){
+    if(x&&x.cache_control&&x.cache_control.ttl){
+      delete x.cache_control.ttl;n++;}}
+  if(Array.isArray(b.system))b.system.forEach(walk);
+  (b.messages||[]).forEach(function(mm){
+    if(Array.isArray(mm.content))mm.content.forEach(walk);});
+  return n;}
+
+GH.fetch=window.fetch.bind(window);
+window.fetch=function(u,o){
+  var url=String(u||''),an=(D.fmt!=='openai');
+  if(!D.apiUrl||url!==D.apiUrl||!o||o.method!=='POST'
+    ||typeof o.body!=='string')return GH.fetch(u,o);
+  /* 一小时缓存要带 beta 头 */
+  if(an&&!TTL1H&&/"ttl"\s*:\s*"1h"/.test(o.body)){
+    var oa={};for(var k0 in o)oa[k0]=o[k0];
+    var hd={};for(var k1 in(o.headers||{}))hd[k1]=o.headers[k1];
+    hd['anthropic-beta']='extended-cache-ttl-2025-04-11';
+    oa.headers=hd;o=oa;}
+  return GH.fetch(u,o).then(function(r){
+    if(r.ok||(r.status!==400&&r.status!==422))return r;
+    var b=null;
+    try{b=JSON.parse(o.body);}catch(e){}
+    if(!b)return r;
+    return r.clone().text().then(function(t){
+      if(!/ttl|beta|cache_control|ephemeral/i.test(String(t)))return r;
+      if(!stripTTL(b))return r;
+      TTL1H=1;APIDOWN.u=D.apiUrl;APIDOWN.ttl=1;
+      try{localStorage.setItem('us.apidown',JSON.stringify(APIDOWN));}catch(e){}
+      var o2={};for(var k2 in o)o2[k2]=o[k2];
+      o2.body=JSON.stringify(b);
+      var h2={};for(var k3 in(o.headers||{}))h2[k3]=o.headers[k3];
+      delete h2['anthropic-beta'];
+      o2.headers=h2;
+      return GH.fetch(u,o2);
+    },function(){return r;});});};
+
+/* ── 面板：三态，看不见就说看不见 ── */
+GH.shCtx=shCtx;
+shCtx=function(){
+  GH.shCtx();
+  try{
+    var bd=document.querySelector('#sh .bdy');if(!bd)return;
+    var cd=bd.querySelector('.cd');if(!cd)return;
+    [].forEach.call(cd.querySelectorAll('.uz,.uz2'),function(e){e.remove();});
+    var k=function(n){
+      if(n>=1000000)return(Math.round(n/100000)/10)+'M';
+      if(n>=1000)return(Math.round(n/100)/10)+'k';
+      return String(n);};
+    var t,dim=1;
+    if(UZ.n){
+      var p=Math.round(UZ.hit/Math.max(1,UZ.in)*100);
+      t='缓存命中 '+p+'%　读入 '+k(UZ.in)+'　这 '+UZ.n+' 轮';
+      dim=0;
+      if(PFX.ch)t+='\n改过风格，下一轮要重写一遍缓存';
+      else if(!UZ.hit&&UZ.w)t+='\n刚存下，下轮开始省';
+    }else if(UZ.pend)t='正在算用量';
+    else if(UZ.bad)t='这个中转不报用量，看不到';
+    else t='说一句话就知道用了多少';
+    cd.insertAdjacentHTML('beforeend',
+      '<div class="uz2" style="margin-top:9px;font-size:12.5px;'
+     +'white-space:pre-line;color:var(--dim'+(dim?'2':'')+')">'
+     +esc(t)+'</div>');
+  }catch(e){}};
+
+if(CV==='chat'){try{paint(1);btn();}catch(e){}}
+})();
 </script>
 </body>
 </html>
