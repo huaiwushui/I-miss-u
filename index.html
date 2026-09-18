@@ -6606,6 +6606,92 @@ shCtx=function(){
 
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 })();
+ /* ══════════ I MISS U · 书签自检 ══════════ */
+if(typeof GI==='undefined')var GI={};
+(function(){
+if(GI.on)return;GI.on=1;
+
+/* ── 清掉可能被误伤的标记 ── */
+try{
+  APIDOWN.sys=0;APIDOWN.cc=0;APIDOWN.ttl=0;
+  localStorage.setItem('us.apidown',JSON.stringify(APIDOWN));
+}catch(e){}
+try{NOCC=0;}catch(e){}
+try{TTL1H=0;}catch(e){}
+
+/* ── 拍平 system 这件事只有真被指名才做 ── */
+downFit=function(b){
+  if(APIDOWN.u!==D.apiUrl)return 0;
+  var ch=0;
+  if(APIDOWN.sys&&Array.isArray(b.system)){
+    b.system=b.system.map(function(x){return(x&&x.text)||'';}).join('\n\n');
+    ch=1;}
+  if(APIDOWN.think&&b.thinking){delete b.thinking;ch=1;}
+  if(APIDOWN.temp&&b.temperature!=null&&b.temperature!==1){
+    b.temperature=1;ch=1;}
+  return ch;};
+
+/* ── 书签发出去几个，记下来 ── */
+var CC={sent:0,cut:'',ttl:0};
+function countCC(b){
+  var n=0,ttl=0;
+  function walk(x){
+    if(x&&x.cache_control){n++;if(x.cache_control.ttl)ttl++;}}
+  if(Array.isArray(b.system))b.system.forEach(walk);
+  (b.messages||[]).forEach(function(m){
+    if(Array.isArray(m.content))m.content.forEach(walk);});
+  return{n:n,ttl:ttl};}
+
+GI.fetch=window.fetch.bind(window);
+window.fetch=function(u,o){
+  if(!D.apiUrl||String(u||'')!==D.apiUrl||!o||o.method!=='POST'
+    ||typeof o.body!=='string')return GI.fetch(u,o);
+  try{
+    var b=JSON.parse(o.body);
+    if(b&&b.stream===true&&Array.isArray(b.messages)){
+      if(D.fmt==='openai')CC={sent:-1,cut:'',ttl:0};
+      else{
+        var c=countCC(b);
+        CC={sent:c.n,ttl:c.ttl,
+          cut:c.n?'':(Array.isArray(b.system)?'':'system 被拍平了')};}}
+  }catch(e){}
+  return GI.fetch(u,o).then(function(r){
+    if(r.ok||(r.status!==400&&r.status!==422))return r;
+    return r.clone().text().then(function(t){
+      var s=String(t);
+      /* 只有明确点到 cache_control 才认 */
+      if(/cache_control/i.test(s))CC.cut='中转不认书签，已摘掉';
+      else if(/\bttl\b|extended-cache/i.test(s))CC.cut='中转不认一小时，已改回五分钟';
+      return r;
+    },function(){return r;});});};
+
+/* ── 摘书签 / 摘 TTL：判定收紧 ── */
+try{
+  if(typeof GG!=='undefined'&&GG.fetch)GG.strict=1;
+  if(typeof GH!=='undefined'&&GH.fetch)GH.strict=1;
+}catch(e){}
+
+/* ── 面板：把书签状态摆出来 ── */
+GI.shCtx=shCtx;
+shCtx=function(){
+  GI.shCtx();
+  try{
+    var bd=document.querySelector('#sh .bdy');if(!bd)return;
+    var cd=bd.querySelector('.cd');if(!cd)return;
+    [].forEach.call(cd.querySelectorAll('.cc3'),function(e){e.remove();});
+    var t;
+    if(CC.sent===-1)t='OpenAI 格式，缓存由对面自动管';
+    else if(CC.cut)t=CC.cut;
+    else if(CC.sent>0)
+      t='上一轮发出 '+CC.sent+' 个书签'+(CC.ttl?'（一小时）':'（五分钟）');
+    else t='还没发过请求';
+    cd.insertAdjacentHTML('beforeend',
+      '<div class="cc3" style="margin-top:5px;font-size:12px;'
+     +'color:var(--dim2)">'+esc(t)+'</div>');
+  }catch(e){}};
+
+if(CV==='chat'){try{paint(1);btn();}catch(e){}}
+})(); 
 </script>
 </body>
 </html>
