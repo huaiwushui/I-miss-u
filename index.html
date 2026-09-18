@@ -6322,237 +6322,7 @@ lkTrim=function(){
 
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 })();
-/* ══════════ I MISS U · 缓存 ══════════ */
-if(typeof GC==='undefined')var GC={};
-(function(){
-if(GC.on)return;GC.on=1;
 
-/* ── 清掉可能被误伤的标记 ── */
-try{
-  APIDOWN.sys=0;
-  localStorage.setItem('us.apidown',JSON.stringify(APIDOWN));
-}catch(e){}
-
-/* 拍平 system 只有明确点名才做 */
-downFit=function(b){
-  if(APIDOWN.u!==D.apiUrl)return 0;
-  var ch=0;
-  if(APIDOWN.sys&&Array.isArray(b.system)){
-    b.system=b.system.map(function(x){return(x&&x.text)||'';}).join('\n\n');
-    ch=1;}
-  if(APIDOWN.think&&b.thinking){delete b.thinking;ch=1;}
-  if(APIDOWN.temp&&b.temperature!=null&&b.temperature!==1){
-    b.temperature=1;ch=1;}
-  return ch;};
-
-/* ── 横滑：引用和长串折行 ── */
-var s=document.createElement('style');
-s.textContent=
- '#ms{overflow-x:hidden}'
-+'#ms .m .in{min-width:0;max-width:100%}'
-+'#ms .qt{max-width:100%;box-sizing:border-box;overflow:hidden}'
-+'#ms .qt .qb,#sh .qt .qb{white-space:pre-wrap;overflow-wrap:anywhere;'
-+'word-break:break-word;max-width:100%}'
-+'#ms .qt .qh span,#ms .wbx .wh span{overflow:hidden;'
-+'text-overflow:ellipsis;white-space:nowrap;min-width:0}'
-+'#ms .sg,#ms .m.ai .bd{overflow-wrap:anywhere}'
-+'#ms .wbx{overflow:hidden}';
-document.head.appendChild(s);
-
-/* ── 前缀：稳定的进 system，会变的挪到最后 ── */
-var CUT=0,TTL=0;
-try{
-  CUT=(APIDOWN.u===D.apiUrl&&APIDOWN.cc)?1:0;
-  TTL=(APIDOWN.u===D.apiUrl&&APIDOWN.ttl)?1:0;
-}catch(e){}
-function cc(){return TTL?{type:'ephemeral'}:{type:'ephemeral',ttl:'1h'};}
-
-sysText=function(){return staticPart();};
-sysBlocks=function(){
-  var b=[{type:'text',text:staticPart()}];
-  if(!CUT)b[0].cache_control=cc();
-  return b;};
-
-GC.buildMsgs=buildMsgs;
-buildMsgs=function(an,forHi,pics){
-  var out=GC.buildMsgs(an,forHi,pics);
-  if(!out.length)return out;
-  var vol='［页面数据，不是她说的。别复述，别回应这一段。］\n'
-    +usPart(forHi?'':lastQ());
-  var last=out[out.length-1];
-  if(last.role!=='user'){
-    out.push({role:'user',content:vol});
-    return out;}
-  var c=last.content;
-  if(!Array.isArray(c))c=[{type:'text',text:String(c||'…')}];
-  if(an&&!CUT&&c.length){
-    var t=c[c.length-1];
-    if(t&&t.type==='text')t.cache_control=cc();}
-  c.push({type:'text',text:vol});
-  last.content=c;
-  return out;};
-
-/* ── 用量：按模型分开，认假零 ── */
-var UZ={m:'',in:0,hit:0,w:0,n:0,st:0};
-/* st: 0 还没发 · 1 正在算 · 2 有数 · 3 看不到 · 4 书签被摘 */
-
-function usages(s){
-  var out=[],i=0,n=s.length;
-  while(i<n){
-    var a=s.indexOf('"usage"',i);
-    if(a<0)break;
-    var p=a+7;
-    while(p<n&&/[\s:]/.test(s.charAt(p)))p++;
-    if(s.charAt(p)!=='{'){i=a+7;continue;}
-    var d=0,k=p,ok=0;
-    for(;k<n;k++){
-      var ch=s.charAt(k);
-      if(ch==='{')d++;
-      else if(ch==='}'){d--;if(!d){ok=1;break;}}}
-    if(!ok)break;
-    try{out.push(JSON.parse(s.slice(p,k+1)));}catch(e){}
-    i=k+1;}
-  return out;}
-
-function eat(txt){
-  var us=usages(txt),r=0,w=0,i=0,got=0;
-  us.forEach(function(u){
-    if(u.cache_read_input_tokens!=null){
-      r=Math.max(r,u.cache_read_input_tokens);got=1;}
-    if(u.prompt_cache_hit_tokens!=null){
-      r=Math.max(r,u.prompt_cache_hit_tokens);got=1;}
-    if(u.cache_creation_input_tokens!=null){
-      w=Math.max(w,u.cache_creation_input_tokens);got=1;}
-    if(u.input_tokens!=null){i=Math.max(i,u.input_tokens);got=1;}
-    else if(u.prompt_cache_miss_tokens!=null){
-      i=Math.max(i,u.prompt_cache_miss_tokens);got=1;}
-    else if(u.prompt_tokens!=null){i=Math.max(i,u.prompt_tokens);got=1;}});
-  if(!got||(i+r+w)===0){if(UZ.st===1)UZ.st=3;return;}
-  UZ.in+=i+r;UZ.hit+=r;UZ.w+=w;UZ.n++;UZ.st=2;}
-
-/* ── 流里夹着的报错 ── */
-function inlineErr(raw){
-  var s2=String(raw||''),m=s2.match(/"error"\s*:\s*\{([\s\S]{0,500}?)\}/);
-  if(m){
-    var t=m[1].match(/"type"\s*:\s*"([^"]{0,60})"/);
-    var g=m[1].match(/"message"\s*:\s*"([^"]{0,200})"/);
-    var k=(t?t[1]:'')+' '+(g?g[1]:'');
-    if(/overload|unavailable|capacity|busy/i.test(k))
-      return'上游正忙，过一会儿再说一次。';
-    if(/rate.?limit|too.?many/i.test(k))return'被限流了，等一下再试。';
-    if(/quota|balance|insufficient|额度|余额/i.test(k))
-      return'这个 key 的额度不够了。';
-    return'上游报错：'+((g?g[1]:t?t[1]:'没说原因')).slice(0,80);}
-  if(/"id"\s*:\s*"msg_err_/.test(s2))return'上游返回了一个错误响应。';
-  return'';}
-
-GC.pump=pump;
-pump=function(res,m,an,sid){
-  try{
-    var c=res.clone();
-    if(c.body){
-      var rd=c.body.getReader(),dec=new TextDecoder(),bf='';
-      (function go2(){
-        rd.read().then(function(x){
-          if(x.done){
-            eat(bf);
-            if(!String(m.t||'').trim()&&!m.err){
-              var e=inlineErr(bf);
-              if(e)m.err=e;}
-            return;}
-          bf+=dec.decode(x.value,{stream:true});
-          if(bf.length>500000)bf=bf.slice(-200000);
-          if(!m.err){var e2=inlineErr(bf);if(e2)m.err=e2;}
-          go2();
-        },function(){eat(bf);});})();}
-    else c.text().then(eat,function(){});
-  }catch(e){}
-  return GC.pump(res,m,an,sid);};
-
-GC.go=go;
-go=function(m,after,q,sid,forHi){
-  try{
-    if(UZ.m!==D.model)UZ={m:D.model,in:0,hit:0,w:0,n:0,st:0};
-    if(UZ.st!==4)UZ.st=1;
-    CACHE={r:0,w:0,i:0,ts:0,pend:1};
-  }catch(e){}
-  return GC.go(m,after,q,sid,forHi);};
-
-/* ── 400：只有明确点名才摘 ── */
-function drop(b,ttlOnly){
-  var n=0;
-  function walk(x){
-    if(!x||!x.cache_control)return;
-    if(ttlOnly){if(x.cache_control.ttl){delete x.cache_control.ttl;n++;}}
-    else{delete x.cache_control;n++;}}
-  if(Array.isArray(b.system))b.system.forEach(walk);
-  (b.messages||[]).forEach(function(mm){
-    if(Array.isArray(mm.content))mm.content.forEach(walk);});
-  return n;}
-
-GC.fetch=window.fetch.bind(window);
-window.fetch=function(u,o){
-  var an=(D.fmt!=='openai');
-  if(!D.apiUrl||String(u||'')!==D.apiUrl||!o||o.method!=='POST'
-    ||typeof o.body!=='string')return GC.fetch(u,o);
-  if(an&&!TTL&&o.body.indexOf('"ttl":"1h"')>=0){
-    var oa={};for(var k0 in o)oa[k0]=o[k0];
-    var hd={};for(var k1 in(o.headers||{}))hd[k1]=o.headers[k1];
-    hd['anthropic-beta']='extended-cache-ttl-2025-04-11';
-    oa.headers=hd;o=oa;}
-  return GC.fetch(u,o).then(function(r){
-    if(r.ok||(r.status!==400&&r.status!==422))return r;
-    var b=null;
-    try{b=JSON.parse(o.body);}catch(e){}
-    if(!b)return r;
-    return r.clone().text().then(function(t){
-      var s3=String(t),ttlOnly=0;
-      if(/\bttl\b|extended-cache/i.test(s3)&&!/cache_control/i.test(s3))
-        ttlOnly=1;
-      else if(!/cache_control/i.test(s3))return r;
-      if(!drop(b,ttlOnly))return r;
-      if(ttlOnly){TTL=1;APIDOWN.ttl=1;}
-      else{CUT=1;APIDOWN.cc=1;UZ.st=4;}
-      APIDOWN.u=D.apiUrl;
-      try{localStorage.setItem('us.apidown',
-        JSON.stringify(APIDOWN));}catch(e){}
-      var o2={};for(var k2 in o)o2[k2]=o[k2];
-      o2.body=JSON.stringify(b);
-      var h2={};for(var k3 in(o.headers||{}))h2[k3]=o.headers[k3];
-      delete h2['anthropic-beta'];
-      o2.headers=h2;
-      return GC.fetch(u,o2);
-    },function(){return r;});});};
-
-/* ── 面板：一行 ── */
-GC.shCtx=shCtx;
-shCtx=function(){
-  GC.shCtx();
-  try{
-    var bd=document.querySelector('#sh .bdy');if(!bd)return;
-    var cd=bd.querySelector('.cd');if(!cd)return;
-    [].forEach.call(cd.querySelectorAll('.uz,.uz2,.cc3,.cz'),
-      function(e){e.remove();});
-    var k=function(n){
-      if(n>=1000000)return(Math.round(n/100000)/10)+'M';
-      if(n>=1000)return(Math.round(n/100)/10)+'k';
-      return String(n);};
-    var t;
-    if(UZ.st===2){
-      var p=Math.round(UZ.hit/Math.max(1,UZ.in)*100);
-      t=(p?('缓存命中 '+p+'%'):(UZ.w?'缓存刚存下，下轮开始省':'没走缓存'))
-        +'　读入 '+k(UZ.in);}
-    else if(UZ.st===4)t='这个中转不支持缓存';
-    else if(UZ.st===3)t='这个中转不报用量';
-    else if(UZ.st===1)t='正在算';
-    else t='说一句话就知道';
-    cd.insertAdjacentHTML('beforeend',
-      '<div class="cz" style="margin-top:9px;font-size:12.5px;'
-     +'color:var(--dim2)">'+esc(t)+'</div>');
-  }catch(e){}};
-
-if(CV==='chat'){try{paint(1);btn();}catch(e){}}
-})();
   /* ══════════ I MISS U · 天气 · 排版 · 外部内容 ══════════ */
 if(typeof GJ==='undefined')var GJ={};
 (function(){
@@ -6778,6 +6548,317 @@ try{NOTE['天气']='要允许一次定位。位置不发给模型，只发天气
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='more'){try{view('more');}catch(e){}}
 if(D.wx){try{wxFetch();}catch(e){}}
+})();
+  /* ══════════ I MISS U · 缓存 ══════════ */
+if(typeof GM==='undefined')var GM={};
+(function(){
+if(GM.on)return;GM.on=1;
+
+/* ── 旧的缓存块漏删了就先卸掉 ── */
+try{
+  if(typeof GC!=='undefined'&&GC.on){
+    if(GC.buildMsgs)buildMsgs=GC.buildMsgs;
+    if(GC.pump)pump=GC.pump;
+    if(GC.go)go=GC.go;
+    if(GC.shCtx)shCtx=GC.shCtx;
+    if(GC.fetch)window.fetch=GC.fetch;}
+  if(typeof GK!=='undefined'&&GK.on){
+    if(GK.ctxInfo)ctxInfo=GK.ctxInfo;
+    if(GK.drawMem)drawMem=GK.drawMem;
+    if(GK.fetch)window.fetch=GK.fetch;}
+}catch(e){}
+
+/* ── 记忆库变动：不再发，也不再留 ── */
+try{D.tomb=[];D.gone=[];saveD();}catch(e){}
+tombAdd=function(){};
+tombText=function(){return'';};
+goneAdd=function(){};
+gones=function(){return[];};
+GM.drawMem=drawMem;
+drawMem=function(){
+  GM.drawMem();
+  try{var b=document.getElementById('gnb');if(b)b.remove();}catch(e){}};
+
+/* ── 别再拍平 system ── */
+try{
+  APIDOWN.sys=0;
+  localStorage.setItem('us.apidown',JSON.stringify(APIDOWN));
+}catch(e){}
+downFlat=function(){};
+downFit=function(b){
+  if(APIDOWN.u!==D.apiUrl)return 0;
+  var ch=0;
+  if(APIDOWN.think&&b.thinking){delete b.thinking;ch=1;}
+  if(APIDOWN.temp&&b.temperature!=null&&b.temperature!==1){
+    b.temperature=1;ch=1;}
+  return ch;};
+
+/* ── 横滑：引用和长串折行 ── */
+var s0=document.createElement('style');
+s0.textContent=
+ '#ms{overflow-x:hidden}'
++'#ms .m .in{min-width:0;max-width:100%}'
++'#ms .qt{max-width:100%;box-sizing:border-box;overflow:hidden}'
++'#ms .qt .qb,#sh .qt .qb{white-space:pre-wrap;overflow-wrap:anywhere;'
++'word-break:break-word;max-width:100%}'
++'#ms .qt .qh span,#ms .wbx .wh span{overflow:hidden;'
++'text-overflow:ellipsis;white-space:nowrap;min-width:0}'
++'#ms .sg,#ms .m.ai .bd{overflow-wrap:anywhere}'
++'#ms .wbx{overflow:hidden}';
+document.head.appendChild(s0);
+
+/* ── 书签 ── */
+var CUT=0,TTL=0;
+try{
+  CUT=(APIDOWN.u===D.apiUrl&&APIDOWN.cc)?1:0;
+  TTL=(APIDOWN.u===D.apiUrl&&APIDOWN.ttl)?1:0;
+}catch(e){}
+function cc(){return TTL?{type:'ephemeral'}:{type:'ephemeral',ttl:'1h'};}
+
+sysText=function(){return staticPart();};
+sysBlocks=function(){
+  var b=[{type:'text',text:staticPart()}];
+  if(!CUT)b[0].cache_control=cc();
+  return b;};
+
+/* ── 历史窗口：钉住起点，前缀才不动 ── */
+var ANCH={};
+function okMsg(x){
+  return x&&x.r!=='gap'&&!x.err&&!x.st
+    &&(x.t||(x.parts&&x.parts.length)||(x.pics&&x.pics.length)
+      ||(x.files&&x.files.length));}
+function capN(){return Math.max(2,Math.min(60,D.ctx||12));}
+ctxList=function(){
+  var arr=ms().filter(okMsg),cap=capN();
+  var s=S(),sid=s?s.id:'';
+  if(!arr.length)return arr;
+  var aid=ANCH[sid],i=-1;
+  if(aid)arr.forEach(function(x,j){if(x.id===aid)i=j;});
+  if(i<0||arr.length-i>cap*2){
+    i=Math.max(0,arr.length-cap);
+    ANCH[sid]=arr[i]?arr[i].id:'';}
+  return arr.slice(i);};
+
+GM.ctxInfo=ctxInfo;
+ctxInfo=function(){
+  var o=GM.ctxInfo();
+  try{
+    var use=ctxList(),ch=0;
+    use.forEach(function(m){ch+=(fullT(m)||m.t||'').length;});
+    var pl=imgPlan(use),mem=0;
+    pickMems('').forEach(function(m){mem+=(m.t||'').length+14;});
+    sumPick().forEach(function(m){mem+=(m.t||'').length+14;});
+    o.use=use.length;o.im=pl.n;
+    o.tok=Math.round((ch+mem+spLen())/2.5)+pl.n*1300;
+  }catch(e){}
+  return o;};
+
+/* ── 会变的挪到最后，前面打第二个书签 ── */
+GM.buildMsgs=buildMsgs;
+buildMsgs=function(an,forHi,pics){
+  var out=GM.buildMsgs(an,forHi,pics);
+  if(!out.length)return out;
+  var vol='［页面数据，不是她说的。别复述，别回应这一段。］\n'
+    +usPart(forHi?'':lastQ());
+  var last=out[out.length-1];
+  if(last.role!=='user'){
+    out.push({role:'user',content:vol});
+    return out;}
+  var c=last.content;
+  if(!Array.isArray(c))c=[{type:'text',text:String(c||'…')}];
+  if(an&&!CUT&&c.length){
+    var t=c[c.length-1];
+    if(t&&t.type==='text')t.cache_control=cc();}
+  c.push({type:'text',text:vol});
+  last.content=c;
+  return out;};
+
+/* ── 用量：按模型分开，认假零 ── */
+var UZ={m:'',in:0,hit:0,w:0,n:0,st:0};
+/* st 0 没发过 · 1 正在算 · 2 有数 · 3 看不到 · 4 书签被摘 */
+
+function usages(s){
+  var out=[],i=0,n=s.length;
+  while(i<n){
+    var a=s.indexOf('"usage"',i);
+    if(a<0)break;
+    var p=a+7;
+    while(p<n&&/[\s:]/.test(s.charAt(p)))p++;
+    if(s.charAt(p)!=='{'){i=a+7;continue;}
+    var d=0,k=p,ok=0;
+    for(;k<n;k++){
+      var ch=s.charAt(k);
+      if(ch==='{')d++;
+      else if(ch==='}'){d--;if(!d){ok=1;break;}}}
+    if(!ok)break;
+    try{out.push(JSON.parse(s.slice(p,k+1)));}catch(e){}
+    i=k+1;}
+  return out;}
+
+function eat(txt){
+  var us=usages(txt),r=0,w=0,i=0,got=0;
+  us.forEach(function(u){
+    var pd=u.prompt_tokens_details;
+    if(pd&&pd.cached_tokens!=null){
+      r=Math.max(r,pd.cached_tokens);got=1;}
+    if(u.cache_read_input_tokens!=null){
+      r=Math.max(r,u.cache_read_input_tokens);got=1;}
+    if(u.prompt_cache_hit_tokens!=null){
+      r=Math.max(r,u.prompt_cache_hit_tokens);got=1;}
+    if(u.cache_creation_input_tokens!=null){
+      w=Math.max(w,u.cache_creation_input_tokens);got=1;}
+    if(u.input_tokens!=null){i=Math.max(i,u.input_tokens);got=1;}
+    else if(u.prompt_cache_miss_tokens!=null){
+      i=Math.max(i,u.prompt_cache_miss_tokens);got=1;}
+    else if(u.prompt_tokens!=null){i=Math.max(i,u.prompt_tokens);got=1;}});
+  if(!got||(i+r+w)===0){if(UZ.st===1)UZ.st=3;return;}
+  if(r&&i>=r)i-=r;
+  UZ.in+=i+r;UZ.hit+=r;UZ.w+=w;UZ.n++;UZ.st=2;}
+
+/* ── 流里夹着的报错 ── */
+function inlineErr(raw){
+  var s2=String(raw||''),m=s2.match(/"error"\s*:\s*\{([\s\S]{0,500}?)\}/);
+  if(m){
+    var t=m[1].match(/"type"\s*:\s*"([^"]{0,60})"/);
+    var g=m[1].match(/"message"\s*:\s*"([^"]{0,200})"/);
+    var k=(t?t[1]:'')+' '+(g?g[1]:'');
+    if(/overload|unavailable|capacity|busy/i.test(k))
+      return'上游正忙，过一会儿再说一次。';
+    if(/rate.?limit|too.?many/i.test(k))return'被限流了，等一下再试。';
+    if(/quota|balance|insufficient|额度|余额/i.test(k))
+      return'这个 key 的额度不够了。';
+    return'上游报错：'+((g?g[1]:t?t[1]:'没说原因')).slice(0,80);}
+  if(/"id"\s*:\s*"msg_err_/.test(s2))return'上游返回了一个错误响应。';
+  return'';}
+
+GM.pump=pump;
+pump=function(res,m,an,sid){
+  try{
+    var c=res.clone();
+    if(c.body){
+      var rd=c.body.getReader(),dec=new TextDecoder(),bf='';
+      (function go2(){
+        rd.read().then(function(x){
+          if(x.done){
+            eat(bf);
+            if(!String(m.t||'').trim()&&!m.err){
+              var e=inlineErr(bf);
+              if(e)m.err=e;}
+            return;}
+          bf+=dec.decode(x.value,{stream:true});
+          if(bf.length>500000)bf=bf.slice(-200000);
+          if(!m.err){var e2=inlineErr(bf);if(e2)m.err=e2;}
+          go2();
+        },function(){eat(bf);});})();}
+    else c.text().then(eat,function(){});
+  }catch(e){}
+  return GM.pump(res,m,an,sid);};
+
+GM.go=go;
+go=function(m,after,q,sid,forHi){
+  try{
+    if(UZ.m!==D.model)UZ={m:D.model,in:0,hit:0,w:0,n:0,st:0};
+    if(UZ.st!==4)UZ.st=1;
+    CACHE={r:0,w:0,i:0,ts:0,pend:1};
+  }catch(e){}
+  return GM.go(m,after,q,sid,forHi);};
+
+/* ── 粘性路由 ── */
+var RID='';
+try{
+  RID=localStorage.getItem('us.rid')||'';
+  if(!RID){RID='u'+uid();localStorage.setItem('us.rid',RID);}
+}catch(e){RID='u0';}
+
+/* ── 400：只有明确点名才摘 ── */
+function drop(b,ttlOnly){
+  var n=0;
+  function walk(x){
+    if(!x||!x.cache_control)return;
+    if(ttlOnly){if(x.cache_control.ttl){delete x.cache_control.ttl;n++;}}
+    else{delete x.cache_control;n++;}}
+  if(Array.isArray(b.system))b.system.forEach(walk);
+  (b.messages||[]).forEach(function(mm){
+    if(Array.isArray(mm.content))mm.content.forEach(walk);});
+  return n;}
+
+GM.fetch=window.fetch.bind(window);
+window.fetch=function(u,o){
+  var an=(D.fmt!=='openai');
+  if(!D.apiUrl||String(u||'')!==D.apiUrl||!o||o.method!=='POST'
+    ||typeof o.body!=='string')return GM.fetch(u,o);
+  try{
+    var b0=JSON.parse(o.body);
+    if(b0&&b0.stream===true){
+      var ch=0;
+      if(an){
+        if(!b0.metadata||b0.metadata.user_id!==RID){
+          b0.metadata={user_id:RID};ch=1;}
+      }else if(b0.user!==RID){b0.user=RID;ch=1;}
+      if(ch){
+        var oz={};for(var kz in o)oz[kz]=o[kz];
+        oz.body=JSON.stringify(b0);o=oz;}}
+  }catch(e){}
+  if(an&&!TTL&&o.body.indexOf('"ttl":"1h"')>=0){
+    var oa={};for(var k0 in o)oa[k0]=o[k0];
+    var hd={};for(var k1 in(o.headers||{}))hd[k1]=o.headers[k1];
+    hd['anthropic-beta']='extended-cache-ttl-2025-04-11';
+    oa.headers=hd;o=oa;}
+  return GM.fetch(u,o).then(function(r){
+    if(r.ok||(r.status!==400&&r.status!==422))return r;
+    var b=null;
+    try{b=JSON.parse(o.body);}catch(e){}
+    if(!b)return r;
+    return r.clone().text().then(function(t){
+      var s3=String(t),ttlOnly=0;
+      if(/\bttl\b|extended-cache/i.test(s3)&&!/cache_control/i.test(s3))
+        ttlOnly=1;
+      else if(!/cache_control/i.test(s3))return r;
+      if(!drop(b,ttlOnly))return r;
+      if(ttlOnly){TTL=1;APIDOWN.ttl=1;}
+      else{CUT=1;APIDOWN.cc=1;UZ.st=4;}
+      APIDOWN.u=D.apiUrl;
+      try{localStorage.setItem('us.apidown',
+        JSON.stringify(APIDOWN));}catch(e){}
+      var o2={};for(var k2 in o)o2[k2]=o[k2];
+      o2.body=JSON.stringify(b);
+      var h2={};for(var k3 in(o.headers||{}))h2[k3]=o.headers[k3];
+      delete h2['anthropic-beta'];
+      o2.headers=h2;
+      return GM.fetch(u,o2);
+    },function(){return r;});});};
+
+/* ── 面板：一行 ── */
+GM.shCtx=shCtx;
+shCtx=function(){
+  GM.shCtx();
+  try{
+    var bd=document.querySelector('#sh .bdy');if(!bd)return;
+    var cd=bd.querySelector('.cd');if(!cd)return;
+    [].forEach.call(cd.querySelectorAll('.uz,.uz2,.cc3,.cz'),
+      function(e){e.remove();});
+    var last=cd.lastElementChild;
+    if(last&&/上一轮\s*·/.test(last.textContent||''))last.remove();
+    var k=function(n){
+      if(n>=1000000)return(Math.round(n/100000)/10)+'M';
+      if(n>=1000)return(Math.round(n/100)/10)+'k';
+      return String(n);};
+    var t;
+    if(UZ.st===2){
+      var p=Math.round(UZ.hit/Math.max(1,UZ.in)*100);
+      t=(p?('缓存命中 '+p+'%'):(UZ.w?'缓存刚存下，下轮开始省':'没走缓存'))
+        +'　读入 '+k(UZ.in);}
+    else if(UZ.st===4)t='这个中转不支持缓存';
+    else if(UZ.st===3)t='这个中转不报用量';
+    else if(UZ.st===1)t='正在算';
+    else t='说一句话就知道';
+    cd.insertAdjacentHTML('beforeend',
+      '<div class="cz" style="margin-top:9px;font-size:12.5px;'
+     +'color:var(--dim2)">'+esc(t)+'</div>');
+  }catch(e){}};
+
+if(CV==='chat'){try{paint(1);btn();}catch(e){}}
+if(CV==='mem'){try{drawMem();}catch(e){}}
 })();
 </script>
 </body>
