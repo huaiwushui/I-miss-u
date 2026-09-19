@@ -6860,6 +6860,203 @@ shCtx=function(){
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='mem'){try{drawMem();}catch(e){}}
 })();
+  /* ══════════ I MISS U · 长回复 ══════════ */
+if(typeof GN==='undefined')var GN={};
+(function(){
+if(GN.on)return;GN.on=1;
+
+var HARD=64000;
+
+/* ── 读流：只留头尾，不重扫 ── */
+var HEAD=4096,TAIL=24576;
+function usages(s){
+  var out=[],i=0,n=s.length;
+  while(i<n){
+    var a=s.indexOf('"usage"',i);
+    if(a<0)break;
+    var p=a+7;
+    while(p<n&&/[\s:]/.test(s.charAt(p)))p++;
+    if(s.charAt(p)!=='{'){i=a+7;continue;}
+    var d=0,k=p,ok=0;
+    for(;k<n;k++){
+      var ch=s.charAt(k);
+      if(ch==='{')d++;
+      else if(ch==='}'){d--;if(!d){ok=1;break;}}}
+    if(!ok)break;
+    try{out.push(JSON.parse(s.slice(p,k+1)));}catch(e){}
+    i=k+1;}
+  return out;}
+
+var UZ2={m:'',in:0,hit:0,w:0,n:0,st:0};
+function eat(txt){
+  var us=usages(txt),r=0,w=0,i=0,got=0;
+  us.forEach(function(u){
+    var pd=u.prompt_tokens_details;
+    if(pd&&pd.cached_tokens!=null){r=Math.max(r,pd.cached_tokens);got=1;}
+    if(u.cache_read_input_tokens!=null){
+      r=Math.max(r,u.cache_read_input_tokens);got=1;}
+    if(u.prompt_cache_hit_tokens!=null){
+      r=Math.max(r,u.prompt_cache_hit_tokens);got=1;}
+    if(u.cache_creation_input_tokens!=null){
+      w=Math.max(w,u.cache_creation_input_tokens);got=1;}
+    if(u.input_tokens!=null){i=Math.max(i,u.input_tokens);got=1;}
+    else if(u.prompt_cache_miss_tokens!=null){
+      i=Math.max(i,u.prompt_cache_miss_tokens);got=1;}
+    else if(u.prompt_tokens!=null){i=Math.max(i,u.prompt_tokens);got=1;}});
+  if(!got||(i+r+w)===0){if(UZ2.st===1)UZ2.st=3;return;}
+  if(r&&i>=r)i-=r;
+  UZ2.in+=i+r;UZ2.hit+=r;UZ2.w+=w;UZ2.n++;UZ2.st=2;}
+
+function errOf(chunk){
+  var s=String(chunk||'');
+  if(s.indexOf('"error"')<0&&s.indexOf('msg_err_')<0)return'';
+  var m=s.match(/"error"\s*:\s*\{([\s\S]{0,400}?)\}/);
+  if(m){
+    var t=m[1].match(/"type"\s*:\s*"([^"]{0,60})"/);
+    var g=m[1].match(/"message"\s*:\s*"([^"]{0,200})"/);
+    var k=(t?t[1]:'')+' '+(g?g[1]:'');
+    if(/overload|unavailable|capacity|busy/i.test(k))
+      return'上游正忙，过一会儿再说一次。';
+    if(/rate.?limit|too.?many/i.test(k))return'被限流了，等一下再试。';
+    if(/quota|balance|insufficient|额度|余额/i.test(k))
+      return'这个 key 的额度不够了。';
+    return'上游报错：'+((g?g[1]:t?t[1]:'没说原因')).slice(0,80);}
+  if(s.indexOf('"id":"msg_err_')>=0)return'上游返回了一个错误响应。';
+  return'';}
+
+/* 取代上一版那个会重扫的 pump 钩子 */
+try{if(typeof GM!=='undefined'&&GM.pump)pump=GM.pump;}catch(e){}
+GN.pump=pump;
+pump=function(res,m,an,sid){
+  try{
+    var c=res.clone();
+    if(c.body){
+      var rd=c.body.getReader(),dec=new TextDecoder();
+      var head='',tail='';
+      (function go2(){
+        rd.read().then(function(x){
+          if(x.done){eat(head+'\n'+tail);return;}
+          var s=dec.decode(x.value,{stream:true});
+          if(head.length<HEAD)head+=s.slice(0,HEAD-head.length);
+          tail+=s;
+          if(tail.length>TAIL)tail=tail.slice(-TAIL);
+          if(!m.err){var e=errOf(s);if(e)m.err=e;}
+          go2();
+        },function(){eat(head+'\n'+tail);});})();}
+    else c.text().then(function(t){
+      eat(t);
+      if(!String(m.t||'').trim()&&!m.err){
+        var e=errOf(t);if(e)m.err=e;}
+    },function(){});
+  }catch(e){}
+  return GN.pump(res,m,an,sid);};
+
+GN.go=go;
+go=function(m,after,q,sid,forHi){
+  try{
+    if(UZ2.m!==D.model)UZ2={m:D.model,in:0,hit:0,w:0,n:0,st:0};
+    if(UZ2.st!==4)UZ2.st=1;
+  }catch(e){}
+  return GN.go(m,after,q,sid,forHi);};
+
+/* ── 长度上限：真按你填的发 ── */
+GN.fetch=window.fetch.bind(window);
+window.fetch=function(u,o){
+  if(!D.apiUrl||String(u||'')!==D.apiUrl||!o||o.method!=='POST'
+    ||typeof o.body!=='string')return GN.fetch(u,o);
+  try{
+    var b=JSON.parse(o.body);
+    if(b&&b.stream===true&&b.max_tokens){
+      var want=Math.max(256,Math.min(HARD,D.maxTok||2048)),ch=0;
+      if(b.max_tokens!==want){b.max_tokens=want;ch=1;}
+      if(b.thinking&&b.thinking.type==='enabled'){
+        var bg=Math.max(1024,Math.min(want-1024,
+          Math.round(want*0.4)));
+        if(b.thinking.budget_tokens!==bg){
+          b.thinking.budget_tokens=bg;ch=1;}}
+      if(ch){
+        var o2={};for(var k in o)o2[k]=o[k];
+        o2.body=JSON.stringify(b);o=o2;}}
+  }catch(e){}
+  return GN.fetch(u,o);};
+
+/* ── 上限超了会被中转拒，退一档重发 ── */
+var MTCAP=0;
+try{MTCAP=parseInt(localStorage.getItem('us.mtcap')||'0',10)||0;}catch(e){}
+if(MTCAP&&D.maxTok>MTCAP)D.maxTok=MTCAP;
+
+/* ── 看门狗：思考也算在动 ── */
+try{
+  if(typeof WD!=='undefined'){
+    WD.id='';WD.len=-1;WD.t=0;}
+}catch(e){}
+GN.unstick=unstick;
+setInterval(function(){
+  try{
+    var a=ms(),m=null,i;
+    for(i=a.length-1;i>=0;i--)if(a[i].st||a[i].wst){m=a[i];break;}
+    if(!m){GN.id='';GN.len=-1;GN.t=0;return;}
+    var now=Date.now();
+    var len=((m.t||'').length)+((m.k||'').length)
+      +((m.parts||[]).length*7)+(m.wst?1:0);
+    if(m.id!==GN.id){GN.id=m.id;GN.len=len;GN.t=now;WD.t=now;return;}
+    if(len!==GN.len){GN.len=len;GN.t=now;WD.t=now;return;}
+    WD.t=now;
+    if(now-GN.t>210000)GN.unstick(m,'等太久了，没收到回应。');
+  }catch(e){}
+},1500);
+
+/* ── 设置：长度能填到六万 ── */
+shGen=function(){
+  sheet({title:'温度和长度',ok:'保存',
+    body:'<div class="lbs">温度 · 越高我越放得开</div>'
+  +'<div class="cd"><input type="range" id="g-t" min="0" max="1" step="0.05" '
+  +'value="'+(D.temp==null?1:D.temp)
+  +'" oninput="document.getElementById(\'gt\').textContent=this.value">'
+  +'<div style="display:flex;justify-content:space-between;font-size:12px;'
+  +'color:var(--dim2)"><span>稳</span>'
+  +'<span id="gt" style="color:var(--ink2);font-weight:600">'
+  +(D.temp==null?1:D.temp)+'</span><span>野</span></div></div>'
+  +'<div class="lbs" style="margin-top:16px">一次最多说多长</div>'
+  +'<div class="fd"><input id="g-m" type="number" inputmode="numeric" '
+  +'placeholder="2048" value="'+(D.maxTok||2048)+'"></div>'
+  +'<div class="nt">要我写长代码就填大些，一万起步。'
+  +'填太大有的中转会拒，报错了自己退回来。</div>',
+    onOk:function(){
+      var t=parseFloat(val('g-t'));if(!isNaN(t))D.temp=t;
+      var n=parseInt(val('g-m'),10);
+      if(n)D.maxTok=Math.max(256,Math.min(HARD,n));
+      saveD();}});};
+
+/* ── 用量面板跟着新读数走 ── */
+GN.shCtx=shCtx;
+shCtx=function(){
+  GN.shCtx();
+  try{
+    var bd=document.querySelector('#sh .bdy');if(!bd)return;
+    var cd=bd.querySelector('.cd');if(!cd)return;
+    [].forEach.call(cd.querySelectorAll('.cz,.uz,.uz2,.cc3'),
+      function(e){e.remove();});
+    var k=function(n){
+      if(n>=1000000)return(Math.round(n/100000)/10)+'M';
+      if(n>=1000)return(Math.round(n/100)/10)+'k';
+      return String(n);};
+    var t;
+    if(UZ2.st===2){
+      var p=Math.round(UZ2.hit/Math.max(1,UZ2.in)*100);
+      t=(p?('缓存命中 '+p+'%')
+        :(UZ2.w?'缓存刚存下，下轮开始省':'没走缓存'))
+        +'　读入 '+k(UZ2.in);}
+    else if(UZ2.st===3)t='这个中转不报用量';
+    else if(UZ2.st===1)t='正在算';
+    else t='说一句话就知道';
+    cd.insertAdjacentHTML('beforeend',
+      '<div class="cz" style="margin-top:9px;font-size:12.5px;'
+     +'color:var(--dim2)">'+esc(t)+'</div>');
+  }catch(e){}};
+
+if(CV==='chat'){try{paint(1);btn();}catch(e){}}
+})();
 </script>
 </body>
 </html>
