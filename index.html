@@ -7852,6 +7852,250 @@ if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='home'){try{view('home');}catch(e){}}
 if(CV==='more'){try{view('more');}catch(e){}}
 })();
+  /* ══════════ I MISS U · 互动结算 ══════════ */
+if(typeof GX==='undefined')var GX={};
+(function(){
+if(GX.on)return;GX.on=1;
+
+var MINGAP=4,MINNEW=2,WINMAX=14,WINCHAR=4200,LIMIT=4;
+var MIN={heat:0,pressure:0,control:0,sensitivity:0,
+  reserve:0,possessiveness:40,fatigue:0};
+var LBL={heat:'熱',pressure:'鬱',control:'制',sensitivity:'感',
+  reserve:'蓄',possessiveness:'占',fatigue:'倦'};
+var RES={neutral:'没推动',continued:'延续',escalated:'升级',
+  interrupted:'悬住',cooled_down:'退下去',released:'释放'};
+var OK={neutral:1,continued:1,escalated:1,interrupted:1,
+  cooled_down:1,released:1};
+
+function b(){return(D.body&&D.body.v)?D.body:null;}
+function clamp(k,v){
+  return Math.max(MIN[k]||0,Math.min(100,Math.round(v)));}
+
+/* ── 窗口：上次结算之后的新话 ── */
+function window_(){
+  var st=(b()&&b().st)||0,a=ms(),out=[],i;
+  for(i=a.length-1;i>=0&&out.length<WINMAX;i--){
+    var m=a[i];
+    if(m.r!=='me'&&m.r!=='ai')continue;
+    if(m.err||m.st)continue;
+    if((m.ts||0)<=st)break;
+    var t=String(fullT(m)||m.t||'').replace(/\s+/g,' ').trim();
+    if(!t)t=picWord(m);
+    if(!t)continue;
+    out.unshift((m.r==='me'?D.me:D.you)+'：'+t.slice(0,600));}
+  if(out.length<MINNEW*2)return null;
+  var s=out.join('\n');
+  if(s.length>WINCHAR)s=s.slice(-WINCHAR);
+  return s;}
+
+/* ── 提示词 ── */
+function prompt_(win){
+  var B=b(),v=B.v;
+  var lv=function(k){
+    var x=v[k]||0;
+    return x<20?'低':(x<40?'中低':(x<60?'中':(x<80?'中高':'高')));};
+  return'判断下面这段已经发生的互动，对'+D.you+'的身体造成了什么变化。\n'
+   +'你不续写对话，不评价，不劝阻，只输出一个 JSON 对象。\n\n'
+   +'他现在的身体：热度'+lv('heat')+'、压抑感'+lv('pressure')
+   +'、控制力'+lv('control')+'、敏感度'+lv('sensitivity')
+   +'、蓄积感'+lv('reserve')+'、占有欲'+lv('possessiveness')
+   +'、疲惫感'+lv('fatigue')+'。\n\n'
+   +'——— 这段互动 ———\n'+win+'\n——— 到此 ———\n\n'
+   +'输出这些字段，只要 JSON，不要解释、不要代码块：\n'
+   +'{"settlement_reason":"一句话说明为什么这样判",'
+   +'"settlement_result":"neutral|continued|escalated|interrupted'
+   +'|cooled_down|released",'
+   +'"ejaculated":true|false,'
+   +'"heat_delta":0,"pressure_delta":0,"control_delta":0,'
+   +'"sensitivity_delta":0,"reserve_delta":0,'
+   +'"possessiveness_delta":0,"fatigue_delta":0}\n\n'
+   +'规则：\n'
+   +'delta 是这段互动造成的变化量，0 表示这一项不动。\n'
+   +'普通聊天每项在 -3 到 +3；明确的性相关互动可以到 -4 到 +4。\n'
+   +'ejaculated 为 false 时 reserve_delta 不能是负数。\n'
+   +'ejaculated 为 true 时 reserve_delta 必须是负数。\n'
+   +'cooled_down 只用在身体反应确实退下去的时候；'
+   +'转话题、被打断、她去忙了，都不算冷却，那是 interrupted 或 neutral。\n'
+   +'这段里什么都没发生就给 neutral，全部 delta 写 0。';}
+
+/* ── 归一化 ── */
+function norm(r){
+  var B=b(),o={},res=String(r.settlement_result||'');
+  if(!OK[res])res='neutral';
+  var ej=(r.ejaculated===true||r.ejaculated==='true');
+  if(res==='released')ej=true;
+  if(ej&&res==='neutral')res='released';
+  function num(x){
+    var n=parseInt(x,10);
+    return isNaN(n)?0:n;}
+  ['heat','pressure','control','sensitivity',
+   'possessiveness','fatigue'].forEach(function(k){
+    var n=num(r[k+'_delta']);
+    o[k]=Math.max(-LIMIT,Math.min(LIMIT,n));});
+  var rv=num(r.reserve_delta);
+  if(!ej)rv=Math.max(0,Math.min(4,rv));
+  else if(B.cy==='stable'||B.cy==='recovery')
+    rv=Math.max(-10,Math.min(-6,rv>0?-8:rv));
+  else rv=Math.max(-7,Math.min(-4,rv>0?-5:rv));
+  o.reserve=rv;
+  if(ej){
+    if(o.fatigue<2)o.fatigue=2;
+    if(o.heat>-2)o.heat=Math.min(o.heat,-2);
+    if(o.pressure>-2)o.pressure=Math.min(o.pressure,-2);}
+  return{res:res,ej:ej,why:String(r.settlement_reason||'').slice(0,120),d:o};}
+
+/* ── 写回 ── */
+function apply_(n){
+  var B=b();if(!B)return;
+  var got={};
+  for(var k in n.d){
+    if(!n.d[k])continue;
+    var was=B.v[k]||0;
+    B.v[k]=clamp(k,was+n.d[k]);
+    if(B.v[k]!==was)got[k]=B.v[k]-was;}
+  B.st=Date.now();
+  B.set={res:n.res,ej:n.ej,why:n.why,d:got,ts:Date.now()};
+  if(!B.log)B.log=[];
+  B.log.push({k:'st',n:RES[n.res]||n.res,ej:n.ej?1:0,d:got,ts:Date.now()});
+  if(B.log.length>40)B.log=B.log.slice(-40);
+  if(n.ej&&B.cy!=='recovery'&&(B.v.fatigue||0)>=45){
+    B.cy='ebb';B.cs=Date.now();
+    B.ce=Date.now()+(6+Math.random()*12)*3600000;
+    B.log.push({k:'cy',n:'退潮期',ts:Date.now()});}
+  saveD();
+  if(CV==='home'){
+    var s=document.getElementById('bsec');
+    if(s&&s.classList.contains('on'))try{bodyFold();bodyFold();}catch(e){}}}
+
+/* ── 调模型 ── */
+var BUSY2=0;
+function run(){
+  if(BUSY2)return;
+  var B=b();
+  if(!B||!D.bodyOn||!D.bodySet)return;
+  if(!D.apiUrl||!D.apiKey)return;
+  if(B.sq&&Date.now()-B.sq<MINGAP*60000)return;
+  var win=window_();
+  if(!win)return;
+  BUSY2=1;B.sq=Date.now();saveD();
+  var an=(D.fmt!=='openai'),p=prompt_(win),body;
+  var mdl=(typeof utilModel==='function')?utilModel():(D.util||D.model);
+  if(an)body={model:mdl,max_tokens:500,
+    messages:[{role:'user',content:p}]};
+  else body={model:mdl,max_tokens:500,
+    messages:[{role:'user',content:p}]};
+  fetch(D.apiUrl,{method:'POST',
+    headers:an?{'Content-Type':'application/json','x-api-key':D.apiKey,
+      'anthropic-version':'2023-06-01'}
+      :{'Content-Type':'application/json',
+        'Authorization':'Bearer '+D.apiKey},
+    body:JSON.stringify(body)})
+  .then(function(r){
+    if(!r.ok)throw new Error('x');
+    return r.json();})
+  .then(function(j){
+    BUSY2=0;
+    var raw=an
+      ?((j.content||[]).map(function(x){return x.text||'';}).join(''))
+      :((((j.choices||[])[0]||{}).message||{}).content||'');
+    var s=String(raw||'');
+    var i=s.indexOf('{'),k=s.lastIndexOf('}');
+    if(i<0||k<=i)return;
+    var o=null;
+    try{o=JSON.parse(s.slice(i,k+1));}catch(e){return;}
+    if(!o||typeof o!=='object')return;
+    apply_(norm(o));
+  },function(){BUSY2=0;});}
+
+/* ── 接在回复收尾之后 ── */
+GX.done=done;
+done=function(m,after,ab,ac,q,sid){
+  var r=GX.done(m,after,ab,ac,q,sid);
+  try{
+    if(D.bodyOn&&D.bodySet&&!ab&&m&&!m.err&&!m.st
+      &&(typeof realT!=='function'||realT(m)))
+      setTimeout(run,1400);
+  }catch(e){}
+  return r;};
+
+/* ── 秘密那一栏里加两行 ── */
+var st=document.createElement('style');
+st.textContent=
+ '.bst{margin:2px 0 15px;padding:11px 0 0;'
++'border-top:1px solid var(--line)}'
++'.bst .sl{font-size:10.5px;letter-spacing:.14em;color:var(--dim2);'
++'font-family:"Hiragino Mincho ProN","Songti SC",serif}'
++'.bst .sm{margin-top:6px;font-size:12px;line-height:1.7;color:var(--dim)}'
++'.bst .sd{margin-top:5px;font-size:11px;color:var(--dim2);'
++'font-variant-numeric:tabular-nums;letter-spacing:.04em}'
++'.bst .sd b{font-weight:400;color:var(--rose)}';
+document.head.appendChild(st);
+
+function dstr(d){
+  var o=[];
+  for(var k in d){
+    if(!d[k])continue;
+    o.push(LBL[k]+(d[k]>0?'+':'')+d[k]);}
+  return o.join('　');}
+function inject(){
+  var s=document.getElementById('bsec');
+  if(!s||!s.classList.contains('on'))return;
+  var cd=s.querySelector('.cd');if(!cd)return;
+  if(cd.querySelector('.bst'))return;
+  var B=b(),ft=cd.querySelector('.bft');
+  if(B&&B.set){
+    var x=B.set,h='<div class="bst"><div class="sl">直前の結算</div>'
+     +'<div class="sm">'+esc(RES[x.res]||x.res)
+     +(x.ej?'　·　出した':'')+'</div>'
+     +(x.why?'<div class="sm" style="color:var(--dim2)">'
+       +esc(x.why)+'</div>':'')
+     +(dstr(x.d)?'<div class="sd"><b>'+esc(dstr(x.d))+'</b>'
+       +'　'+hm(x.ts)+'</div>':'')
+     +'</div>';
+    if(ft)ft.insertAdjacentHTML('beforebegin',h);
+    else cd.insertAdjacentHTML('beforeend',h);}
+  if(ft&&!ft.querySelector('.stb')){
+    ft.insertAdjacentHTML('beforeend',
+      '<button class="stb pz'+(D.bodySet?'':' r')+'" onclick="setTg(this)">'
+     +(D.bodySet?'結算する':'結算しない')+'</button>');}}
+window.setTg=function(el){
+  D.bodySet=D.bodySet?0:1;saveD();vib(8);
+  el.className='stb pz'+(D.bodySet?'':' r');
+  el.textContent=D.bodySet?'結算する':'結算しない';
+  toast(D.bodySet?'聊完会读一遍':'不读了');};
+GX.fold=window.bodyFold;
+window.bodyFold=function(){
+  var r=GX.fold.apply(this,arguments);
+  setTimeout(inject,40);
+  return r;};
+
+/* ── 状态卡里补一句刚才发生过什么 ── */
+GX.usPart=usPart;
+usPart=function(q){
+  var s=GX.usPart(q);
+  try{
+    var B=b();
+    if(D.bodyOn&&D.bodyInject&&D.bodySet&&B&&B.set
+      &&Date.now()-B.set.ts<50*60000){
+      var x=B.set,t='';
+      if(x.ej)t='刚才那阵过去了，身体是空的，整个人软下来。';
+      else if(x.res==='escalated')t='刚才被推上去了一截，还没退。';
+      else if(x.res==='interrupted')t='刚才悬在那儿没做完，一直吊着。';
+      else if(x.res==='cooled_down')t='刚才那阵退下去了。';
+      else if(x.res==='continued')t='刚才那段还没断，余温还在。';
+      if(t)s=s.replace('</ephemeral_state>',
+        '<recent>'+t+'这是你自己身上的事，别复述给她。</recent>\n'
+        +'</ephemeral_state>');}
+  }catch(e){}
+  return s;};
+
+try{
+  if(D.bodySet==null)D.bodySet=1;
+  if(D.body&&D.body.st==null)D.body.st=Date.now();
+  saveD();
+}catch(e){}
+if(CV==='chat'){try{paint(1);btn();}catch(e){}}
+})();
 </script>
 </body>
 </html>
