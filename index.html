@@ -6255,8 +6255,8 @@ lkTrim=function(){
 
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 })();
-
-  /* ══════════ I MISS U · 天气 · 排版 · 外部内容 ══════════ */
+  
+/* ══════════ I MISS U · 排版与外部内容 ══════════ */
 if(typeof GJ==='undefined')var GJ={};
 (function(){
 if(GJ.on)return;GJ.on=1;
@@ -6282,7 +6282,6 @@ st.textContent=
 +'#ms .bd .tb td,#ms .bd .tb th{border:1px solid var(--line);'
 +'padding:6px 10px;text-align:left;white-space:nowrap}'
 +'#ms .bd .tb th{font-weight:600;background:var(--sel)}'
-/* 引用带进来时不横滑 */
 +'#ms{overflow-x:hidden}'
 +'#ms .qt{max-width:100%;box-sizing:border-box;overflow:hidden}'
 +'#ms .qt .qb{white-space:pre-wrap;overflow-wrap:anywhere;'
@@ -6363,7 +6362,6 @@ function render(src){
   flush();
   return out.join('').replace(/(<\/(?:h4|div|table)>)\n+/g,'$1');}
 
-/* 接在代码块渲染的里层，不动 G9 的外层 */
 try{
   if(typeof G9!=='undefined'&&G9.md)G9.md=render;
   else{GJ.md=md;md=render;}
@@ -6402,85 +6400,19 @@ toC=function(x,an,pics){
     if(last&&last.type==='text')last.text=add(last.text);}
   return c;};
 
-/* ══ 天气 ══ */
-var WX={t:'',at:0,busy:0};
+/* ══ 天气：连同旧痕迹一起清掉 ══ */
 try{
-  var raw=JSON.parse(localStorage.getItem('us.wx')||'null');
-  if(raw&&raw.t)WX={t:raw.t,at:raw.at||0,busy:0};
+  delete D.wx;delete D.wx2;saveD();
+  ['us.wx','us.wx2','us.loc','us.locdeny'].forEach(function(k){
+    try{localStorage.removeItem(k);}catch(e){}});
+  delete NOTE['天气'];
 }catch(e){}
-var WCODE={0:'晴',1:'基本晴',2:'多云',3:'阴',45:'有雾',48:'雾凇',
-51:'小毛雨',53:'毛毛雨',55:'毛雨',56:'冻雨',57:'冻雨',
-61:'小雨',63:'下雨',65:'大雨',66:'冻雨',67:'冻雨',
-71:'小雪',73:'下雪',75:'大雪',77:'雪粒',
-80:'阵雨',81:'阵雨',82:'大阵雨',85:'阵雪',86:'大阵雪',
-95:'雷雨',96:'雷雨带冰雹',99:'雷雨带冰雹'};
-function wxFetch(){
-  if(!D.wx||WX.busy)return;
-  if(Date.now()-WX.at<40*60000)return;
-  if(!navigator.geolocation)return;
-  WX.busy=1;
-  navigator.geolocation.getCurrentPosition(function(p){
-    var la=p.coords.latitude.toFixed(2),lo=p.coords.longitude.toFixed(2);
-    fetch('https://api.open-meteo.com/v1/forecast?latitude='+la
-      +'&longitude='+lo+'&current=temperature_2m,weather_code'
-      +'&daily=temperature_2m_max,temperature_2m_min'
-      +'&timezone=auto&forecast_days=1')
-    .then(function(r){return r.ok?r.json():null;})
-    .then(function(j){
-      WX.busy=0;
-      if(!j||!j.current)return;
-      var c=j.current,d=j.daily||{},s=WCODE[c.weather_code]||'';
-      var t=Math.round(c.temperature_2m)+'℃';
-      var hi=(d.temperature_2m_max||[])[0],lo2=(d.temperature_2m_min||[])[0];
-      WX.t='她那边'+(s?s+'，':'')+t
-        +(hi!=null?('，今天 '+Math.round(lo2)+'～'+Math.round(hi)+'℃'):'');
-      WX.at=Date.now();
-      try{localStorage.setItem('us.wx',
-        JSON.stringify({t:WX.t,at:WX.at}));}catch(e){}
-    },function(){WX.busy=0;});
-  },function(){WX.busy=0;},{timeout:9000,maximumAge:1800000});}
-
-GJ.usPart=usPart;
-usPart=function(q){
-  var s=GJ.usPart(q);
-  if(D.wx&&WX.t&&Date.now()-WX.at<3*3600000)
-    s+='\n\n【天气】'+WX.t+'（页面查的，别每次都提）';
-  return s;};
-
-GJ.go=go;
-go=function(m,after,q,sid,forHi){
-  try{wxFetch();}catch(e){}
-  return GJ.go(m,after,q,sid,forHi);};
-
-function shWx(){
-  sheet({title:'天气',
-    body:'<div class="cd cd0"><div class="sw" onclick="tgWx(this)">'
-  +'<span class="l">开着</span><span class="k'+(D.wx?' on':'')
-  +'"><i></i></span></div></div>'
-  +'<div class="nt">开着我就知道你那边冷不冷、在不在下雨。'
-  +'要允许一次定位，只取大概位置，半小时问一次。'
-  +'位置不发给模型，只发天气。</div>'});}
-window.shWx=shWx;
-window.tgWx=function(el){
-  D.wx=D.wx?0:1;saveD();
-  el.querySelector('.k').className='k'+(D.wx?' on':'');
-  vib(8);
-  if(D.wx){WX.at=0;wxFetch();}};
-if(D.wx==null){D.wx=0;}
-
-GJ.vMore=vMore;
-vMore=function(){
-  return GJ.vMore().replace(
-    '<span class="l">先开口</span>',
-    '<span class="l">先开口</span>')
-   .replace(/(<div class="rw pz" onclick="shWeb\(\)">)/,
-    '<div class="rw pz" onclick="shWx()">'
-   +'<span class="l">天气</span>'+I.chevD+'</div>$1');};
-try{NOTE['天气']='要允许一次定位。位置不发给模型，只发天气。';}catch(e){}
+window.shWx=function(){};
+window.tgWx=function(){};
+window.wxAgain=function(){};
 
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='more'){try{view('more');}catch(e){}}
-if(D.wx){try{wxFetch();}catch(e){}}
 })();
 
   /* ══════════ I MISS U · 缓存与长回复 ══════════ */
