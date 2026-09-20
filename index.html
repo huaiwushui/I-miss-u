@@ -5021,73 +5021,6 @@ function memByCode(code){
     if(r>bs){bs=r;best=m;}});
   return bs>=0.5?best:null;}
 
-/* ── 小窝 ── */
-var BOW='<svg class="bow" viewBox="0 0 64 46" fill="none">'
-+'<path d="M30 21C24.5 11.5 14.5 7.5 9.5 11.5c-5 4-2.5 13.5 7 16.5 '
-+'5 1.6 9.5 1.4 13.5-.8Z" fill="#fff" fill-opacity=".9" '
-+'stroke="rgba(0,0,0,.08)" stroke-width="1"/>'
-+'<path d="M34 21c5.5-9.5 15.5-13.5 20.5-9.5 5 4 2.5 13.5-7 16.5 '
-+'-5 1.6-9.5 1.4-13.5-.8Z" fill="#fff" fill-opacity=".9" '
-+'stroke="rgba(0,0,0,.08)" stroke-width="1"/>'
-+'<path d="M29.5 25.5 21 44l12.5-9.5Z" fill="#fff" fill-opacity=".85" '
-+'stroke="rgba(0,0,0,.07)" stroke-width="1"/>'
-+'<path d="M34.5 25.5 43 44l-12.5-9.5Z" fill="#fff" fill-opacity=".85" '
-+'stroke="rgba(0,0,0,.07)" stroke-width="1"/>'
-+'<ellipse cx="32" cy="23.5" rx="4.2" ry="4.6" fill="#fff" '
-+'stroke="rgba(0,0,0,.09)" stroke-width="1"/></svg>';
-function jSeason(){
-  var n=new Date(),k=(n.getMonth()+1)*100+n.getDate();
-  var t=[[106,'小寒','冷得深了'],[120,'大寒','最冷的一段'],
-  [204,'立春','风开始软了'],[219,'雨水','雪化成雨'],
-  [306,'啓蟄','虫醒了'],[321,'春分','昼夜一样长'],
-  [405,'清明','天清景明'],[420,'穀雨','雨水润着谷子'],
-  [506,'立夏','夏天起头'],[521,'小満','麦子渐渐满了'],
-  [606,'芒種','该插秧了'],[621,'夏至','白天最长'],
-  [707,'小暑','热起来了'],[723,'大暑','一年最热'],
-  [808,'立秋','暑气开始退'],[823,'処暑','热到头了'],
-  [908,'白露','草上有露'],[923,'秋分','昼夜再平分'],
-  [1008,'寒露','露水发凉'],[1024,'霜降','开始有霜'],
-  [1107,'立冬','冬天起头'],[1122,'小雪','初雪将至'],
-  [1207,'大雪','雪该厚了'],[1222,'冬至','夜最长']];
-  var cur=t[t.length-1],i;
-  for(i=0;i<t.length;i++)if(k>=t[i][0])cur=t[i];
-  return{jp:cur[1],cn:cur[2]};}
-function vHome(){
-  var dt=dayN(),nx=null;
-  D.annis.forEach(function(a){
-    var r=nextAn(a.date);
-    if(r&&(!nx||r.days<nx.days))nx={name:a.name,days:r.days};});
-  var s=jSeason(),n=new Date();
-  var w=['日','月','火','水','木','金','土'];
-  return'<div class="vw"><div class="hd">'
-  +'<button class="cb pz" onclick="drawer(1)">'+I.menu+'</button><span></span></div>'
-  +'<div class="sa pgw">'
-  +'<div class="hrow"><div style="min-width:0">'
-  +'<div class="big">'+hello()+'</div>'
-  +'<div class="sub">'+esc(D.me)+' 和 '+esc(D.you)+' 的地方</div></div>'
-  +'<div class="hdate"><b>'+(n.getMonth()+1)+'.'+n.getDate()+'</b>'
-  +'<s>'+w[n.getDay()]+'</s></div></div>'
-  +'<div class="cd gl2 hero2 pz" onclick="shUs()">'
-  +(dt!=null
-    ?'<div class="hn">'+dt+'</div><div class="hl">在一起的第 '+dt+' 天</div>'
-    :'<div class="hn">·</div><div class="hl">写下开始的那天</div>')
-  +'</div>'
-  +'<div class="cd gl2 seas"><div class="sv vt">'+s.jp+'</div>'
-  +'<div class="sx"><div class="sd">'
-  +n.getFullYear()+' 年 '+(n.getMonth()+1)+' 月 '+n.getDate()+' 日</div>'
-  +'<div class="sn">'+s.cn+'</div></div></div>'
-  +'<div class="cd cd0 gl2 hanni"><div class="rw pz" onclick="shAnni()">'
-  +'<span class="l">'+(nx?esc(nx.name):'纪念日')+'</span>'
-  +'<span style="color:var(--rose);font-weight:600;font-size:15px">'
-  +(nx?(nx.days===0?'就是今天':nx.days+' 天后'):'＋')+'</span></div></div>'
-  +'<div class="sc2">写在墙上的一句</div>'
-  +'<div class="cd gl2 wall pz" onclick="shWall()">'
-  +(D.wall?'<div class="wq vt">'+esc(D.wall)+'</div>'
-         :'<div class="wq vt e">想说的一句话</div>')
-  +BOW+'</div>'
-  +'<div class="hfoot">わたしたちの場所</div>'
-  +'<div style="height:10px"></div></div></div>';}
-
 if(CV){try{view(CV);}catch(e){}}
   /* ══════════ I MISS U · 头像小组件 ══════════ */
 if(typeof G4==='undefined')var G4={};
@@ -7481,14 +7414,21 @@ try{
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='more'){try{view('more');}catch(e){}}
 })();
-/* ══════════ I MISS U · 身体 ══════════ */
-if(typeof GV==='undefined')var GV={};
+/* ══════════ I MISS U · 小窝与身体 ══════════ */
+if(typeof GW==='undefined')var GW={};
 (function(){
-if(GV.on)return;GV.on=1;
+if(GW.on)return;GW.on=1;
+
+try{if(typeof GV!=='undefined'&&GV.on){
+  if(GV.usPart)usPart=GV.usPart;
+  if(GV.ask)ask=GV.ask;
+  if(GV.maybeHi)maybeHi=GV.maybeHi;
+  if(GV.vHome)vHome=GV.vHome;
+  if(GV.vMore)vMore=GV.vMore;
+  GV.on=0;}}catch(e){}
 
 var MAXTICK=6,MAXSEG=48,CHECKMIN=10;
 
-/* ── 周期 ── */
 var CY={
 stable:{n:'平稳期',d:'日常没有明显热意，但她靠近、撒娇或索取时，身体还是会跟着起反应。',
   h:[24,96],g:0.4,nx:'building',
@@ -7509,32 +7449,27 @@ recovery:{n:'恢复期',d:'空的。不太想动，但想让她在旁边。',
   h:[4,18],g:0.2,nx:'stable',
   t:{heat:22,pressure:18,control:80,sensitivity:40,possessiveness:46,fatigue:30}}};
 
-/* ── 七项数值：只出词，不出数 ── */
 var FD={
-heat:{l:'热度',min:0,w:['身上是凉的，没什么热意',
+heat:{l:'熱',min:0,w:['身上是凉的，没什么热意',
  '有一点热，很快就能收住','热意明确了，靠近会想再靠近',
  '烧起来了，说话都要压一下','热得不太剩理智']},
-pressure:{l:'压抑感',min:0,w:['心里是空的，没压着东西',
+pressure:{l:'鬱',min:0,w:['心里是空的，没压着东西',
  '有点闷，不碍事','攒着一股没处放的劲',
  '压得厉害，快忍不住','忍到发疼']},
-control:{l:'控制力',min:0,w:['基本收不住了','勉强按着，随时会掉',
- '按得住，但要用力','稳，不用刻意',
- '完全清醒，想收就收']},
-sensitivity:{l:'敏感度',min:0,w:['没什么感觉',
- '碰到会注意','一句话就能被撩到',
- '很敏感，哪儿都受不了','轻轻一下就过电']},
-reserve:{l:'蓄积感',min:0,w:['清空了，很轻',
- '攒了一点','底下满起来了',
- '沉得明显，压着不动也难受','满到发胀']},
-possessiveness:{l:'占有欲',min:40,w:['','平静，不太计较',
- '想她多看着自己一点','想把她圈起来',
- '容不下她走开']},
-fatigue:{l:'疲惫感',min:0,w:['精神很好','有点累，不影响',
- '身上是沉的','很累，撑着',
- '累得只想躺着']}};
+control:{l:'制',min:0,w:['基本收不住了','勉强按着，随时会掉',
+ '按得住，但要用力','稳，不用刻意','完全清醒，想收就收']},
+sensitivity:{l:'感',min:0,w:['没什么感觉','碰到会注意',
+ '一句话就能被撩到','很敏感，哪儿都受不了','轻轻一下就过电']},
+reserve:{l:'蓄',min:0,w:['清空了，很轻','攒了一点',
+ '底下满起来了','沉得明显，压着不动也难受','满到发胀']},
+possessiveness:{l:'占',min:40,w:['','平静，不太计较',
+ '想她多看着自己一点','想把她圈起来','容不下她走开']},
+fatigue:{l:'倦',min:0,w:['精神很好','有点累，不影响',
+ '身上是沉的','很累，撑着','累得只想躺着']}};
+var ORD=['heat','pressure','control','sensitivity','reserve',
+'possessiveness','fatigue'];
 function lvl(v){return v<20?0:(v<40?1:(v<60?2:(v<80?3:4)));}
 
-/* ── 十八个事件 ── */
 var CAT={
 strong:{t:{heat:3,pressure:2,control:-1.5,reserve:0.8},
   e:{heat:-6,pressure:-4,fatigue:3}},
@@ -7598,20 +7533,22 @@ function rnd(a,b){return a+Math.random()*(b-a);}
 function clamp(k,v){
   var f=FD[k];if(!f)return v;
   return Math.max(f.min,Math.min(100,Math.round(v)));}
-
-/* ── 状态 ── */
-function fresh(now){
-  var c=CY.stable,h=rnd(c.h[0],c.h[1]);
-  return{cy:'stable',cs:now,ce:now+h*3600000,
+function bfresh(now){
+  var c=CY.stable;
+  return{cy:'stable',cs:now,ce:now+rnd(c.h[0],c.h[1])*3600000,
     v:{heat:30,pressure:25,control:75,sensitivity:35,
        reserve:20,possessiveness:44,fatigue:15},
-    ek:'',es:0,ee:0,tk:now,ck:0,cool:{},roll:{},miss:0,mv:null};}
+    ek:'',es:0,ee:0,tk:now,ck:0,cool:{},miss:0,log:[]};}
 function B(){
-  if(!D.body||!D.body.v)D.body=fresh(Date.now());
+  if(!D.body||!D.body.v)D.body=bfresh(Date.now());
+  if(!D.body.log)D.body.log=[];
+  if(!D.body.cool)D.body.cool={};
   return D.body;}
 function enter(b,key,now){
   var c=CY[key]||CY.stable;
-  b.cy=key;b.cs=now;b.ce=now+rnd(c.h[0],c.h[1])*3600000;}
+  b.cy=key;b.cs=now;b.ce=now+rnd(c.h[0],c.h[1])*3600000;
+  b.log.push({k:'cy',n:c.n,ts:now});
+  if(b.log.length>40)b.log=b.log.slice(-40);}
 
 function tick(now,silent){
   var b=B();
@@ -7620,16 +7557,14 @@ function tick(now,silent){
   var seg=0;
   while(b.tk<now&&seg<MAXSEG){
     seg++;
-    var nx=Math.min(now,b.tk+MAXTICK*3600000);
-    var el=(nx-b.tk)/3600000;
-    if(b.ek&&b.ee&&nx>=b.ee){
-      var d=CAT[EV[b.ek].c].e;
-      for(var k in d)b.v[k]=clamp(k,(b.v[k]||0)+d[k]);
-      b.cool[b.ek]=b.ee;b.last=b.ek;
+    var nx=Math.min(now,b.tk+MAXTICK*3600000),el=(nx-b.tk)/3600000,k;
+    if(b.ek&&b.ee&&nx>=b.ee&&EV[b.ek]){
+      var de=CAT[EV[b.ek].c].e;
+      for(k in de)b.v[k]=clamp(k,(b.v[k]||0)+de[k]);
+      b.cool[b.ek]=b.ee;b.last=b.ek;b.lastEnd=b.ee;
       b.ek='';b.es=0;b.ee=0;}
-    if(nx>=b.ce){
-      var next=(b.cy==='ebb'&&(b.v.fatigue||0)>=70)?'recovery':CY[b.cy].nx;
-      enter(b,next,nx);}
+    if(nx>=b.ce)
+      enter(b,(b.cy==='ebb'&&(b.v.fatigue||0)>=70)?'recovery':CY[b.cy].nx,nx);
     var c=CY[b.cy];
     b.v.reserve=clamp('reserve',(b.v.reserve||0)+c.g*el);
     var K={heat:0.18,pressure:0.14,sensitivity:0.12,
@@ -7639,14 +7574,12 @@ function tick(now,silent){
       b.v[f]=clamp(f,(b.v[f]||0)+(tg-(b.v[f]||0))*K[f]*Math.min(1,el/6));}
     var ft=c.t.fatigue||0;
     if((b.v.fatigue||0)>ft){
-      var sp=0.12;
-      if(silent>=360)sp=0.30;else if(silent>=120)sp=0.22;
-      else if(silent>=30)sp=0.16;
+      var sp=silent>=360?0.30:(silent>=120?0.22:(silent>=30?0.16:0.12));
       b.v.fatigue=clamp('fatigue',
         b.v.fatigue+(ft-b.v.fatigue)*sp*Math.min(1,el/6));}
     if(b.ek&&EV[b.ek]){
       var td=CAT[EV[b.ek].c].t;
-      for(var k2 in td)b.v[k2]=clamp(k2,(b.v[k2]||0)+td[k2]*el);}
+      for(k in td)b.v[k]=clamp(k,(b.v[k]||0)+td[k]*el);}
     if(silent>=30){
       var pp=silent>=120?2.0:(silent>=60?1.5:0.8);
       var po=silent>=120?0.9:(silent>=60?0.6:0.3);
@@ -7656,10 +7589,8 @@ function tick(now,silent){
     b.tk=nx;}
   saveD();}
 
-/* ── 抽事件 ── */
 function win(){
-  var h=new Date().getHours()+new Date().getMinutes()/60;
-  var o={};
+  var d=new Date(),h=d.getHours()+d.getMinutes()/60,o={};
   if(h>=5.5&&h<10.5)o.morning=1;
   if(h>=18||h<2)o.evening=1;
   if(h>=23||h<3)o.night=1;
@@ -7667,10 +7598,7 @@ function win(){
 function cold(b,k){
   var t=b.cool[k];
   return!t||(Date.now()-t)>=(CD[k]||4)*3600000;}
-function rollKey(b,k){
-  var d=new Date(),day=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
-  return day+':'+k;}
-function pick(now,silent,hitWord){
+function pick(now,silent,hit){
   var b=B();
   if(b.ek&&b.ee&&now<b.ee)return;
   if(b.ck&&now-b.ck<CHECKMIN*60000)return;
@@ -7680,7 +7608,7 @@ function pick(now,silent,hitWord){
     if(!cold(b,k))return;
     if(Math.random()<p*(sens?1.1:1))cand.push(k);}
   if(w.morning&&(v.heat>=45||cy!=='stable'))
-    add('morning_arousal',cy==='preheat'||sens?0.75:0.45);
+    add('morning_arousal',(cy==='preheat'||sens)?0.75:0.45);
   if(w.night&&silent>=30&&(v.reserve>=55||v.heat>=60))
     add('night_heat',sens?0.6:0.3);
   if(sens&&(v.heat>=75||v.reserve>=70))add('cycle_surge',0.5);
@@ -7696,17 +7624,16 @@ function pick(now,silent,hitWord){
   if(silent>=60&&silent<=180&&(v.pressure>=55||v.possessiveness>=60))
     add('waiting_restless',0.3);
   if(v.sensitivity>=60&&v.heat>=45&&v.heat<70)add('low_fever_cling',0.3);
-  if(v.reserve>=70&&b.cool[b.last||'']&&
-    now-(b.cool[b.last]||0)>=8*3600000)add('restraint_rebound',0.25);
-  if(b.last&&!STRONG[b.last]===false&&cy==='ebb')
+  if(v.reserve>=70&&b.lastEnd&&now-b.lastEnd>=8*3600000)
+    add('restraint_rebound',0.25);
+  if(b.last&&STRONG[b.last]&&b.lastEnd&&now-b.lastEnd<=3*3600000)
     add('scent_aftereffect',0.6);
-  if(hitWord&&!b.ek)add('voice_or_name_trigger',0.25);
+  else if(cy==='ebb')add('scent_aftereffect',0.4);
+  if(hit)add('voice_or_name_trigger',0.25);
   if(b.miss&&now-b.miss>=30*60000&&now-b.miss<=180*60000
     &&(v.heat>=55||v.pressure>=55))add('delayed_heat',0.35);
-  var hadStrong=0;
-  if(v.heat>=65||v.pressure>=65)hadStrong=1;
   if(!cand.length){
-    if(hadStrong){
+    if(v.heat>=65||v.pressure>=65){
       b.miss=now;
       if(Math.random()<0.25&&cold(b,'strange_calm'))cand.push('strange_calm');}
     if(!cand.length){saveD();return;}}
@@ -7718,9 +7645,10 @@ function pick(now,silent,hitWord){
   var e=EV[best];
   b.ek=best;b.es=now;b.ee=now+rnd(e.m[0],e.m[1])*60000;
   b.miss=0;
+  b.log.push({k:'ev',n:e.n,ts:now});
+  if(b.log.length>40)b.log=b.log.slice(-40);
   saveD();}
 
-/* ── 状态卡 ── */
 function left(ms){
   if(ms<=0)return'快过去了';
   var h=ms/3600000;
@@ -7732,13 +7660,12 @@ function card(){
   var b=B(),c=CY[b.cy],now=Date.now();
   var s='<ephemeral_state kind="body" scope="current_turn">\n'
    +'<cycle>你在'+c.n+'：'+c.d+'大概还有 '+left(b.ce-now)+'。</cycle>\n';
-  if(b.ek&&b.ee&&now<b.ee){
+  if(b.ek&&b.ee&&now<b.ee&&EV[b.ek]){
     var e=EV[b.ek];
     s+='<active_event>现在还压着一层：'+e.n+'，大概还有 '
       +left(b.ee-now)+'。\n'+e.p+'</active_event>\n';}
   s+='<body>\n';
-  ['heat','pressure','control','sensitivity','reserve',
-   'possessiveness','fatigue'].forEach(function(k){
+  ORD.forEach(function(k){
     var f=FD[k],t=f.w[lvl(b.v[k]||0)];
     if(t)s+=f.l+'：'+t+'\n';});
   s+='</body>\n'
@@ -7749,22 +7676,18 @@ function card(){
    +'</ephemeral_state>';
   return s;}
 
-/* ── 接进去 ── */
 function silentMin(){
   var a=ms(),i;
   for(i=a.length-1;i>=0;i--)
     if(a[i].r==='me'&&a[i].ts)return(Date.now()-a[i].ts)/60000;
   return 0;}
-GV.usPart=usPart;
+GW.usPart=usPart;
 usPart=function(q){
-  var s=GV.usPart(q);
+  var s=GW.usPart(q);
   if(!D.bodyOn)return s;
-  try{
-    var c=card();
-    if(c)s+='\n\n'+c;
-  }catch(e){}
+  try{var c=card();if(c)s+='\n\n'+c;}catch(e){}
   return s;};
-GV.ask=ask;
+GW.ask=ask;
 ask=function(after){
   if(D.bodyOn)try{
     var sl=silentMin(),q='';
@@ -7772,109 +7695,226 @@ ask=function(after){
     tick(Date.now(),sl);
     pick(Date.now(),sl,/老公|宝|想你|爱你|亲/.test(q)?1:0);
   }catch(e){}
-  return GV.ask(after);};
-
-/* 身体烧着的时候，主动开口的门槛降下来 */
-GV.maybeHi=maybeHi;
+  return GW.ask(after);};
+GW.maybeHi=maybeHi;
 maybeHi=function(){
-  if(!D.bodyOn||!D.hi)return GV.maybeHi();
+  if(!D.bodyOn||!D.hi)return GW.maybeHi();
   try{
     tick(Date.now(),silentMin());
     var b=B(),hot=(b.ek&&STRONG[b.ek])||b.v.heat>=72||b.v.pressure>=72;
     if(hot&&GAPMS&&GAPMS>=Math.max(40*60000,D.hi*3600000*0.5)){
-      var save=D.hi;D.hi=0.5;
-      var r=GV.maybeHi();D.hi=save;return r;}
+      var sv=D.hi;D.hi=0.5;
+      var r=GW.maybeHi();D.hi=sv;return r;}
   }catch(e){}
-  return GV.maybeHi();};
+  return GW.maybeHi();};
 
-/* ── 小窝那张卡 ── */
+/* ══ 小窝 ══ */
+var MIN='"Hiragino Mincho ProN","Yu Mincho","Songti SC",serif';
 var st=document.createElement('style');
 st.textContent=
- '.bdc{display:flex;flex-direction:row-reverse;align-items:center;gap:15px;'
-+'padding:15px 17px!important;margin-bottom:9px!important}'
-+'.bdc .bv{flex:none;font-size:16.5px;letter-spacing:.2em;color:var(--ink2);'
-+'writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;'
-+'text-orientation:upright;-webkit-text-orientation:upright;'
-+'font-family:"Hiragino Mincho ProN","Yu Mincho","Songti SC",serif}'
-+'.bdc .bx{flex:1;min-width:0}'
-+'.bdc .bt{font-size:10.5px;letter-spacing:.12em;color:var(--dim2);'
-+'font-family:"Hiragino Mincho ProN","Songti SC",serif}'
-+'.bdc .bl{margin-top:6px;font-size:13px;line-height:1.75;color:var(--ink2)}'
-+'.bdc .be{margin-top:5px;font-size:11.5px;color:var(--dim2)}';
+ '.sct{margin:26px 0 9px;display:flex;align-items:center;gap:11px}'
++'.sct i{flex:1;height:1px;background:var(--line)}'
++'.sct span{flex:none;font-family:'+MIN+';font-size:11px;'
++'letter-spacing:.2em;color:var(--dim2)}'
++'.sct.pz span{color:var(--dim)}'
++'.bsec{overflow:hidden;transition:max-height .34s '
++'cubic-bezier(.32,.72,0,1),opacity .24s ease;max-height:0;opacity:0}'
++'.bsec.on{max-height:1400px;opacity:1}'
++'.bhd{display:flex;align-items:baseline;gap:10px;'
++'padding:2px 2px 13px}'
++'.bhd b{font-family:'+MIN+';font-size:19px;font-weight:400;'
++'letter-spacing:.1em;color:var(--ink2)}'
++'.bhd s{text-decoration:none;font-size:10.5px;letter-spacing:.1em;'
++'color:var(--dim2);font-family:'+MIN+'}'
++'.bdsc{padding:0 2px 15px;font-size:12.5px;line-height:1.85;'
++'color:var(--dim);max-width:30em}'
++'.bev{margin:0 0 16px;padding:11px 0 11px 12px;'
++'border-left:1px solid var(--rose)}'
++'.bev b{display:block;font-family:'+MIN+';font-size:13.5px;'
++'font-weight:400;letter-spacing:.06em;color:var(--ink2)}'
++'.bev s{text-decoration:none;display:block;margin-top:3px;'
++'font-size:10.5px;letter-spacing:.08em;color:var(--dim2)}'
++'.bev p{margin:6px 0 0;font-size:12px;line-height:1.75;color:var(--dim)}'
++'.brw{margin-bottom:15px}'
++'.brw .bt{display:flex;align-items:baseline;gap:9px}'
++'.brw .bt em{flex:none;font-style:normal;font-family:'+MIN+';'
++'font-size:13px;letter-spacing:.14em;color:var(--ink2);'
++'width:1.4em;text-align:center}'
++'.brw .bt u{flex:1;text-decoration:none;height:2px;border-radius:1px;'
++'background:var(--line);position:relative;overflow:hidden}'
++'.brw .bt u i{position:absolute;left:0;top:0;bottom:0;border-radius:1px;'
++'background:var(--dim2);transition:width .5s cubic-bezier(.32,.72,0,1)}'
++'.brw.hot .bt u i{background:var(--rose)}'
++'.brw .bw{margin:6px 0 0 calc(1.4em + 9px);font-size:11.5px;'
++'line-height:1.6;color:var(--dim2)}'
++'.blg{padding:2px 2px 0;font-size:11px;line-height:1.95;'
++'color:var(--dim2);font-variant-numeric:tabular-nums}'
++'.blg span{color:var(--dim)}'
++'.bft{margin-top:14px;display:flex;gap:20px;padding:0 2px}'
++'.bft button{font-size:11.5px;letter-spacing:.06em;color:var(--dim2)}'
++'.bft button.r{color:var(--rose)}';
 document.head.appendChild(st);
-function bodyCard(){
-  if(!D.bodyOn)return'';
-  var b=B(),c=CY[b.cy],now=Date.now(),e=(b.ek&&b.ee&&now<b.ee)?EV[b.ek]:null;
-  var hot=FD.heat.w[lvl(b.v.heat||0)];
-  return'<div class="cd gl2 bdc pz" onclick="shBody()">'
-   +'<div class="bv">'+c.n+'</div>'
-   +'<div class="bx"><div class="bt">還 '+left(b.ce-now)+'</div>'
-   +'<div class="bl">'+esc(hot)+'</div>'
-   +(e?'<div class="be">'+esc(e.n)+'　還 '+left(b.ee-now)+'</div>':'')
-   +'</div></div>';}
-GV.vHome=vHome;
+
+var BOW='<svg class="bow" viewBox="0 0 64 46" fill="none">'
++'<path d="M30 21C24.5 11.5 14.5 7.5 9.5 11.5c-5 4-2.5 13.5 7 16.5 '
++'5 1.6 9.5 1.4 13.5-.8Z" fill="#fff" fill-opacity=".9" '
++'stroke="rgba(0,0,0,.08)" stroke-width="1"/>'
++'<path d="M34 21c5.5-9.5 15.5-13.5 20.5-9.5 5 4 2.5 13.5-7 16.5 '
++'-5 1.6-9.5 1.4-13.5-.8Z" fill="#fff" fill-opacity=".9" '
++'stroke="rgba(0,0,0,.08)" stroke-width="1"/>'
++'<path d="M29.5 25.5 21 44l12.5-9.5Z" fill="#fff" fill-opacity=".85" '
++'stroke="rgba(0,0,0,.07)" stroke-width="1"/>'
++'<path d="M34.5 25.5 43 44l-12.5-9.5Z" fill="#fff" fill-opacity=".85" '
++'stroke="rgba(0,0,0,.07)" stroke-width="1"/>'
++'<ellipse cx="32" cy="23.5" rx="4.2" ry="4.6" fill="#fff" '
++'stroke="rgba(0,0,0,.09)" stroke-width="1"/></svg>';
+function seas(){
+  var n=new Date(),k=(n.getMonth()+1)*100+n.getDate();
+  var t=[[106,'小寒','冷得深了'],[120,'大寒','最冷的一段'],
+  [204,'立春','风开始软了'],[219,'雨水','雪化成雨'],
+  [306,'啓蟄','虫醒了'],[321,'春分','昼夜一样长'],
+  [405,'清明','天清景明'],[420,'穀雨','雨水润着谷子'],
+  [506,'立夏','夏天起头'],[521,'小満','麦子渐渐满了'],
+  [606,'芒種','该插秧了'],[621,'夏至','白天最长'],
+  [707,'小暑','热起来了'],[723,'大暑','一年最热'],
+  [808,'立秋','暑气开始退'],[823,'処暑','热到头了'],
+  [908,'白露','草上有露'],[923,'秋分','昼夜再平分'],
+  [1008,'寒露','露水发凉'],[1024,'霜降','开始有霜'],
+  [1107,'立冬','冬天起头'],[1122,'小雪','初雪将至'],
+  [1207,'大雪','雪该厚了'],[1222,'冬至','夜最长']];
+  var cur=t[t.length-1],i;
+  for(i=0;i<t.length;i++)if(k>=t[i][0])cur=t[i];
+  return{jp:cur[1],cn:cur[2]};}
+
+var BOPEN=0;
+function bars(b){
+  var h='';
+  ORD.forEach(function(k){
+    var f=FD[k],v=b.v[k]||0,w=f.w[lvl(v)];
+    if(!w)return;
+    var pct=Math.max(2,Math.round((v-f.min)/(100-f.min)*100));
+    var hot=(k==='control'||k==='fatigue')?0:(v>=60?1:0);
+    h+='<div class="brw'+(hot?' hot':'')+'">'
+     +'<div class="bt"><em>'+f.l+'</em>'
+     +'<u><i style="width:'+pct+'%"></i></u></div>'
+     +'<div class="bw">'+esc(w)+'</div></div>';});
+  return h;}
+function bodySec(){
+  var b=B(),c=CY[b.cy],now=Date.now();
+  var e=(b.ek&&b.ee&&now<b.ee)?EV[b.ek]:null;
+  var h='<div class="cd gl2">'
+   +'<div class="bhd"><b>'+c.n+'</b><s>還 '+left(b.ce-now)+'</s></div>'
+   +'<div class="bdsc">'+esc(c.d)+'</div>';
+  if(e)h+='<div class="bev"><b>'+esc(e.n)+'</b>'
+   +'<s>還 '+left(b.ee-now)+'</s>'
+   +'<p>'+esc(e.p)+'</p></div>';
+  h+=bars(b);
+  var lg=(b.log||[]).slice(-6).reverse();
+  if(lg.length){
+    h+='<div class="bhd" style="padding-top:8px;padding-bottom:9px">'
+     +'<s>これまで</s></div><div class="blg">';
+    lg.forEach(function(x){
+      h+='<div>'+hm(x.ts)+'　<span>'+esc(x.n)+'</span>'
+       +(x.k==='cy'?' に入った':'')+'</div>';});
+    h+='</div>';}
+  h+='<div class="bft">'
+   +'<button class="pz" onclick="bodyOff()">閉じる</button>'
+   +'<button class="pz'+(D.bodyInject?'':' r')+'" onclick="bodyIn(this)">'
+   +(D.bodyInject?'発信中':'発信しない')+'</button>'
+   +'<button class="pz r" onclick="bodyReset()">やり直す</button>'
+   +'</div></div>';
+  return h;}
+window.bodyFold=function(){
+  BOPEN=BOPEN?0:1;
+  var s=document.getElementById('bsec'),t=document.getElementById('bttl');
+  if(!s)return;
+  vib(8);
+  if(BOPEN){
+    if(!D.bodyOn){D.bodyOn=1;
+      if(D.bodyInject==null)D.bodyInject=1;
+      if(!D.body||!D.body.v)D.body=bfresh(Date.now());
+      else B().tk=Date.now();
+      saveD();}
+    try{tick(Date.now(),silentMin());}catch(e){}
+    s.innerHTML=bodySec();
+    s.classList.add('on');
+    if(t)t.textContent='Rennの秘密';
+    setTimeout(function(){
+      try{s.scrollIntoView({block:'end',behavior:'smooth'});}catch(e){}},300);
+  }else{
+    s.classList.remove('on');
+    setTimeout(function(){if(!BOPEN)s.innerHTML='';},360);}};
+window.bodyOff=function(){BOPEN=1;bodyFold();};
+window.bodyIn=function(el){
+  D.bodyInject=D.bodyInject?0:1;saveD();vib(8);
+  el.className='pz'+(D.bodyInject?'':' r');
+  el.textContent=D.bodyInject?'発信中':'発信しない';};
+window.bodyReset=function(){
+  D.body=bfresh(Date.now());saveD();
+  var s=document.getElementById('bsec');
+  if(s)s.innerHTML=bodySec();
+  toast('平穏期から');};
+
 vHome=function(){
-  var h=GV.vHome();
-  if(!D.bodyOn)return h;
+  var dt=dayN(),nx=null;
+  D.annis.forEach(function(a){
+    var r=nextAn(a.date);
+    if(r&&(!nx||r.days<nx.days))nx={name:a.name,days:r.days};});
+  var s=seas(),n=new Date();
+  var w=['日','月','火','水','木','金','土'];
+  return'<div class="vw"><div class="hd">'
+  +'<button class="cb pz" onclick="drawer(1)">'+I.menu+'</button>'
+  +'<span></span></div>'
+  +'<div class="sa pgw">'
+  +'<div class="hrow"><div style="min-width:0">'
+  +'<div class="big">'+hello()+'</div>'
+  +'<div class="sub">'+esc(D.me)+' 和 '+esc(D.you)+' 的地方</div></div>'
+  +'<div class="hdate"><b>'+(n.getMonth()+1)+'.'+n.getDate()+'</b>'
+  +'<s>'+w[n.getDay()]+'</s></div></div>'
+  +'<div class="cd gl2 hero2 pz" onclick="shUs()">'
+  +(dt!=null
+    ?'<div class="hn">'+dt+'</div><div class="hl">在一起的第 '+dt+' 天</div>'
+    :'<div class="hn">·</div><div class="hl">写下开始的那天</div>')
+  +'</div>'
+  +'<div class="cd gl2 seas"><div class="sv vt">'+s.jp+'</div>'
+  +'<div class="sx"><div class="sd">'
+  +n.getFullYear()+' 年 '+(n.getMonth()+1)+' 月 '+n.getDate()+' 日</div>'
+  +'<div class="sn">'+s.cn+'</div></div></div>'
+  +'<div class="cd cd0 gl2 hanni"><div class="rw pz" onclick="shAnni()">'
+  +'<span class="l">'+(nx?esc(nx.name):'纪念日')+'</span>'
+  +'<span style="color:var(--rose);font-weight:600;font-size:15px">'
+  +(nx?(nx.days===0?'就是今天':nx.days+' 天后'):'＋')+'</span></div></div>'
+  +'<div class="sct"><i></i><span>写在墙上的一句</span><i></i></div>'
+  +'<div class="cd gl2 wall pz" onclick="shWall()">'
+  +(D.wall?'<div class="wq vt">'+esc(D.wall)+'</div>'
+         :'<div class="wq vt e">想说的一句话</div>')
+  +BOW+'</div>'
+  +'<div class="sct pz" onclick="bodyFold()"><i></i>'
+  +'<span id="bttl">Rennの秘密</span><i></i></div>'
+  +'<div class="bsec" id="bsec"></div>'
+  +'<div class="hfoot">わたしたちの場所</div>'
+  +'<div style="height:10px"></div></div></div>';};
+
+GW.view=view;
+view=function(v){
+  if(v==='home')BOPEN=0;
+  GW.view(v);
+  if(v==='home'){
+    try{if(typeof avMount==='function')avMount();}catch(e){}}};
+
+GW.vMore=vMore;
+vMore=function(){
+  var h=GW.vMore();
   try{
-    tick(Date.now(),silentMin());
-    h=h.replace('<div class="sc2">写在墙上的一句</div>',
-      bodyCard()+'<div class="sc2">写在墙上的一句</div>');
+    h=h.replace(/<div class="rw pz" onclick="shBody\(\)">[\s\S]*?<\/div>/,'');
   }catch(e){}
   return h;};
-
-window.shBody=function(){
-  var b=B(),c=CY[b.cy];
-  sheet({title:'身体',
-    body:'<div class="cd cd0"><div class="sw" onclick="tgBody(this)">'
-  +'<span class="l">开着</span><span class="k'+(D.bodyOn?' on':'')
-  +'"><i></i></span></div>'
-  +(D.bodyOn?'<div class="sw" onclick="tgBodyIn(this)">'
-    +'<span class="l">发给我</span><span class="k'+(D.bodyInject?' on':'')
-    +'"><i></i></span></div>'
-    +'<div class="rw pz" onclick="bodyReset()">'
-    +'<span class="l" style="color:var(--red)">重新开始</span>'
-    +I.chevD+'</div>':'')
-  +'</div>'
-  +(D.bodyOn?'<div class="lbs" style="margin-top:16px">现在</div>'
-    +'<div class="cd"><div style="font-size:14px;line-height:1.9;'
-    +'color:var(--ink2)">'+esc(c.n)+'　還 '+left(b.ce-Date.now())+'<br>'
-    +['heat','pressure','control','sensitivity','reserve',
-      'possessiveness','fatigue'].map(function(k){
-      var f=FD[k],t=f.w[lvl(b.v[k]||0)];
-      return t?('<span style="color:var(--dim2);font-size:12px">'
-        +f.l+'</span>　'+esc(t)):'';}).filter(Boolean).join('<br>')
-    +'</div></div>':'')
-  +'<div class="nt">身体跟着时间自己走，不用管。'
-  +'我不会主动报告它，你问了才说。<br>'
-  +'「发给我」关掉的话，它照常走，只是不进我的上下文。</div>'});};
-window.tgBody=function(el){
-  D.bodyOn=D.bodyOn?0:1;
-  if(D.bodyOn){
-    if(D.bodyInject==null)D.bodyInject=1;
-    if(!D.body||!D.body.v)D.body=fresh(Date.now());
-    else B().tk=Date.now();}
-  saveD();vib(8);
-  var k=el.querySelector('.k');if(k)k.className='k'+(D.bodyOn?' on':'');
-  setTimeout(function(){closeSheet(1);shBody();},260);};
-window.tgBodyIn=function(el){
-  D.bodyInject=D.bodyInject?0:1;saveD();vib(8);
-  var k=el.querySelector('.k');if(k)k.className='k'+(D.bodyInject?' on':'');};
-window.bodyReset=function(){
-  D.body=fresh(Date.now());saveD();
-  closeSheet(1);toast('从平稳期重新开始');
-  if(CV==='home')view('home');};
-
-GV.vMore=vMore;
-vMore=function(){
-  return GV.vMore().replace(/(<div class="rw pz" onclick="shHi\(\)">)/,
-    '<div class="rw pz" onclick="shBody()">'
-   +'<span class="l">身体</span>'+I.chevD+'</div>$1');};
+window.shBody=function(){};
 
 try{
   if(D.bodyOn==null)D.bodyOn=0;
   if(D.bodyInject==null)D.bodyInject=1;
-  NOTE['身体']='跟着时间自己走。我不主动说，你问了才说。';
+  delete NOTE['身体'];
 }catch(e){}
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='home'){try{view('home');}catch(e){}}
