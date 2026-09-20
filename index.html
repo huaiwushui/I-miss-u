@@ -7852,16 +7852,18 @@ if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='home'){try{view('home');}catch(e){}}
 if(CV==='more'){try{view('more');}catch(e){}}
 })();
- /* ══════════ I MISS U · 互动结算 ══════════ */
-if(typeof GZ==='undefined')var GZ={};
+/* ══════════ I MISS U · 结算与秘密 ══════════ */
+if(typeof HA==='undefined')var HA={};
 (function(){
-if(GZ.on)return;GZ.on=1;
+if(HA.on)return;HA.on=1;
 
-try{if(typeof GX!=='undefined'&&GX.on){
-  if(GX.done)done=GX.done;
-  if(GX.usPart)usPart=GX.usPart;
-  if(GX.fold)window.bodyFold=GX.fold;
-  GX.on=0;}}catch(e){}
+try{['GX','GZ'].forEach(function(n){
+  var g=window[n];
+  if(!g||!g.on)return;
+  if(g.done)done=g.done;
+  if(g.usPart)usPart=g.usPart;
+  if(g.fold)window.bodyFold=g.fold;
+  g.on=0;});}catch(e){}
 try{if(typeof GY!=='undefined')GY.on=0;}catch(e){}
 
 var MINGAP=4,MINNEW=2,WINMAX=14,WINCHAR=4200,LIMIT=4;
@@ -7869,24 +7871,43 @@ var FLOOR={heat:0,pressure:0,control:0,sensitivity:0,
   reserve:0,possessiveness:40,fatigue:0};
 var LBL={heat:'熱',pressure:'鬱',control:'制',sensitivity:'感',
   reserve:'蓄',possessiveness:'占',fatigue:'倦'};
-var RES={neutral:'何もなし',continued:'続き',escalated:'高まった',
-  interrupted:'途中で止まった',cooled_down:'引いた',released:'出した'};
+var WORD={heat:['凉的，没什么热意','有一点热，很快就能收住',
+  '热意明确了，靠近会想再靠近','烧起来了，说话都要压一下',
+  '热得不太剩理智'],
+pressure:['心里是空的','有点闷，不碍事','攒着一股没处放的劲',
+  '压得厉害，快忍不住','忍到发疼'],
+control:['基本收不住了','勉强按着，随时会掉','按得住，但要用力',
+  '稳，不用刻意','完全清醒，想收就收'],
+sensitivity:['没什么感觉','碰到会注意','一句话就能被撩到',
+  '很敏感，哪儿都受不了','轻轻一下就过电'],
+reserve:['清空了，很轻','攒了一点','底下满起来了',
+  '沉得明显，压着不动也难受','满到发胀'],
+possessiveness:['','平静，不太计较','想她多看着自己一点',
+  '想把她圈起来','容不下她走开'],
+fatigue:['精神很好','有点累，不影响','身上是沉的','很累，撑着',
+  '累得只想躺着']};
+var ORD=['heat','pressure','control','sensitivity','reserve',
+'possessiveness','fatigue'];
+var RES={neutral:'何もなかった',continued:'まだ続いている',
+escalated:'высоко',interrupted:'途中で止まった',
+cooled_down:'引いていった',released:'出した'};
+RES.escalated='さらに高まった';
 var OK={neutral:1,continued:1,escalated:1,interrupted:1,
   cooled_down:1,released:1};
 
-/* 开关合成一个 */
 try{
-  D.bodyInject=1;
-  delete D.bodySet;
+  D.bodyInject=1;delete D.bodySet;
   if(D.bodyOn==null)D.bodyOn=0;
-  if(D.body&&D.body.v&&!D.body.st){D.body.st=Date.now();}
+  if(D.body&&D.body.v&&!D.body.st)D.body.st=Date.now();
   saveD();
 }catch(e){}
 
 function bd(){return(D.body&&D.body.v)?D.body:null;}
 function cl(k,v){
   return Math.max(FLOOR[k]||0,Math.min(100,Math.round(v)));}
+function lv(v){return v<20?0:(v<40?1:(v<60?2:(v<80?3:4)));}
 
+/* ══ 结算 ══ */
 function win_(){
   var B=bd();if(!B)return null;
   if(!B.st){B.st=Date.now();saveD();return null;}
@@ -7904,15 +7925,15 @@ function win_(){
 
 function pr(w){
   var v=bd().v;
-  var lv=function(k){
+  var g=function(k){
     var x=v[k]||0;
     return x<20?'低':(x<40?'中低':(x<60?'中':(x<80?'中高':'高')));};
   return'判断下面这段已经发生的互动，对'+D.you+'的身体造成了什么变化。\n'
    +'不续写，不评价，不劝阻，只输出一个 JSON。\n\n'
-   +'他现在：热度'+lv('heat')+'、压抑感'+lv('pressure')
-   +'、控制力'+lv('control')+'、敏感度'+lv('sensitivity')
-   +'、蓄积感'+lv('reserve')+'、占有欲'+lv('possessiveness')
-   +'、疲惫感'+lv('fatigue')+'。\n\n'
+   +'他现在：热度'+g('heat')+'、压抑感'+g('pressure')
+   +'、控制力'+g('control')+'、敏感度'+g('sensitivity')
+   +'、蓄积感'+g('reserve')+'、占有欲'+g('possessiveness')
+   +'、疲惫感'+g('fatigue')+'。\n\n'
    +'——— 互动 ———\n'+w+'\n——— 到此 ———\n\n'
    +'只要 JSON，不要解释、不要代码块：\n'
    +'{"settlement_reason":"一句话为什么这样判",'
@@ -7951,18 +7972,6 @@ function norm(r){
   return{res:res,ej:ej,
     why:String(r.settlement_reason||'').slice(0,120),d:o};}
 
-/* 原地刷新，不让页面乱跳 */
-function refresh(){
-  try{
-    var s=document.getElementById('bsec');
-    if(!s||!s.classList.contains('on'))return;
-    var box=msBox&&0;
-    var P=Element.prototype,old=P.scrollIntoView;
-    P.scrollIntoView=function(){};
-    try{bodyFold();bodyFold();}catch(e){}
-    setTimeout(function(){P.scrollIntoView=old;},600);
-  }catch(e){}}
-
 function apply_(n){
   var B=bd();if(!B)return;
   var got={},k;
@@ -7981,7 +7990,7 @@ function apply_(n){
     B.ce=Date.now()+(6+Math.random()*12)*3600000;
     B.log.push({k:'cy',n:'退潮期',ts:Date.now()});}
   saveD();
-  if(CV==='home')refresh();}
+  redraw();}
 
 var RUN=0;
 function run(){
@@ -8016,9 +8025,9 @@ function run(){
     if(o&&typeof o==='object')apply_(norm(o));
   },function(){RUN=0;});}
 
-GZ.done=done;
+HA.done=done;
 done=function(m,after,ab,ac,q,sid){
-  var r=GZ.done(m,after,ab,ac,q,sid);
+  var r=HA.done(m,after,ab,ac,q,sid);
   try{
     if(D.bodyOn&&!ab&&m&&!m.err&&!m.st
       &&(typeof realT!=='function'||realT(m)))
@@ -8026,10 +8035,9 @@ done=function(m,after,ab,ac,q,sid){
   }catch(e){}
   return r;};
 
-/* 余波留在身上 */
-GZ.usPart=usPart;
+HA.usPart=usPart;
 usPart=function(q){
-  var s=GZ.usPart(q);
+  var s=HA.usPart(q);
   try{
     var B=bd();
     if(D.bodyOn&&B&&B.set&&Date.now()-B.set.ts<50*60000){
@@ -8044,58 +8052,182 @@ usPart=function(q){
   }catch(e){}
   return s;};
 
-/* 秘密那一栏：加结算记录，收掉多余开关 */
+/* ══ 显示层：整个重画 ══ */
+var MIN='"Hiragino Mincho ProN","Yu Mincho","Songti SC",serif';
 var st=document.createElement('style');
 st.textContent=
- '.bst{margin:2px 0 15px;padding:11px 0 0;border-top:1px solid var(--line)}'
-+'.bst .sl{font-size:10.5px;letter-spacing:.14em;color:var(--dim2);'
-+'font-family:"Hiragino Mincho ProN","Songti SC",serif}'
-+'.bst .sm{margin-top:6px;font-size:12px;line-height:1.7;color:var(--dim)}'
-+'.bst .sd{margin-top:5px;font-size:11px;color:var(--rose);'
-+'font-variant-numeric:tabular-nums;letter-spacing:.05em}';
+ '#bsec .cd{padding:19px 20px 17px!important}'
++'.bh{display:flex;align-items:flex-end;gap:11px;'
++'padding-bottom:14px;margin-bottom:16px;'
++'border-bottom:1px solid var(--ln2)}'
++'.bh b{font-family:'+MIN+';font-size:21px;font-weight:400;'
++'letter-spacing:.12em;color:var(--ink2);line-height:1}'
++'.bh s{text-decoration:none;flex:1;text-align:right;font-size:10px;'
++'letter-spacing:.14em;color:var(--dim2);font-family:'+MIN+';'
++'font-variant-numeric:tabular-nums;padding-bottom:2px}'
++'.bq{font-size:12.5px;line-height:1.95;color:var(--dim);'
++'margin-bottom:20px}'
++'.bnow{margin:0 0 20px;padding-left:12px;'
++'border-left:1px solid var(--rose)}'
++'.bnow b{display:block;font-family:'+MIN+';font-size:13.5px;'
++'font-weight:400;letter-spacing:.08em;color:var(--ink2)}'
++'.bnow s{text-decoration:none;font-size:10px;letter-spacing:.12em;'
++'color:var(--dim2);font-family:'+MIN+'}'
++'.bnow p{margin:7px 0 0;font-size:12px;line-height:1.8;color:var(--dim)}'
++'.br{margin-bottom:17px}'
++'.br .bl{display:flex;align-items:center;gap:11px}'
++'.br .bl em{flex:none;font-style:normal;font-family:'+MIN+';'
++'font-size:12.5px;letter-spacing:0;color:var(--dim);width:1.2em}'
++'.br .bl u{flex:1;text-decoration:none;height:1px;'
++'background:var(--ln2);position:relative}'
++'.br .bl u i{position:absolute;left:0;top:-1px;height:3px;'
++'border-radius:2px;background:var(--dim2);opacity:.55;'
++'transition:width .6s cubic-bezier(.32,.72,0,1)}'
++'.br.hi .bl em{color:var(--rose)}'
++'.br.hi .bl u i{background:var(--rose);opacity:.7}'
++'.br .bw{margin:7px 0 0 calc(1.2em + 11px);font-size:11.5px;'
++'line-height:1.6;color:var(--dim2)}'
++'.blast{margin:4px 0 0;padding-top:15px;'
++'border-top:1px solid var(--ln2)}'
++'.blast .k{font-family:'+MIN+';font-size:10px;letter-spacing:.18em;'
++'color:var(--dim2)}'
++'.blast .v{margin-top:8px;font-family:'+MIN+';font-size:13.5px;'
++'letter-spacing:.06em;color:var(--ink2)}'
++'.blast .r{margin-top:6px;font-size:11.5px;line-height:1.7;'
++'color:var(--dim2)}'
++'.blast .n{margin-top:7px;font-size:11px;color:var(--rose);'
++'letter-spacing:.08em;font-variant-numeric:tabular-nums}'
++'.blog{margin:16px 0 0;padding-top:15px;'
++'border-top:1px solid var(--ln2)}'
++'.blog .k{font-family:'+MIN+';font-size:10px;letter-spacing:.18em;'
++'color:var(--dim2);margin-bottom:8px}'
++'.blog div.e{font-size:11.5px;line-height:2.05;color:var(--dim2);'
++'font-variant-numeric:tabular-nums}'
++'.blog div.e span{color:var(--dim);letter-spacing:.04em}'
++'.bof{margin-top:19px;text-align:center}'
++'.bof button{font-family:'+MIN+';font-size:11px;letter-spacing:.24em;'
++'color:var(--dim2);padding:6px 20px}'
++'.bof button:active{color:var(--dim)}';
 document.head.appendChild(st);
 
+function lft(ms2){
+  if(ms2<=0)return'もうすぐ';
+  var h=ms2/3600000;
+  if(h<1)return Math.max(1,Math.round(ms2/60000))+'分';
+  if(h<24)return Math.round(h)+'時間';
+  return Math.round(h/24)+'日';}
 function ds(d){
   var o=[],k;
   for(k in d){if(d[k])o.push(LBL[k]+(d[k]>0?'+':'')+d[k]);}
   return o.join('　');}
-function deco(){
-  try{
-    var s=document.getElementById('bsec');
-    if(!s||!s.classList.contains('on'))return;
-    var cd=s.querySelector('.cd');
-    if(!cd||cd.dataset.gz)return;
-    cd.dataset.gz='1';
-    var B=bd(),ft=cd.querySelector('.bft');
-    if(B&&B.set){
-      var x=B.set;
-      var h='<div class="bst"><div class="sl">直前</div>'
-       +'<div class="sm">'+esc(RES[x.res]||x.res)+'　'+hm(x.ts)+'</div>'
-       +(x.why?'<div class="sm" style="color:var(--dim2)">'
-         +esc(x.why)+'</div>':'')
-       +(ds(x.d)?'<div class="sd">'+esc(ds(x.d))+'</div>':'')+'</div>';
-      if(ft)ft.insertAdjacentHTML('beforebegin',h);
-      else cd.insertAdjacentHTML('beforeend',h);}
-    if(ft){
-      var bs=ft.querySelectorAll('button'),i;
-      for(i=0;i<bs.length;i++){
-        var t=bs[i].textContent||'';
-        if(t.indexOf('発信')>=0){
-          bs[i].textContent='オフ';
-          bs[i].className='pz r';
-          bs[i].onclick=function(){bodyStop();};
-          bs[i].removeAttribute('onclick');}}}
-  }catch(e){}}
-window.bodyStop=function(){
-  D.bodyOn=0;D.bodyInject=1;saveD();vib(8);
-  try{bodyFold();}catch(e){}
-  toast('止めた');};
-GZ.fold=window.bodyFold;
+
+function sec(){
+  var B=bd();if(!B)return'';
+  var CYN={stable:['平穏期','日常没有明显热意，但她靠近、撒娇或索取时，身体还是会跟着起反应。'],
+  building:['蓄積期','身体底下有东西在慢慢攒起来，还压得住，但比平时更容易被点着。'],
+  preheat:['予兆期','快到了。体温和耐性都在往一个方向偏，碰一下就有反应。'],
+  sensitive:['易感期','热得很实在，脑子比身体慢半步。想靠近、想占着、想要她只看着你。'],
+  ebb:['退潮期','劲头退下去了，留着一层黏糊糊的余温，人比平时软。'],
+  recovery:['回復期','空的。不太想动，但想让她在旁边。']};
+  var c=CYN[B.cy]||CYN.stable,now=Date.now();
+  var h='<div class="cd gl2">'
+   +'<div class="bh"><b>'+c[0]+'</b><s>あと '+lft(B.ce-now)+'</s></div>'
+   +'<div class="bq">'+esc(c[1])+'</div>';
+  if(B.ek&&B.ee&&now<B.ee&&typeof EVN==='object'&&EVN[B.ek]){
+    h+='<div class="bnow"><b>'+esc(EVN[B.ek][0])+'</b>'
+     +'<s>あと '+lft(B.ee-now)+'</s>'
+     +'<p>'+esc(EVN[B.ek][1])+'</p></div>';}
+  ORD.forEach(function(k){
+    var v=B.v[k]||0,w=WORD[k][lv(v)];
+    if(!w)return;
+    var fl=FLOOR[k]||0;
+    var pct=Math.max(3,Math.round((v-fl)/(100-fl)*100));
+    var hi=(k==='control'||k==='fatigue')?0:(v>=60?1:0);
+    h+='<div class="br'+(hi?' hi':'')+'">'
+     +'<div class="bl"><em>'+LBL[k]+'</em>'
+     +'<u><i style="width:'+pct+'%"></i></u></div>'
+     +'<div class="bw">'+esc(w)+'</div></div>';});
+  if(B.set){
+    var x=B.set;
+    h+='<div class="blast"><div class="k">直前</div>'
+     +'<div class="v">'+esc(RES[x.res]||x.res)+'　'+hm(x.ts)+'</div>'
+     +(x.why?'<div class="r">'+esc(x.why)+'</div>':'')
+     +(ds(x.d)?'<div class="n">'+esc(ds(x.d))+'</div>':'')
+     +'</div>';}
+  var lg=(B.log||[]).slice(-6).reverse();
+  if(lg.length){
+    h+='<div class="blog"><div class="k">これまで</div>';
+    lg.forEach(function(e){
+      h+='<div class="e">'+hm(e.ts)+'　<span>'+esc(e.n)+'</span></div>';});
+    h+='</div>';}
+  h+='<div class="bof"><button class="pz" onclick="bodyStop()">'
+   +'とじる</button></div></div>';
+  return h;}
+
+var EVN={
+cycle_surge:['周期の波','周期撞上来了，热得压不住。不是她做了什么，是身体自己到点了。'],
+morning_arousal:['朝の反応','刚醒，身体比脑子先有反应。声音是哑的，耐性也薄。'],
+night_heat:['夜の熱','夜里热起来了，她又不在眼前。想她想得具体。'],
+control_slip:['制御の緩み','收不住了。平时能压下去的话，现在会漏出来。'],
+demanding:['求める','想要。不绕弯子，也不太想等她主动。'],
+marking_impulse:['印をつけたい','想在她身上留下点属于自己的东西。哪怕只是一个称呼。'],
+pheromone_disorder:['乱れ','身体乱掉了，热和冷来得没道理，自己也说不清。'],
+holding_back:['我慢','热着，但在硬压。说话会短，会岔开话题，会突然沉默。'],
+voice_or_name_trigger:['呼ばれて','她刚才那一声直接碰到了地方。来得快，退得也快。'],
+nesting:['巣ごもり','想把她收在一个只有你们俩的地方，哪儿都不去。'],
+delayed_heat:['遅れてきた熱','刚才没退干净的东西又回来了，比上一波闷。'],
+low_fever_cling:['微熱','不高不低地烧着，像低烧。只想贴着她，不想动。'],
+waiting_restless:['待ちきれない','她太久没回。一边告诉自己她在忙，一边坐不住。'],
+restraint_rebound:['反動','忍太久了，反弹上来。语气会比平时紧。'],
+closeness_hunger:['触れたい','不是要做什么，就是想碰到她。手、肩膀、哪儿都行。'],
+dream_afterglow:['夢のあと','梦里的东西还挂在身上，醒着也没散。'],
+scent_aftereffect:['残り香','刚才那阵还留着味，身体记得比脑子清楚。'],
+strange_calm:['妙な静けさ','明明烧着，人却异常安静。这种安静不是没事。']};
+
+var OPEN=0;
+function redraw(){
+  if(CV!=='home'||!OPEN)return;
+  var s=document.getElementById('bsec');
+  if(!s)return;
+  s.innerHTML=sec();}
 window.bodyFold=function(){
-  var r=GZ.fold.apply(this,arguments);
-  setTimeout(deco,50);
-  return r;};
+  var s=document.getElementById('bsec');
+  if(!s)return;
+  vib(8);
+  OPEN=OPEN?0:1;
+  if(!OPEN){
+    s.classList.remove('on');
+    setTimeout(function(){if(!OPEN)s.innerHTML='';},360);
+    return;}
+  if(!D.bodyOn){
+    D.bodyOn=1;D.bodyInject=1;
+    if(!D.body||!D.body.v){
+      D.body={cy:'stable',cs:Date.now(),
+        ce:Date.now()+(24+Math.random()*72)*3600000,
+        v:{heat:30,pressure:25,control:75,sensitivity:35,
+           reserve:20,possessiveness:44,fatigue:15},
+        ek:'',es:0,ee:0,tk:Date.now(),ck:0,cool:{},miss:0,
+        log:[],st:Date.now()};}
+    else{D.body.tk=Date.now();
+      if(!D.body.st)D.body.st=Date.now();}
+    saveD();}
+  s.innerHTML=sec();
+  s.classList.add('on');
+  setTimeout(function(){
+    try{s.scrollIntoView({block:'end',behavior:'smooth'});}catch(e){}},320);};
+window.bodyStop=function(){
+  D.bodyOn=0;saveD();
+  OPEN=1;bodyFold();
+  toast('とじた');};
 window.bodyIn=function(){};
+window.bodyReset=function(){};
+window.bodyOff=function(){OPEN=1;bodyFold();};
+window.bodyRefresh=redraw;
+
+HA.view=view;
+view=function(v){
+  if(v==='home')OPEN=0;
+  return HA.view(v);};
 
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='home'){try{view('home');}catch(e){}}
