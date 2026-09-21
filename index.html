@@ -2345,13 +2345,15 @@ function paint(keep){
     prev=side;pts=m.ts||0;
     var pk=SEL?' pick'+(SEL.indexOf(m.id)>=0?' on':''):'';
     var tp=SEL?' onclick="pickMsg(\''+m.id+'\')"':'';
+    var isq=(m.r==='quote');
     var u=mine?AVD.b:AVD.a;
-    var side1='<div class="mside"><div class="mav">'
-      +(u?('<img src="'+u+'" alt="">')
-        :('<i>'+esc(avInit(mine?D.me:D.you))+'</i>'))
-      +'</div></div>';
-    var nm='<div class="mnm">'+esc(mine?D.me:D.you)
-      +'<s>'+tstamp(m.ts)+'</s></div>';
+    var side1='<div class="mside">'
+      +(isq?'':'<div class="mav">'
+        +(u?('<img src="'+u+'" alt="">')
+          :('<i>'+esc(avInit(mine?D.me:D.you))+'</i>'))
+        +'</div>')+'</div>';
+    var nm=isq?'':('<div class="mnm">'+esc(mine?D.me:D.you)
+      +'<s>'+tstamp(m.ts)+'</s></div>');
     h+='<div class="m '+side+pk+(cont?' cont':'')+'" id="m-'+m.id+'"'+tp+'>';
     if(!mine)h+=side1;
     h+='<div class="mbody">';
@@ -6261,6 +6263,389 @@ function bkIn(){
       if(takeIn(val('b-k')))return'done';
       return false;}});}
 
+  /* ══════════════════════════════════════════════════
+   九 · 气泡 · 多条 · 等你说完
+   ══════════════════════════════════════════════════ */
+(function(){
+
+/* ══ 五种气泡 ══ */
+var st=document.createElement('style');
+st.textContent=
+ '#ms .m.ai .bd:empty{display:none}'
++'#ms .m.ai .sg:last-child{margin-bottom:0}'
+
+/* 一 · 只有我的话在气泡里 —— 默认，不写样式 */
+
+/* 二 · 两边都在气泡里 */
++'html.sk1 #ms .m.ai .bd,html.sk1 #ms .m.ai .sg{'
++'display:inline-block;max-width:92%;background:var(--bub);'
++'border-radius:20px;padding:10px 15px;line-height:1.62;'
++'box-sizing:border-box}'
+
+/* 三 · 只有一道边 */
++'html.sk2 #ms .m.me .bd{background:none;'
++'border:1px solid var(--ln2)}'
++'html.sk2 #ms .m.ai .bd,html.sk2 #ms .m.ai .sg{'
++'display:inline-block;max-width:92%;background:none;'
++'border:1px solid var(--ln2);border-radius:20px;'
++'padding:10px 15px;line-height:1.62;box-sizing:border-box}'
+
+/* 四 · 果冻：内高光 + 底影 + 上半弧光 */
++'html.sk3 #ms .m .bd,html.sk3 #ms .m.ai .sg{'
++'position:relative;display:inline-block;max-width:88%;'
++'border-radius:23px;padding:12px 17px;line-height:1.66;'
++'box-sizing:border-box;overflow:hidden;'
++'background:linear-gradient(168deg,var(--jel1),var(--jel2));'
++'box-shadow:inset 0 1px 0 rgba(255,255,255,.72),'
++'inset 0 -1px 0 rgba(255,255,255,.28),'
++'0 1px 2px var(--sd),0 10px 22px -16px var(--sd2)}'
++'html.sk3 #ms .m .bd:before,html.sk3 #ms .m.ai .sg:before{'
++'content:"";position:absolute;left:0;right:0;top:0;height:54%;'
++'border-radius:23px 23px 40% 40%/23px 23px 100% 100%;'
++'background:linear-gradient(180deg,rgba(255,255,255,.5),'
++'rgba(255,255,255,0));pointer-events:none}'
++'html.sk3 #ms .m.me .bd.tight{padding:10px 16px}'
++'html.dark.sk3 #ms .m .bd,html.dark.sk3 #ms .m.ai .sg{'
++'box-shadow:inset 0 1px 0 rgba(255,255,255,.14),'
++'inset 0 -1px 0 rgba(255,255,255,.05),'
++'0 1px 2px var(--sd),0 10px 22px -16px var(--sd2)}'
++'html.dark.sk3 #ms .m .bd:before,html.dark.sk3 #ms .m.ai .sg:before{'
++'background:linear-gradient(180deg,rgba(255,255,255,.1),'
++'rgba(255,255,255,0))}'
+
+/* 五 · 都是白纸上的字 */
++'html.sk4 #ms .m.me .bd{background:none!important;'
++'border:0!important;padding:0 1px!important;'
++'border-radius:0!important;line-height:1.72!important;'
++'max-width:100%!important}'
++'html.sk4 #ms .m.me .bd.tight{padding:0 1px!important}'
+
+/* 多条：一条一条冒出来 */
++'@keyframes pop{from{opacity:0;transform:translateY(7px) scale(.985)}'
++'to{opacity:1;transform:none}}'
++'#ms .sg.po,#ms .m.me .bd.po{animation:pop .26s '
++'cubic-bezier(.32,.72,0,1) both}'
++'#ms .m.me .bd+.bd{margin-top:7px}'
++'#ms .m.me .bd{display:inline-block}'
+
+/* 正在等你说完 */
++'.wait{display:flex;align-items:center;gap:8px;margin:2px 0 20px;'
++'padding-left:45px;font-size:11.5px;color:var(--dim2);'
++'letter-spacing:.04em;animation:fade .3s ease both}'
++'.wait i{width:4px;height:4px;border-radius:50%;'
++'background:var(--dim2);animation:dots 1.6s ease-in-out infinite}'
++'.wait i:nth-child(2){animation-delay:.2s}'
++'.wait i:nth-child(3){animation-delay:.4s}'
++'.wait span{margin-left:3px}';
+document.head.appendChild(st);
+
+/* 果冻底色跟着深浅走 */
+var st2=document.createElement('style');
+st2.textContent=
+ ':root{--jel1:rgba(255,255,255,.86);--jel2:rgba(112,124,138,.14)}'
++'html.dark{--jel1:rgba(255,255,255,.085);'
++'--jel2:rgba(226,232,240,.045)}';
+document.head.appendChild(st2);
+
+var SKIN=['一侧','两侧','描边','果冻','素面'];
+function skApply(){
+  var v=Math.max(0,Math.min(4,D.skin||0));
+  de.classList.remove('sk1','sk2','sk3','sk4');
+  if(v)de.classList.add('sk'+v);}
+window.pkSkin=function(v){
+  D.skin=v;saveD();skApply();
+  var w=document.getElementById('sk-seg');
+  if(w)[].forEach.call(w.children,function(b,j){
+    b.className='pz'+(j===v?' on':'');});
+  vib(8);};
+window.shSkin=function(){
+  var v=D.skin||0;
+  sheet({title:'气泡',
+    body:'<div class="segw" id="sk-seg">'+SKIN.map(function(x,i){
+    return'<button class="pz'+(i===v?' on':'')
+      +'" onclick="pkSkin('+i+')">'+x+'</button>';}).join('')+'</div>'
+  +'<div class="nt">换完立刻能看见，聊天页不用退出去</div>'});};
+NOTE['气泡']='换完立刻能看见，聊天页不用退出去';
+if(D.skin==null)D.skin=0;
+skApply();
+
+/* 更多页塞进「样子」 */
+var vMore0=vMore;
+vMore=function(){
+  var h=vMore0();
+  try{
+    var key='<div class="rw pz" onclick="shTheme()">';
+    var i=h.indexOf(key);
+    if(i>=0)h=h.slice(0,i)
+      +'<div class="rw pz" onclick="shSkin()">'
+      +'<span class="l">气泡</span>'+I.chevD+'</div>'
+      +h.slice(i);
+  }catch(e){}
+  return h;};
+
+/* ══ 多条消息 ══ */
+var SPLIT=/\n[ \t]*(?:—{2,}|-{3,}|\/{2,}|‖|∥)[ \t]*\n/;
+var SEGCAP=4,SEGMIN=2,SEGGAP=520;
+
+/* 教我怎么分 */
+var sp0=staticPart;
+staticPart=function(){
+  var s=sp0();
+  if(!D.multi)return s;
+  return s+'\n\n【分几条说】\n'
+   +'想像真的在发消息那样一条一条来，就在换气的地方单起一行写 ——（两个破折号）。\n'
+   +'页面会拆开，隔半秒一条冒出来。最多分 '+SEGCAP+' 条。\n'
+   +'短句、递进、突然想起来补一句——这些地方分。\n'
+   +'一段完整的话别硬拆，说一句话也不用分。';};
+
+function cutSegs(t){
+  var s=String(t||'');
+  if(!SPLIT.test(s))return null;
+  var out=s.split(SPLIT).map(function(x){return x.trim();})
+    .filter(function(x){return x;});
+  if(out.length<SEGMIN)return null;
+  if(out.length>SEGCAP){
+    var tail=out.slice(SEGCAP-1).join('\n\n');
+    out=out.slice(0,SEGCAP-1);
+    out.push(tail);}
+  return out;}
+
+/* 收尾时把它拆成 parts */
+EXT_DONE.push(function(m,ab){
+  if(!D.multi||!m||m.err)return;
+  try{
+    if(m.parts&&m.parts.length){
+      var ch=0,np=[];
+      m.parts.forEach(function(p){
+        if(p.ty!=='t'||!p.t){np.push(p);return;}
+        var g=cutSegs(p.t);
+        if(!g){np.push(p);return;}
+        ch=1;
+        g.forEach(function(x){np.push({ty:'t',t:x});});});
+      var g2=cutSegs(m.t||'');
+      if(g2){
+        ch=1;
+        g2.forEach(function(x){np.push({ty:'t',t:x});});
+        m.t='';}
+      if(ch){
+        m.parts=np;m.multi=1;
+        saveS(S().id);
+        if(CV==='chat')paint();}
+      return;}
+    var g3=cutSegs(m.t||'');
+    if(!g3)return;
+    m.parts=g3.map(function(x){return{ty:'t',t:x};});
+    m.t='';m.multi=1;
+    saveS(S().id);
+    if(CV==='chat')paint();
+  }catch(e){}});
+
+/* 一条一条冒出来，只放一次 */
+var POPPED={};
+function popSegs(){
+  var b=msBox();
+  if(!b)return;
+  [].forEach.call(b.querySelectorAll('.m.ai'),function(w){
+    var id=(w.id||'').slice(2);
+    if(!id||POPPED[id])return;
+    var m=find(id);
+    if(!m||!m.multi||m.st)return;
+    POPPED[id]=1;
+    var sg=w.querySelectorAll('.sg');
+    if(sg.length<2)return;
+    [].forEach.call(sg,function(el,i){
+      if(!i){el.classList.add('po');return;}
+      el.style.visibility='hidden';
+      setTimeout(function(){
+        if(!el.isConnected)return;
+        el.style.visibility='';
+        el.classList.add('po');
+        if(SC.pin&&!SC.hold)keepBottom(400);},i*SEGGAP);});
+    keepBottom(sg.length*SEGGAP+500);});}
+
+/* 我发的多条：按空行拆气泡 */
+function splitMine(){
+  var b=msBox();
+  if(!b||SEL)return;
+  [].forEach.call(b.querySelectorAll('.m.me'),function(w){
+    if(w.dataset.ms)return;
+    var bd=w.querySelector('.bd');
+    if(!bd||bd.dataset.cl)return;
+    w.dataset.ms='1';
+    var t=bd.textContent||'';
+    if(t.indexOf('\n\n')<0)return;
+    var ps=t.split(/\n{2,}/).map(function(x){return x.trim();})
+      .filter(function(x){return x;});
+    if(ps.length<2||ps.length>6)return;
+    var box=bd.parentNode,ref=bd.nextSibling;
+    bd.remove();
+    ps.forEach(function(x){
+      var d=document.createElement('div');
+      d.className='bd'+(x.indexOf('\n')<0&&x.length<=14?' tight':'');
+      d.textContent=x;
+      d.dataset.tb='1';
+      box.insertBefore(d,ref);
+      box.insertBefore(document.createElement('br'),ref);});
+    var last=ref?ref.previousSibling:box.lastChild;
+    if(last&&last.tagName==='BR')last.remove();});}
+
+var paint0=paint;
+paint=function(keep){
+  var r=paint0(keep);
+  try{
+    if(D.multi){splitMine();popSegs();}
+  }catch(e){keepErr('分条',e);}
+  return r;};
+
+/* ══ 等你说完 ══ */
+var WAITT=0,WAITON=0,PENDSEND=0;
+function waitBar(on){
+  var b=document.getElementById('wbar');
+  if(!on){if(b)b.remove();return;}
+  var box=msBox();
+  if(!box)return;
+  if(b)return;
+  b=document.createElement('div');
+  b.id='wbar';b.className='wait';
+  b.innerHTML='<i></i><i></i><i></i><span>等你说完…</span>';
+  box.appendChild(b);
+  if(SC.pin&&!SC.hold)keepBottom(400);}
+function waitGo(){
+  WAITON=0;WAITT=0;
+  waitBar(0);
+  if(!PENDSEND)return;
+  PENDSEND=0;
+  try{ask();}catch(e){keepErr('发送',e);}}
+function waitArm(){
+  clearTimeout(WAITT);
+  if(!D.wait||!PENDSEND){waitGo();return;}
+  WAITON=1;waitBar(1);
+  WAITT=setTimeout(waitGo,Math.max(1,D.wait)*1000);}
+
+/* 她还在打字就一直等 */
+document.addEventListener('input',function(e){
+  var t=e.target;
+  if(!t||t.id!=='ta')return;
+  if(!WAITON)return;
+  if(!t.value.trim())return;
+  clearTimeout(WAITT);
+  WAITT=setTimeout(waitGo,Math.max(1,D.wait)*1000+2000);},true);
+
+/* 键盘收了就开始数 */
+document.addEventListener('focusout',function(e){
+  if(!e.isTrusted)return;
+  var t=e.target;
+  if(!t||t.id!=='ta')return;
+  if(!WAITON)return;
+  clearTimeout(WAITT);
+  WAITT=setTimeout(waitGo,Math.max(1,Math.round(D.wait*0.5))*1000);
+},true);
+
+var send0=send;
+send=function(){
+  var ta=document.getElementById('ta');
+  if(!ta)return;
+  var t=ta.value.trim();
+  if(!t&&!ATT.length){toast('还没写呢');return;}
+  if(!D.wait||!D.apiUrl||!D.apiKey)return send0();
+  /* 只存消息，先不叫 */
+  SC.pin=1;SC.el=null;SC.hold=0;
+  var s=S(),pics=[],files=[],pdfs=[],jobs=[];
+  ATT.forEach(function(u){
+    var id=uid();
+    if(u&&u.ty==='p'){
+      pdfs.push({fid:id,name:u.name,size:u.size});
+      jobs.push(dbPut('pic','pdf:'+id,{d:u.data,ts:Date.now()}));
+      return;}
+    if(u&&u.ty==='f'){
+      files.push({fid:id,name:u.name,size:u.size,lang:u.lang||''});
+      jobs.push(dbPut('pic','f:'+id,{d:u.text,ts:Date.now()}));
+      return;}
+    pics.push(id);PICQ[id]=u;
+    jobs.push(dbPut('pic',id,{d:u,ts:Date.now()}));});
+  var m={id:uid(),r:'me',t:t,ts:Date.now()};
+  if(pics.length)m.pics=pics;
+  if(files.length)m.files=files;
+  if(pdfs.length)m.pdfs=pdfs;
+  ms().push(m);
+  if(!s.ti||s.ti==='新的对话')
+    s.ti=(t||(files[0]&&files[0].name)||(pdfs[0]&&pdfs[0].name)
+      ||'一张图片').slice(0,18);
+  s.at=Date.now();D.seen=Date.now();
+  ta.value='';DRAFT='';ATT=[];drawAtt();fitTa(ta);
+  try{localStorage.removeItem('us.draft');}catch(e){}
+  saveD();saveS(s.id);
+  Promise.all(jobs).catch(function(){toast('附件没存上');});
+  paint();btn();keepBottom(900);
+  PENDSEND=1;waitArm();};
+
+/* 手动点停就立刻发 */
+var hit0=hitSend;
+hitSend=function(){
+  if(WAITON){clearTimeout(WAITT);waitGo();return;}
+  hit0();};
+
+/* 切走 / 换段 / 停下都别留着 */
+var view0=view;
+view=function(v){
+  if(WAITON&&v!=='chat'){clearTimeout(WAITT);waitGo();}
+  return view0(v);};
+var stop0=stop;
+stop=function(){
+  if(WAITON){
+    clearTimeout(WAITT);
+    WAITON=0;PENDSEND=0;waitBar(0);}
+  return stop0();};
+window.addEventListener('pagehide',function(){
+  if(WAITON){clearTimeout(WAITT);WAITON=0;PENDSEND=0;}});
+
+/* ══ 两个开关 ══ */
+window.shMulti=function(){
+  sheet({title:'像真的在发消息',ok:'保存',
+    body:'<div class="cd cd0"><div class="sw">'
+  +'<span class="l">我的话分几条发</span>'
+  +'<div class="k'+(D.multi?' on':'')
+  +'" onclick="tgMulti(this)"><i></i></div></div></div>'
+  +'<div class="lbs" style="margin-top:16px">等你说完再回</div>'
+  +'<div class="fd"><input id="w-s" type="number" inputmode="numeric" '
+  +'placeholder="填秒数，空着或 0 就立刻回" value="'
+  +(D.wait||'')+'"></div>'
+  +'<div class="nt">现在是'+(D.wait?(D.wait+' 秒'):'立刻回')
+  +'，你还在打字就接着等</div>',
+    onOk:function(){
+      var v=parseInt(val('w-s'),10);
+      D.wait=(!v||v<=0)?0:Math.min(120,v);
+      saveD();}});};
+window.tgMulti=function(el){
+  D.multi=D.multi?0:1;saveD();
+  el.className='k'+(D.multi?' on':'');
+  vib(8);};
+NOTE['像真的在发消息']='你还在打字就接着等，收了键盘才开始数';
+if(D.multi==null)D.multi=1;
+if(D.wait==null)D.wait=0;
+
+var vMore1=vMore;
+vMore=function(){
+  var h=vMore1();
+  try{
+    var key='<div class="rw pz" onclick="shHi()">';
+    var i=h.indexOf(key);
+    if(i>=0)h=h.slice(0,i)
+      +'<div class="rw pz" onclick="shMulti()">'
+      +'<span class="l">像真的在发消息</span>'+I.chevD+'</div>'
+      +h.slice(i);
+  }catch(e){}
+  return h;};
+
+/* 分支切换时把动画标记清掉，免得不再冒 */
+var useSnap0=useSnap;
+useSnap=function(m,v){
+  try{delete POPPED[m.id];}catch(e){}
+  return useSnap0(m,v);};
+
+if(CV==='chat'){try{paint(1);btn();}catch(e){}}
+if(CV==='more'){try{view('more');}catch(e){}}
+})();
 boot();
 </script>
 </body>
