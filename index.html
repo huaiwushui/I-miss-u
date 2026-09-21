@@ -6828,6 +6828,39 @@ st.textContent=
 +'#sh .bdy>.nt:last-child{padding-bottom:2px}';
 document.head.appendChild(st);
 
+/* ══ 窗口漂移收窄：cap 到 1.5 倍，不再涨到两倍 ══ */
+ctxList=function(){
+  var arr=ms().filter(okMsg),cap=ctxCap();
+  var s=S(),sid=s?s.id:'';
+  if(!arr.length)return arr;
+  var lim=cap+Math.min(20,Math.ceil(cap/2));
+  var aid=ANCH[sid],i=-1;
+  if(aid)arr.forEach(function(x,j){if(x.id===aid)i=j;});
+  if(i<0||arr.length-i>lim){
+    i=Math.max(0,arr.length-cap);
+    ANCH[sid]=arr[i]?arr[i].id:'';}
+  return arr.slice(i);};
+
+/* 身体和心情那张卡也要算进 token */
+var ci0=ctxInfo;
+ctxInfo=function(){
+  var c=ci0();
+  try{if(D.bodyOn)c.tok+=320;}catch(e){}
+  return c;};
+
+/* 卡片里写明白窗口会漂 */
+var sx0=shCtx;
+shCtx=function(){
+  sx0();
+  try{
+    var cd=document.querySelector('#sh .bdy .cd');
+    if(!cd)return;
+    var cap=ctxCap(),hi=cap+Math.min(20,Math.ceil(cap/2));
+    cd.insertAdjacentHTML('beforeend',
+      '<div style="margin-top:9px;font-size:12.5px;color:var(--dim2)">'
+      +'起点钉住不动，'+cap+' 到 '+hi+' 条之间漂，缓存才命中</div>');
+  }catch(e){}};
+
 function inkApply(){
   var c=INKS[D.cink||0];
   if(!c||!c[1])de.style.removeProperty('--ci');
