@@ -6720,7 +6720,7 @@ try{
   if(!(D.cink>=0&&D.cink<=4))D.cink=0;
 }catch(e){D.cink=0;}
 
-/* ══ 送信键：猫爪 · 纸飞机 · 方块，三个一样大 ══ */
+/* ══ 送信键：猫爪 · 纸飞机 · 心 ══ */
 I.wave='<svg class="ic cw" width="21" height="21" viewBox="0 0 24 24" '
 +'fill="currentColor"><ellipse cx="12" cy="15.6" rx="5.3" ry="4.2"/>'
 +'<ellipse cx="6.2" cy="10.4" rx="1.9" ry="2.4" '
@@ -6735,9 +6735,11 @@ I.send='<svg class="ic cw" width="21" height="21" viewBox="0 0 24 24" '
 +'fill-opacity=".92"/><path d="M20.8 3.2 10.15 13.14" '
 +'stroke="var(--ink)" stroke-width="1.5" stroke-linecap="round" '
 +'opacity=".5"/></svg>';
-I.stop='<svg class="ic cw" width="21" height="21" viewBox="0 0 24 24">'
-+'<rect x="4" y="4" width="16" height="16" rx="4.6" '
-+'fill="currentColor"/></svg>';
+I.stop='<svg class="ic cw hb" width="21" height="21" '
++'viewBox="0 0 24 24" fill="currentColor">'
++'<path d="M12 20.7c-.34 0-.67-.12-.93-.35C7.02 16.72 3.7 13.8 3.7 '
++'9.9a4.5 4.5 0 0 1 8.3-2.44A4.5 4.5 0 0 1 20.3 9.9c0 3.9-3.32 '
++'6.82-7.37 10.45-.26.23-.59.35-.93.35Z"/></svg>';
 
 var st=document.createElement('style');
 st.textContent=
@@ -6750,6 +6752,17 @@ st.textContent=
 +'.snd:active{transform:scale(.9) rotate(-4deg)}'
 +'.snd.off{opacity:.3;border-radius:50%}'
 +'.snd .ic{transition:none}'
++'@keyframes hb{0%,100%{transform:scale(1)}'
++'14%{transform:scale(1.13)}28%{transform:scale(1)}'
++'42%{transform:scale(1.09)}56%{transform:scale(1)}}'
++'.snd .ic.hb{animation:hb 1.5s ease-in-out infinite;'
++'transform-origin:50% 55%}'
+
+ /* ── 正在写字：末尾一个呼吸的小点 ── */
++'#ms .bd[data-wr]:after{content:"";display:inline-block;'
++'width:.4em;height:.4em;border-radius:50%;background:currentColor;'
++'opacity:.32;margin-left:.22em;vertical-align:.08em;'
++'animation:dots 1.15s ease-in-out infinite}'
 
  /* ── 字色：正文跟着走，灰字和代码不动 ── */
 +'#ms .m .bd,#ms .m .sg,#ms .m .bd b,#ms .m .sg b,'
@@ -6828,7 +6841,56 @@ st.textContent=
 +'#sh .bdy>.nt:last-child{padding-bottom:2px}';
 document.head.appendChild(st);
 
-/* ══ 窗口漂移收窄：cap 到 1.5 倍，不再涨到两倍 ══ */
+/* ══ 流式：每帧最多重排一次，末尾带个小点 ══ */
+pump=function(res,m,an,sid){
+  var rd=res.body.getReader(),dec=new TextDecoder(),bf='';
+  var wantK=!!D.think,raf=0,dirty=0;
+  function draw(){
+    raf=0;
+    if(!dirty)return;
+    dirty=0;
+    var s=S();
+    if(sid&&(!s||s.id!==sid))return;
+    if(m.k&&!m._ks){m._ks=1;paint();return;}
+    var el=document.getElementById('b-'+m.id);
+    if(!el)return;
+    el.innerHTML=md(stripMarks(m.t));
+    if(m.st)el.dataset.wr='1';
+    else delete el.dataset.wr;
+    xBind();stick();}
+  function mark(){
+    dirty=1;
+    if(!raf)raf=requestAnimationFrame(draw);}
+  return(function read(){
+    return rd.read().then(function(r){
+      if(r.done){draw();return;}
+      bf+=dec.decode(r.value,{stream:true});
+      var ls=bf.split('\n');
+      bf=ls.pop();
+      ls.forEach(function(ln){
+        ln=ln.trim();
+        if(!ln||ln.slice(0,5)!=='data:')return;
+        var d=ln.slice(5).trim();
+        if(!d||d==='[DONE]')return;
+        var j;
+        try{j=JSON.parse(d);}catch(e){return;}
+        if(an){
+          if(j.type==='content_block_delta'&&j.delta){
+            if(j.delta.type==='text_delta')m.t+=(j.delta.text||'');
+            else if(j.delta.type==='thinking_delta'&&wantK)
+              m.k+=(j.delta.thinking||'');}
+          else if(j.type==='error'&&j.error)
+            m.err=j.error.message||'接口报错';
+        }else{
+          var c=(j.choices||[])[0];
+          if(c&&c.delta){
+            if(c.delta.content)m.t+=c.delta.content;
+            if(c.delta.reasoning_content&&wantK)
+              m.k+=c.delta.reasoning_content;}}});
+      mark();
+      return read();});})();};
+
+/* ══ 窗口漂移收窄：cap 到 1.5 倍 ══ */
 ctxList=function(){
   var arr=ms().filter(okMsg),cap=ctxCap();
   var s=S(),sid=s?s.id:'';
@@ -6841,14 +6903,12 @@ ctxList=function(){
     ANCH[sid]=arr[i]?arr[i].id:'';}
   return arr.slice(i);};
 
-/* 身体和心情那张卡也要算进 token */
 var ci0=ctxInfo;
 ctxInfo=function(){
   var c=ci0();
   try{if(D.bodyOn)c.tok+=320;}catch(e){}
   return c;};
 
-/* 卡片里写明白窗口会漂 */
 var sx0=shCtx;
 shCtx=function(){
   sx0();
