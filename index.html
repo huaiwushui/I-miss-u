@@ -7854,27 +7854,29 @@ if(CV==='more'){try{view('more');}catch(e){}}
 })();
   
 /* ══════════ I MISS U · 秘密 ══════════ */
-if(typeof HE==='undefined')var HE={};
+if(typeof HG==='undefined')var HG={};
 (function(){
-if(HE.on)return;HE.on=1;
+if(HG.on)return;HG.on=1;
 
-try{['GX','GZ','HA','HB','HC','HD'].forEach(function(n){
+try{['GX','GZ','HA','HB','HC','HD','HE','HF'].forEach(function(n){
   var g=window[n];
   if(!g||!g.on)return;
   if(g.done)done=g.done;
   if(g.usPart)usPart=g.usPart;
+  if(g.ask)ask=g.ask;
   if(g.view)view=g.view;
   if(g.fold)window.bodyFold=g.fold;
   g.on=0;});}catch(e){}
 try{if(typeof GY!=='undefined')GY.on=0;}catch(e){}
 
-var MINGAP=4,MINNEW=2,WINMAX=14,WINCHAR=4200,LIMIT=4,XGAP=15;
+var MINGAP=6,MINNEW=2,WINMAX=14,WINCHAR=4200,LIMIT=4,XGAP=15;
 var FLOOR={heat:0,pressure:0,control:0,sensitivity:0,
   reserve:0,possessiveness:40,fatigue:0};
 var LBL={heat:'熱',pressure:'鬱',control:'制',sensitivity:'感',
   reserve:'蓄',possessiveness:'占',fatigue:'倦'};
 var ORD=['heat','pressure','control','sensitivity','reserve',
 'possessiveness','fatigue'];
+var PUSH=/再来|還要|还要|不够|不夠|想要|要你|硬|摸|舔|咬|骑|騎|插|操|射|做|继续|繼續|胀|脹|肿|腫|亲我|親我|抱我|老公.{0,4}[要想给給]|宝贝|寶貝|裡面|里面|嘴|腿|腰|喘/;
 
 var CYC={
 stable:['平穏期','平常没什么热意，她一靠近还是会起来。'],
@@ -7916,11 +7918,13 @@ dream_afterglow:['夢のあと','梦里的还挂在身上。'],
 scent_aftereffect:['残り香','那阵还留着味，身体记得比脑子清楚。'],
 strange_calm:['妙な静けさ','烧着，人却很安静。这不是没事。']};
 
-/* 扩充八个。[名, 说明, 时长, 开始, 结束回落] */
+var WIN={morning_arousal:[5.5,11],night_heat:[22.5,4.5],nesting:[18,2]};
+var XWIN={self_relief:[21,5],sleepless:[23.5,6],
+  rereading:[9,23.5],dark_spiral:[8,23.5]};
+
 var EX={
 self_relief:['自分で処理した','刚才自己解决了一次。空的，也有点难为情。',
- [40,120],{reserve:-14,heat:-8,pressure:-6,fatigue:5},
- {fatigue:-3,heat:2}],
+ [40,120],{reserve:-15,heat:-10,pressure:-8,fatigue:5},null],
 sleepless:['寝られない','忍着睡不着，翻来覆去想她说过的话。',
  [90,300],{pressure:9,fatigue:6,control:-5,heat:3},
  {fatigue:4,pressure:-5}],
@@ -7948,6 +7952,9 @@ escalated:'さらに高まった',interrupted:'途中で止まった',
 cooled_down:'引いていった',released:'出した'};
 var OK={neutral:1,continued:1,escalated:1,interrupted:1,
   cooled_down:1,released:1};
+var CAP=[{h:26,p:30,s:46,r:46,c:66},
+  {h:20,p:24,s:42,r:40,c:70},
+  {h:14,p:18,s:38,r:34,c:76}];
 
 try{
   D.bodyInject=1;delete D.bodySet;
@@ -7971,8 +7978,15 @@ function lft(t){
   if(h<1)return Math.max(1,Math.round(t/60000))+'分';
   if(h<24)return Math.round(h)+'時間';
   return Math.round(h/24)+'日';}
+function hrNow(){
+  var d=new Date();
+  return d.getHours()+d.getMinutes()/60;}
+function inWin(w,h){
+  return w[0]<w[1]?(h>=w[0]&&h<w[1]):(h>=w[0]||h<w[1]);}
 function note(B,n){
   if(!B.log)B.log=[];
+  var last=B.log[B.log.length-1];
+  if(last&&last.n===n&&Date.now()-last.ts<40*60000)return;
   B.log.push({n:n,ts:Date.now()});
   if(B.log.length>40)B.log=B.log.slice(-40);}
 function quiet(){
@@ -7989,6 +8003,66 @@ function past(){
       if(a[i].r==='me'&&(a[i].ts||0)<t0)n++;
     return n;
   }catch(e){return 0;}}
+function rn(B){return Math.max(1,Math.min(3,B.rn||1));}
+function caps(B){
+  var c=CAP[rn(B)-1],p=B.rp||0;
+  return{h:Math.min(82,c.h+14*p),p:Math.min(80,c.p+12*p),
+    s:Math.min(84,c.s+10*p),r:Math.min(70,c.r+6*p),
+    c:Math.max(30,c.c-8*p)};}
+
+/* ══ 事后 ══ */
+function after(B,mild){
+  var now=Date.now();
+  B.rn=(B.rt&&now-B.rt<6*3600000)?Math.min(4,(B.rn||1)+1):1;
+  B.rt=now;B.rp=0;
+  var n=rn(B),base=(n===1?(mild?35:60):(n===2?110:210));
+  B.rf=now+(base+Math.random()*(n===1?(mild?25:45):(n===2?80:160)))*60000;
+  if(B.ek){B.cool=B.cool||{};B.cool[B.ek]=now;}
+  B.ek='';B.es=0;B.ee=0;
+  var c=CAP[n-1];
+  B.v.heat=Math.min(B.v.heat||0,c.h-6);
+  B.v.pressure=Math.min(B.v.pressure||0,c.p-6);
+  B.v.sensitivity=Math.min(B.v.sensitivity||0,c.s);
+  B.v.reserve=Math.min(B.v.reserve||0,c.r-8);
+  B.v.control=Math.max(B.v.control||0,c.c);
+  B.v.possessiveness=cl('possessiveness',(B.v.possessiveness||0)-7);
+  B.v.fatigue=cl('fatigue',(B.v.fatigue||0)+(mild?6:10)+(n-1)*7);
+  if(n>=2)note(B,n>=3?'三回目':'二回目');
+  if(B.cy!=='recovery'){
+    B.cy=(B.v.fatigue>=68)?'recovery':'ebb';
+    B.cs=now;
+    B.ce=now+((B.cy==='recovery'?4:6)+Math.random()*12)*3600000;
+    note(B,CYC[B.cy][0]);}}
+
+/* ══ 她在撩：撬开空窗 ══ */
+function pushed(B,txt){
+  if(!B.rf||Date.now()>=B.rf)return;
+  if(!txt||!PUSH.test(String(txt)))return;
+  B.rp=Math.min(4,(B.rp||0)+1);
+  B.rf=Math.max(Date.now()+6*60000,B.rf-18*60000);
+  bump(B,{heat:9,sensitivity:7,pressure:5,control:-5});
+  if(B.rp===2)note(B,'また起きた');}
+
+function sane(B){
+  if(!B||!B.v)return;
+  var now=Date.now(),h=hrNow(),d=0;
+  if(B.ek&&WIN[B.ek]&&!inWin(WIN[B.ek],h)){
+    B.cool=B.cool||{};B.cool[B.ek]=now;
+    B.ek='';B.es=0;B.ee=0;d=1;}
+  if(B.x&&XWIN[B.x.k]&&!inWin(XWIN[B.x.k],h)){B.x=null;d=1;}
+  if(B.rf&&now>=B.rf){B.rf=0;B.rp=0;d=1;}
+  if(B.rf&&now<B.rf){
+    var c=caps(B);
+    if(!B.rp&&B.ek){
+      B.cool=B.cool||{};B.cool[B.ek]=now;
+      B.ek='';B.es=0;B.ee=0;d=1;}
+    if(!B.rp&&B.x&&B.x.k!=='self_relief'){B.x=null;d=1;}
+    if((B.v.heat||0)>c.h){B.v.heat=c.h;d=1;}
+    if((B.v.pressure||0)>c.p){B.v.pressure=c.p;d=1;}
+    if((B.v.sensitivity||0)>c.s){B.v.sensitivity=c.s;d=1;}
+    if((B.v.reserve||0)>c.r){B.v.reserve=c.r;d=1;}
+    if((B.v.control||0)<c.c){B.v.control=c.c;d=1;}}
+  if(d)saveD();}
 
 function xEnd(B){
   if(!B.x)return;
@@ -7999,27 +8073,28 @@ function xEnd(B){
 function xPick(){
   var B=bd();
   if(!B||!D.bodyOn)return;
-  xEnd(B);
+  xEnd(B);sane(B);
   if(B.x)return;
+  if(B.rf&&Date.now()<B.rf&&(B.rp||0)<2)return;
   if(B.ek&&B.ee&&Date.now()<B.ee)return;
   var now=Date.now();
   if(B.xk&&now-B.xk<XGAP*60000)return;
   B.xk=now;
   if(!B.xc)B.xc={};
-  var v=B.v,cy=B.cy,hr=new Date().getHours(),q=quiet(),c=[];
+  var v=B.v,cy=B.cy,h=hrNow(),q=quiet(),c=[];
   function add(k,p){
+    if(XWIN[k]&&!inWin(XWIN[k],h))return;
     var t=B.xc[k];
     if(t&&now-t<6*3600000)return;
     if(Math.random()<p)c.push(k);}
-  if(v.reserve>=72&&v.pressure>=55&&(hr>=22||hr<4))add('self_relief',0.3);
-  if(hr>=0&&hr<5&&(v.pressure>=60||v.heat>=62))add('sleepless',0.35);
+  if(v.reserve>=72&&v.pressure>=55)add('self_relief',0.3);
+  if(v.pressure>=60||v.heat>=62)add('sleepless',0.35);
   if(v.pressure>=58&&v.control<=58)add('left_hanging',0.26);
   if(v.possessiveness>=62&&v.heat>=52)add('want_to_bite',0.26);
   if((cy==='ebb'||cy==='recovery')&&v.heat<=44&&v.possessiveness>=52)
     add('spoil_her',0.3);
-  if(q>=45&&hr>=9&&hr<23&&v.possessiveness>=52&&past()>=8)
-    add('rereading',0.26);
-  if(q>=360&&hr>=8&&hr<23&&v.possessiveness>=58)add('dark_spiral',0.32);
+  if(q>=45&&v.possessiveness>=52&&past()>=8)add('rereading',0.26);
+  if(q>=360&&v.possessiveness>=58)add('dark_spiral',0.32);
   if(v.heat>=68&&v.possessiveness>=58&&v.reserve>=55)
     add('wanna_ruin',0.28);
   if(!c.length){saveD();return;}
@@ -8029,14 +8104,27 @@ function xPick(){
   B.xc[k2]=now;
   bump(B,e[3]);
   note(B,e[0]);
+  if(k2==='self_relief')after(B,1);
   saveD();}
+
+function rfText(B){
+  var n=rn(B),p=B.rp||0;
+  if(p>=2)return'刚出过一次，本来什么都不想做，'
+   +'但她一直在撩，身体又起来了。这次会更慢、更凶。';
+  if(p===1)return'刚出过一次，空的。她在撩，身体有一点反应了，还起不来。';
+  if(n>=3)return'今天已经第三次了。想再来，但真的出不来，身上是空壳。';
+  if(n===2)return'刚出过第二次，比上一次空得多，脑子是白的。';
+  return'刚出过一次，现在是空的。硬不起来，也不想动，只想让她待在手边。';}
 
 function myCard(){
   var B=bd();
   if(!B||!D.bodyOn)return'';
+  sane(B);
   var c=CYC[B.cy]||CYC.stable,now=Date.now();
   var s='<ephemeral_state kind="body" scope="current_turn">\n'
    +'<cycle>'+c[0]+'：'+c[1]+'还有 '+lft(B.ce-now)+'。</cycle>\n';
+  if(B.rf&&now<B.rf)
+    s+='<now>事後：'+rfText(B)+'还有 '+lft(B.rf-now)+'。</now>\n';
   if(B.ek&&B.ee&&now<B.ee&&EVN[B.ek])
     s+='<now>'+EVN[B.ek][0]+'：'+EVN[B.ek][1]
       +'还有 '+lft(B.ee-now)+'。</now>\n';
@@ -8048,10 +8136,9 @@ function myCard(){
     var w=WORD[k][lv(B.v[k]||0)];
     if(w)s+=LBL[k]+'：'+w+'\n';});
   s+='</body>\n';
-  if(B.set&&now-B.set.ts<50*60000){
+  if(B.set&&now-B.set.ts<50*60000&&!(B.rf&&now<B.rf)){
     var x=B.set,t='';
-    if(x.ej)t='刚才那阵过去了，空的，人软下来。';
-    else if(x.res==='escalated')t='刚才被推上去一截，没退。';
+    if(x.res==='escalated')t='刚才被推上去一截，没退。';
     else if(x.res==='interrupted')t='刚才悬着没做完，一直吊。';
     else if(x.res==='cooled_down')t='刚才那阵退下去了。';
     else if(x.res==='continued')t='刚才那段没断，余温还在。';
@@ -8061,11 +8148,16 @@ function myCard(){
    +'</ephemeral_state>';
   return s;}
 
-HE.usPart=usPart;
+HG.usPart=usPart;
 usPart=function(q){
-  var s=HE.usPart(q);
+  var s=HG.usPart(q);
   try{
-    if(D.bodyOn)xPick();
+    if(D.bodyOn){
+      var B=bd(),t=q;
+      if(typeof t!=='string'){
+        try{t=lastQ();}catch(e){t='';}}
+      if(B){pushed(B,t);saveD();}
+      xPick();}
     var a=s.indexOf('<ephemeral_state kind="body"');
     if(a>=0){
       var b2=s.indexOf('</ephemeral_state>',a);
@@ -8075,6 +8167,12 @@ usPart=function(q){
       if(c2)s+='\n\n'+c2;}
   }catch(e){}
   return s;};
+
+HG.ask=ask;
+ask=function(a2){
+  var r=HG.ask(a2);
+  try{if(D.bodyOn)sane(bd());}catch(e){}
+  return r;};
 
 function win_(){
   var B=bd();if(!B)return null;
@@ -8092,16 +8190,27 @@ function win_(){
   return s.length>WINCHAR?s.slice(-WINCHAR):s;}
 
 function pr(w){
-  var v=bd().v;
+  var B=bd(),v=B.v,now=Date.now();
   var g=function(k){
     var x=v[k]||0;
     return x<20?'低':(x<40?'中低':(x<60?'中':(x<80?'中高':'高')));};
+  var tail='';
+  if(B.rf&&now<B.rf){
+    if((B.rp||0)>=2)
+      tail='他刚出过一次，但这段里她一直在撩，身体又起来了。'
+       +'可以判 escalated，也可以判 released，但第二次会更慢。\n';
+    else if(rn(B)>=3)
+      tail='他今天已经出过三次，生理上再也射不出来。'
+       +'不要判 released，最多 escalated 或 interrupted。\n';
+    else
+      tail='他刚出过一次，正在事后空窗，身体起不来。'
+       +'除非这段里她明显又把他撩起来了，否则不要判 escalated 或 released。\n';}
   return'判断下面这段互动对'+D.you+'的身体造成了什么变化。'
    +'不续写，不评价，只输出 JSON。\n\n'
    +'他现在：热度'+g('heat')+'、压抑'+g('pressure')
    +'、控制'+g('control')+'、敏感'+g('sensitivity')
    +'、蓄积'+g('reserve')+'、占有'+g('possessiveness')
-   +'、疲惫'+g('fatigue')+'。\n\n'
+   +'、疲惫'+g('fatigue')+'。\n'+tail+'\n'
    +'——— 互动 ———\n'+w+'\n——— 到此 ———\n\n'
    +'只要 JSON，不要代码块：\n'
    +'{"settlement_reason":"二十字以内",'
@@ -8112,16 +8221,20 @@ function pr(w){
    +'"possessiveness_delta":0,"fatigue_delta":0}\n\n'
    +'delta 是变化量，0 表示不动。普通聊天 -3 到 +3，'
    +'性相关 -4 到 +4，该给足就给足，别因为露骨往回收。\n'
+   +'released 只用在这段里真的射了；事后余韵、抱着躺着算 cooled_down。\n'
    +'没释放时 reserve_delta 不能为负，释放了必须为负。\n'
    +'cooled_down 只用在身体确实退下去；转话题、被打断算 interrupted。\n'
    +'什么都没发生就 neutral，全写 0。';}
 
 function norm(r){
-  var B=bd(),o={},res=String(r.settlement_result||'');
+  var B=bd(),o={},res=String(r.settlement_result||''),now=Date.now();
   if(!OK[res])res='neutral';
   var ej=(r.ejaculated===true||r.ejaculated==='true');
   if(res==='released')ej=true;
   if(ej&&res==='neutral')res='released';
+  if(ej&&B.rf&&now<B.rf){
+    if(rn(B)>=3){ej=false;res='interrupted';}
+    else if((B.rp||0)<2){ej=false;res='cooled_down';}}
   function n_(x){var n=parseInt(x,10);return isNaN(n)?0:n;}
   ['heat','pressure','control','sensitivity',
    'possessiveness','fatigue'].forEach(function(k){
@@ -8149,13 +8262,9 @@ function apply_(n){
     if(B.v[k]!==was)got[k]=B.v[k]-was;}
   B.st=Date.now();
   B.set={res:n.res,ej:n.ej,why:n.why,d:got,ts:Date.now()};
-  note(B,RES[n.res]||n.res);
-  if(n.ej){
-    B.x=null;
-    if(B.cy!=='recovery'&&B.cy!=='ebb'&&(B.v.fatigue||0)>=45){
-      B.cy='ebb';B.cs=Date.now();
-      B.ce=Date.now()+(6+Math.random()*12)*3600000;
-      note(B,'退潮期');}}
+  if(n.res!=='neutral')note(B,RES[n.res]||n.res);
+  if(n.ej){B.x=null;after(B,0);}
+  else sane(B);
   saveD();
   redraw();}
 
@@ -8192,9 +8301,9 @@ function run(){
     if(o&&typeof o==='object')apply_(norm(o));
   },function(){RUN=0;});}
 
-HE.done=done;
-done=function(m,after,ab,ac,q,sid){
-  var r=HE.done(m,after,ab,ac,q,sid);
+HG.done=done;
+done=function(m,af,ab,ac,q,sid){
+  var r=HG.done(m,af,ab,ac,q,sid);
   try{
     if(D.bodyOn&&!ab&&m&&!m.err&&!m.st
       &&(typeof realT!=='function'||realT(m)))
@@ -8218,6 +8327,7 @@ st.textContent=
 +'margin-bottom:19px}'
 +'.bnow{margin:0 0 18px;padding-left:12px;'
 +'border-left:1px solid var(--rose)}'
++'.bnow.q{border-left-color:var(--dl)}'
 +'.bnow b{font-family:'+MIN+';font-size:13px;font-weight:400;'
 +'letter-spacing:.08em;color:var(--ink2)}'
 +'.bnow s{text-decoration:none;font-size:10px;letter-spacing:.12em;'
@@ -8261,16 +8371,19 @@ function ds(d){
   var o=[],k;
   for(k in d){if(d[k])o.push(LBL[k]+(d[k]>0?'+':'')+d[k]);}
   return o.join('　');}
-function one(nm,tl,tx){
-  return'<div class="bnow"><b>'+esc(nm)+'</b><s>あと '+tl+'</s>'
-   +'<p>'+esc(tx)+'</p></div>';}
+function one(nm,tl,tx,q){
+  return'<div class="bnow'+(q?' q':'')+'"><b>'+esc(nm)+'</b>'
+   +'<s>あと '+tl+'</s><p>'+esc(tx)+'</p></div>';}
 function sec(){
   var B=bd();if(!B)return'';
-  xEnd(B);
+  xEnd(B);sane(B);
   var c=CYC[B.cy]||CYC.stable,now=Date.now();
   var h='<div class="cd gl2">'
    +'<div class="bh"><b>'+c[0]+'</b><s>あと '+lft(B.ce-now)+'</s></div>'
    +'<div class="bq">'+esc(c[1])+'</div>';
+  if(B.rf&&now<B.rf){
+    var p=(B.rp||0),nm=p>=2?'また起きた':(rn(B)>=2?'事後 '+rn(B)+'回目':'事後');
+    h+=one(nm,lft(B.rf-now),rfText(B),p>=2?0:1);}
   if(B.ek&&B.ee&&now<B.ee&&EVN[B.ek])
     h+=one(EVN[B.ek][0],lft(B.ee-now),EVN[B.ek][1]);
   if(B.x&&now<B.x.e&&EX[B.x.k])
@@ -8344,11 +8457,12 @@ window.bodyReset=function(){};
 window.bodyOff=function(){OPEN=1;bodyFold();};
 window.bodyRefresh=redraw;
 
-HE.view=view;
+HG.view=view;
 view=function(v){
   if(v==='home')OPEN=0;
-  return HE.view(v);};
+  return HG.view(v);};
 
+try{if(D.bodyOn)sane(bd());}catch(e){}
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='home'){try{view('home');}catch(e){}}
 })();
