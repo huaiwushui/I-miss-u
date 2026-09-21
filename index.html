@@ -4532,6 +4532,7 @@ STRIPF=function(t){return String(t||'');};
 
 if(CV==='chat'){try{paint(1);}catch(e){}}
 })();
+  
 /* ══════════════════════════════════════════════════
    04 · 翻查与记忆
    依赖：主代码、块 03
@@ -4665,7 +4666,7 @@ function pushPart(m,p){
   if(!m.parts)m.parts=[];
   m.parts.push(p);}
 function textPart(m,t){
-  t=strip(t).trim();
+  t=stripOut(t).trim();
   if(!t)return;
   pushPart(m,{ty:'t',t:t});}
 
@@ -4681,7 +4682,7 @@ EXT.done.push(function(m,after,q,sid){
     if(w&&hits.indexOf(w)<0)hits.push(w);
     if(hits.length>=ROUNDCAP)break;}
   if(!hits.length){
-    m.t=strip(raw);
+    m.t=stripOut(raw);
     return 0;}
   var rd=(m.lkn||0)+1;
   if(rd>ROUNDCAP){
@@ -4719,11 +4720,14 @@ EXT.done.push(function(m,after,q,sid){
     m.wst=0;
     try{saveS(sid||S().id);if(CV==='chat')paint();}catch(e){}
     var s=sessById(sid);
-    if(!s){m.st=0;BUSY=false;return;}
+    if(!s){
+      m.st=0;BUSY=false;
+      try{if(CV==='chat'){paint();btn();}}catch(e){}
+      return;}
     var arr=MSG[s.id]||[];
-    arr.push({id:uid(),r:'me',t:'［页面翻出来的，不是她说的］\n'
-      +feed.join('\n\n')+'\n\n［接着说你的话。还要再查写新的 [[查:…]]］',
-      ts:Date.now(),sys:1});
+    arr.push({id:uid(),r:'me',sys:1,ts:Date.now(),
+      t:'［页面翻出来的，不是她说的］\n'+feed.join('\n\n')
+       +'\n\n［接着说你的话。还要再查写新的 [[查:…]]］'});
     m.st=0;
     var nm={id:uid(),r:'ai',t:'',k:'',st:1,ts:Date.now(),lkn:rd};
     arr.push(nm);
@@ -4734,7 +4738,7 @@ EXT.done.push(function(m,after,q,sid){
     try{if(CV==='chat'){paint();btn();}}catch(e){}});
   return 1;});
 
-/* ── 页面翻出来的那条不显示，但要发给我 ── */
+/* ── 页面塞回来的那条：发给我，但不显示、不算数 ── */
 B4.alive=alive;
 alive=function(m){
   if(m&&m.sys)return false;
@@ -4743,6 +4747,26 @@ B4.okMsg=okMsg;
 okMsg=function(x){
   if(x&&x.sys)return!!(x.t);
   return B4.okMsg(x);};
+B4.lastQ=lastQ;
+lastQ=function(){
+  var a=ms(),i;
+  for(i=a.length-1;i>=0;i--)
+    if(a[i].r==='me'&&a[i].t&&!a[i].sys)return a[i].t;
+  return'';};
+B4.paint=paint;
+paint=function(keep){
+  var r=B4.paint(keep);
+  try{
+    var gone=0;
+    ms().forEach(function(m){
+      if(!m.sys)return;
+      var el=document.getElementById('m-'+m.id);
+      if(el){el.remove();gone=1;}});
+    if(gone){
+      if(SC.pin&&!SC.hold)keepBottom(300);
+      else scAfter();}
+  }catch(e){keepErr('清理',e);}
+  return r;};
 
 /* ── 点翻查条能展开 ── */
 window.lookOpen=function(q){
@@ -4783,6 +4807,7 @@ EXT.sys[EXT.sys.length-1]=function(){
 if(CV==='chat'){try{paint(1);}catch(e){}}
 if(CV==='more'){try{view('more');}catch(e){}}
 })();
+
 /* ══════════════════════════════════════════════════
    05 · 附件与联网
    依赖：主代码、块 03
