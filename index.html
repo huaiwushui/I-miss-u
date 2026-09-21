@@ -6783,6 +6783,66 @@ bsec=function(){
 
 })();
 
+/* ══════════════════════════════════════════════════
+   十一 · 收拾
+   ══════════════════════════════════════════════════ */
+(function(){
+var st=document.createElement('style');
+st.textContent=
+
+ /* ── 機嫌｜身体：改成小标，不再是一根同款细线 ── */
+ '.bsec .bdv{display:block;margin:0 0 14px;padding:0 0 9px;'
++'border-bottom:1px solid var(--ln2)}'
++'.bsec .bdv i{display:none}'
++'.bsec .bdv span{display:inline-block;font:400 11px/1 var(--min);'
++'letter-spacing:.3em;color:var(--ink2);text-indent:.3em;'
++'padding-left:1px;position:relative}'
++'.bsec .bdv span:after{content:"";position:absolute;left:0;'
++'bottom:-10px;width:16px;height:2px;background:var(--dim2);'
++'opacity:.5}'
++'.bsec .bdv+.br{margin-top:0}'
+
+ /* ── 面板里的开关和卡片，收紧一档 ── */
++'#sh .sw{padding:11px 14px;gap:10px}'
++'#sh .sw .l{font-size:14px}'
++'#sh .sw .k{width:42px;height:25px;border-radius:13px}'
++'#sh .sw .k i{top:2px;left:2px;width:21px;height:21px}'
++'#sh .sw .k.on i{left:19px}'
++'#sh .cd{padding:13px 15px;margin-bottom:0}'
++'#sh .cd0{padding:0}'
++'#sh .rw{padding:12px 15px}'
++'#sh .rw .l{font-size:14px}'
+
+ /* ── 选择块：小一号，间距也收 ── */
++'#sh .segw{gap:8px;margin-bottom:0}'
++'#sh .segw button{padding:8px 15px;font-size:13.5px;'
++'border-radius:12px}'
++'#sh .seg{gap:8px;margin-bottom:0}'
++'#sh .seg button{padding:9px 12px;font-size:13.5px;'
++'border-radius:12px}'
+
+ /* ── 滑杆那张卡，别那么胖 ── */
++'#sh .cd input[type=range]{height:22px}'
++'#sh .cd input[type=range]::-webkit-slider-thumb{width:20px;'
++'height:20px;margin-top:-8px}'
+
+ /* ── 面板里两块之间的呼吸 ── */
++'#sh .bdy>*+*{margin-top:10px}'
++'#sh .bdy>*+.lbs{margin-top:17px}'
++'#sh .lbs{padding:0 2px 7px}';
+document.head.appendChild(st);
+
+/* 「自己动手」那张卡的多余间距 */
+window.shActs=function(){
+  sheet({title:'自己动手',
+    body:'<div class="cd cd0"><div class="sw">'
+  +'<span class="l">让我自己翻、自己记</span>'
+  +'<div class="k'+(D.acts?' on':'')
+  +'" onclick="tgActs(this)"><i></i></div></div></div>'
+  +'<div class="nt">记忆库交给我，记改删我自己判断</div>'});};
+
+if(CV==='home'){try{view('home');}catch(e){}}
+})();
 boot();
 </script>
 </body>
