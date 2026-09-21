@@ -6804,6 +6804,19 @@ st.textContent=
 +'html.sk1 #ms .m.ai .bub+.bub,html.sk2 #ms .m.ai .bub+.bub,'
 +'html.sk3 #ms .m.ai .bub+.bub{margin-top:8px}'
 
+ /* ── 正文和输入框之间，别空那么一大块 ── */
++'#ms{padding-bottom:calc(6px + var(--kb))}'
++'html.kbot #ms{padding-bottom:6px}'
++'#ms>.m:last-child{margin-bottom:2px}'
++'#ms>.mfar+.m:last-child{margin-bottom:2px}'
++'.ib{padding-top:0}'
++'#ms .ops{margin-top:9px}'
+
+ /* ── 锁屏那行英文，回到看得清的大小 ── */
++'#lk .en{font-size:12.5px;letter-spacing:.34em;'
++'font-weight:500;margin-top:18px}'
++'#lk .jp{font-size:34px}'
+
  /* ── 機嫌 / 身体：一小截短杠加一行字 ── */
 +'.bsec .bdv{display:flex;align-items:center;gap:9px;'
 +'margin:0 0 13px;padding:0;border:0}'
@@ -6814,14 +6827,6 @@ st.textContent=
 +'letter-spacing:.26em;color:var(--ink2);text-indent:.26em}'
 +'.bsec .bdv span:after{display:none}'
 +'.bsec .bdv+.br{margin-top:0}'
-
- /* ── 正文底下那排按钮：收窄，别横贯整屏 ── */
-+'#ms .ops{gap:11px;margin-top:8px;opacity:.5}'
-+'#ms .ops>button{width:24px;height:24px;display:flex;'
-+'align-items:center;justify-content:center}'
-+'#ms .ops .nav{margin-left:3px;gap:3px}'
-+'#ms .eo{gap:9px;margin-top:3px;opacity:.45}'
-+'#ms .eo button{width:22px;height:22px}'
 
  /* ── 面板：收紧一档 ── */
 +'#sh .sw{padding:11px 14px;gap:10px}'
@@ -6861,7 +6866,7 @@ window.shActs=function(){
   +'" onclick="tgActs(this)"><i></i></div></div></div>'
   +'<div class="nt">记忆库交给我，记改删我自己判断</div>'});};
 
-/* ══ 进聊天页不卡：先把架子搭起来，气泡下一帧再拆 ══ */
+/* ══ 进聊天页不卡：先搭架子，气泡下一帧再拆 ══ */
 (function(){
   var RAF=0,PEND=0;
   var p0=paint;
@@ -6874,7 +6879,8 @@ window.shActs=function(){
       if(RAF)cancelAnimationFrame(RAF);
       RAF=requestAnimationFrame(function(){
         RAF=0;
-        try{BUBRUN();}catch(e){keepErr('气泡',e);}});}
+        try{BUBRUN();}catch(e){keepErr('气泡',e);}
+        if(SC.pin&&!SC.hold)keepBottom(260);});}
     return r;};
   window.__bubDefer=function(){PEND=1;};
 })();
