@@ -6564,6 +6564,109 @@ if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='more'){try{view('more');}catch(e){}}
 })();
 boot();
+  /* ══════════════════════════════════════════════════
+   十 · 收尾
+   ══════════════════════════════════════════════════ */
+(function(){
+
+/* ══ 字体：五种，带各自的字重 ══ */
+var st=document.createElement('style');
+st.textContent=
+ '#ms .bd,#ms .sg,#ms .bub{font-weight:var(--cw,400)}'
+ /* 附件卡里那个小方块，不再写内联 */
++'.att .a.af .fi{flex:none;width:26px;height:26px;border-radius:7px;'
++'font:600 9px/26px ui-monospace,Menlo,monospace;text-align:center;'
++'background:var(--cbx);color:var(--cbxt);overflow:hidden}'
++'.att .a.af .fi.p{background:#B4453C;color:#fff}';
+document.head.appendChild(st);
+
+FONTS=[
+ ['原本','-apple-system,BlinkMacSystemFont,"PingFang SC",'
+  +'"Helvetica Neue",sans-serif',1.68,400],
+ ['細身','"Helvetica Neue","PingFang SC",-apple-system,sans-serif',
+  1.74,300],
+ ['明朝','"Hiragino Mincho ProN","Yu Mincho","Songti SC",serif',
+  1.78,400],
+ ['丸','"Hiragino Maru Gothic ProN","Yuanti SC","PingFang SC",'
+  +'sans-serif',1.74,400],
+ ['手書き','"HanziPen SC","Hannotate SC",'
+  +'"Hiragino Maru Gothic ProN",cursive',1.8,400]];
+
+if(!(D.cft>=0&&D.cft<=4))D.cft=0;
+
+look=function(){
+  var f=FONTS[D.cft]||FONTS[0];
+  de.style.setProperty('--cs',(D.csz||16)+'px');
+  de.style.setProperty('--cf',f[1]);
+  de.style.setProperty('--clh',String(f[2]));
+  de.style.setProperty('--cw',String(f[3]||400));
+  var v=Math.max(0,Math.min(3,D.skin||0));
+  de.classList.remove('sk1','sk2','sk3');
+  if(v)de.classList.add('sk'+v);};
+look();
+
+var shLook0=shLook;
+window.shLook=function(){
+  shLook0();
+  var w=document.getElementById('cf-seg');
+  if(!w)return;
+  w.innerHTML=FONTS.map(function(x,i){
+    return'<button class="pz'+(i===(D.cft||0)?' on':'')
+      +'" onclick="pkFont('+i+')" style="font-family:'
+      +x[1].replace(/"/g,"'")+'">'+x[0]+'</button>';}).join('');};
+
+/* ══ 时间：每条都有，日期一天一次 ══ */
+timeTags=function(list){
+  var out={},lastDay='';
+  list.forEach(function(x){
+    if(x.r==='ai'||x.r==='quote'||x.sys||!x.ts)return;
+    var day=dlab(x.ts);
+    if(day!==lastDay){out[x.id]=day+' '+hm(x.ts);lastDay=day;}
+    else out[x.id]=hm(x.ts);});
+  return out;};
+
+/* ══ 代码高亮：#FFF 不再被当注释 ══ */
+hl=function(code){
+  var t=esc(code),map={},n=0;
+  function pk(i){
+    var s='';i++;
+    while(i>0){s+=String.fromCharCode(97+i%26);i=Math.floor(i/26);}
+    return s;}
+  function keep(c,s){
+    var k='\u0001'+pk(n++)+'\u0001';
+    map[k]='<i class="'+c+'">'+s+'</i>';
+    return k;}
+  t=t.replace(/(&quot;|&#39;)(?:\\[\s\S]|(?!\1)[\s\S])*?\1/g,
+    function(m){return keep('cs',m);});
+  t=t.replace(/`[^`\n]*`/g,function(m){return keep('cs',m);});
+  t=t.replace(/\/\*[\s\S]*?\*\//g,function(m){return keep('cc',m);});
+  t=t.replace(/\/\/[^\n]*/g,function(m){return keep('cc',m);});
+  t=t.replace(/(^|[\s(])#(?![0-9A-Fa-f]{3,8}\b)[^\n]*/g,
+    function(m,p){return p+keep('cc',m.slice(p.length));});
+  t=t.replace(KW,'<i class="ck">$1</i>');
+  t=t.replace(/\b\d+(?:\.\d+)?\b/g,'<i class="cn">$&</i>');
+  t=t.replace(/([A-Za-z_$][\w$]*)(\s*\()/g,'<i class="cf">$1</i>$2');
+  return t.replace(/\u0001[a-z]+\u0001/g,function(k){return map[k]||k;});};
+HC={};HQ=[];
+
+/* ══ 附件卡：样式挪进 CSS ══ */
+drawAtt=function(){
+  var e=document.getElementById('att');
+  if(!e)return;
+  e.innerHTML=ATT.map(function(u,i){
+    if(u&&(u.ty==='f'||u.ty==='p'))
+      return'<div class="a af">'
+        +'<div class="fi'+(u.ty==='p'?' p':'')+'">'
+        +(u.ty==='p'?'PDF':esc(extOf(u.name)))+'</div>'
+        +'<div class="fx"><b>'+esc(u.name)+'</b>'
+        +'<s>'+fSize(u.size||0)+'</s></div>'
+        +'<button onclick="rmAtt('+i+')">×</button></div>';
+    return'<div class="a"><img src="'+u+'">'
+      +'<button onclick="rmAtt('+i+')">×</button></div>';}).join('');
+  e.style.display=ATT.length?'flex':'none';};
+
+if(CV==='chat'){try{paint(1);}catch(e){}}
+})();
 </script>
 </body>
 </html>
