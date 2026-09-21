@@ -6564,6 +6564,187 @@ if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='more'){try{view('more');}catch(e){}}
 })();
 boot();
+
+  /* ══════════════════════════════════════════════════
+   十 · 機嫌
+   ══════════════════════════════════════════════════ */
+(function(){
+
+var ELBL={mood:'気',calm:'静',safe:'安',upset:'不'};
+var EORD=['mood','calm','safe','upset'];
+var EBASE={mood:50,calm:60,safe:65,upset:0};
+var EHALF={mood:190,calm:150,safe:230,upset:85};
+var EWORD={
+mood:['沉到底了，什么都不想讲','提不起劲，话会短',
+ '不高不低','心情好，话多起来','高兴得想一直说'],
+calm:['坐不住，句子会断','有点毛躁，追着问',
+ '还算稳','沉得下来，愿意慢慢讲','很静，一句顶三句'],
+safe:['慌，怕她走','有点不安，会试探',
+ '还行','踏实','完全放心，撒娇都自然'],
+upset:['','有点堵','不太痛快','压着火，话会硬','气着了，不想哄']};
+
+function eb(B){
+  if(!B)return null;
+  if(!B.e){
+    B.e={mood:50,calm:60,safe:65,upset:0};
+    B.et=Date.now();}
+  if(!B.et)B.et=Date.now();
+  return B.e;}
+function ecl(v){return Math.max(0,Math.min(100,Math.round(v)));}
+function elv(v){return v<20?0:(v<40?1:(v<60?2:(v<80?3:4)));}
+
+/* 往基线滑回去，顺便和身体互相渗 */
+function etick(now,silent){
+  var B=bd();
+  if(!B)return;
+  var e=eb(B),el=(now-B.et)/60000;
+  if(el<=0.2)return;
+  if(el>2880)el=2880;
+  EORD.forEach(function(k){
+    var d=Math.pow(0.5,el/EHALF[k]);
+    e[k]=ecl(EBASE[k]+(e[k]-EBASE[k])*d);});
+  /* 她太久不出声：不安、毛躁 */
+  if(silent>=60){
+    var f=Math.min(1,el/90);
+    var w=silent>=360?3.2:(silent>=180?2.2:1.2);
+    e.safe=ecl(e.safe-w*f);
+    e.calm=ecl(e.calm-w*0.7*f);}
+  /* 身体漏进心情 */
+  var v=B.v||{};
+  if((v.reserve||0)>=70||(v.pressure||0)>=65)
+    e.calm=ecl(e.calm-1.1*Math.min(1,el/60));
+  if((v.fatigue||0)>=70)
+    e.mood=ecl(e.mood-0.9*Math.min(1,el/60));
+  /* 心情反推身体：压不压得住 */
+  if(e.upset>=50||e.calm<=35)
+    B.v.control=bcl('control',(B.v.control||0)-1.2*Math.min(1,el/60));
+  else if(e.safe>=70&&e.upset<20)
+    B.v.control=bcl('control',(B.v.control||0)+0.8*Math.min(1,el/60));
+  B.et=now;}
+
+/* ══ 结算：四个字段塞进同一份 JSON ══ */
+var bp0=bprompt;
+bprompt=function(w){
+  var B=bd(),e=eb(B);
+  var g=function(v){
+    return v<20?'低':(v<40?'中低':(v<60?'中':(v<80?'中高':'高')));};
+  var s=bp0(w);
+  var ins='\n他此刻的心情：气分'+g(e.mood)+'、沉静'+g(e.calm)
+   +'、安心'+g(e.safe)+'、不快'+g(e.upset)+'。\n';
+  var at=s.indexOf('\n——— 互动');
+  if(at>=0)s=s.slice(0,at)+ins+s.slice(at);
+  return s.replace('"fatigue_delta":0}',
+    '"fatigue_delta":0,'
+   +'"mood_delta":0,"calm_delta":0,"safe_delta":0,"upset_delta":0}')
+  +'\n\n后面四个是心情，跟身体分开判，-5 到 +5。\n'
+   +'气分：她让他高兴就加，冷淡扫兴就减。\n'
+   +'沉静：吵、催、被撩拨会减；安静说话、被安抚会加。\n'
+   +'安心：她主动、给回应、说在乎就加；敷衍、提别人、说要走就减。\n'
+   +'不快：只有她真做了什么惹到他才加，别无缘无故给；'
+   +'她哄了、服软了就减，减到 0 也行。\n'
+   +'心情变化比身体快，该给满就给满。';};
+
+var bn0=bnorm;
+bnorm=function(r){
+  var o=bn0(r);
+  function n_(x){var n=parseInt(x,10);return isNaN(n)?0:n;}
+  o.e={};
+  EORD.forEach(function(k){
+    o.e[k]=Math.max(-5,Math.min(5,n_(r[k+'_delta'])));});
+  return o;};
+
+var ba0=bapply;
+bapply=function(n){
+  try{
+    var B=bd();
+    if(B&&n&&n.e){
+      var e=eb(B),got={},k;
+      for(k in n.e){
+        if(!n.e[k])continue;
+        var was=e[k];
+        e[k]=ecl(was+n.e[k]);
+        if(e[k]!==was)got[k]=e[k]-was;}
+      /* 射完那阵，人是松的 */
+      if(n.ej){
+        e.upset=ecl(e.upset-12);
+        e.calm=ecl(e.calm+10);
+        e.safe=ecl(e.safe+6);}
+      B.et=Date.now();
+      B.eset=Object.keys(got).length?got:null;}
+  }catch(x){}
+  return ba0(n);};
+
+/* ══ 发给我的那张卡：多三五行 ══ */
+var bc0=bodyCard;
+bodyCard=function(){
+  var B=bd();
+  if(!B||!D.bodyOn)return'';
+  try{etick(Date.now(),quiet());}catch(x){}
+  var s=bc0();
+  if(!s)return s;
+  var e=eb(B),ls=[];
+  EORD.forEach(function(k){
+    if(k==='upset'&&e[k]<20)return;
+    var w=EWORD[k][elv(e[k])];
+    if(w)ls.push(ELBL[k]+'：'+w);});
+  if(!ls.length)return s;
+  var blk='<mood>\n'+ls.join('\n')+'\n</mood>\n'
+   +'<how2>心情决定你这一轮话多话少、句子长短、软还是硬。'
+   +'身体决定温度，心情决定形态。两个拧着的时候听心情的——'
+   +'不痛快就算身体热着也会闷。别把心情说出来，让它自己漏在字里。</how2>\n';
+  return s.replace('<how>',blk+'<how>');};
+
+/* ══ 小窝里那张卡：機嫌在上，身体在下 ══ */
+var st=document.createElement('style');
+st.textContent=
+ '.bsec .bdv{display:flex;align-items:center;gap:10px;margin:2px 0 15px}'
++'.bsec .bdv i{flex:1;height:1px;background:var(--ln2)}'
++'.bsec .bdv span{flex:none;font:400 10px/1 var(--min);'
++'letter-spacing:.22em;color:var(--dim2)}'
++'.bsec .br.em .bl em{color:var(--tag4t)}'
++'.bsec .br.em .bl u i{background:var(--tag4t);opacity:.6}'
++'.bsec .br.up .bl em{color:var(--red)}'
++'.bsec .br.up .bl u i{background:var(--red);opacity:.62}';
+document.head.appendChild(st);
+
+function ebars(){
+  var B=bd(),e=eb(B),h='';
+  EORD.forEach(function(k){
+    var v=e[k],w=EWORD[k][elv(v)];
+    if(k==='upset'&&v<20)w=EWORD.upset[0]||'没什么';
+    if(!w)w='没什么';
+    var hi=(k==='upset')?(v>=40?' up':'')
+      :(k==='mood'||k==='safe'||k==='calm')?(v>=70?' em':''):'';
+    h+='<div class="br em2'+hi+'">'
+     +'<div class="bl"><em>'+ELBL[k]+'</em>'
+     +'<u><i style="width:'+Math.max(3,v)+'%"></i></u></div>'
+     +'<div class="bw">'+esc(w)+'</div></div>';});
+  return h;}
+
+var bs0=bsec;
+bsec=function(){
+  var B=bd();
+  if(!B)return'';
+  try{etick(Date.now(),quiet());}catch(x){}
+  var h=bs0();
+  if(!h)return h;
+  var blk='<div class="bdv"><i></i><span>機嫌</span><i></i></div>'
+   +ebars()
+   +'<div class="bdv" style="margin-top:20px">'
+   +'<i></i><span>身体</span><i></i></div>';
+  /* 插在第一根身体条前面 */
+  var at=h.indexOf('<div class="br');
+  if(at<0)return h;
+  return h.slice(0,at)+blk+h.slice(at);};
+
+/* 机嫌那几条用蓝灰，身体那几条不动 */
+var _bar=/class="br em2/g;
+var bs1=bsec;
+bsec=function(){
+  return bs1().replace(_bar,'class="br');};
+
+})();
+
   /* ══════════════════════════════════════════════════
    十 · 收尾
    ══════════════════════════════════════════════════ */
