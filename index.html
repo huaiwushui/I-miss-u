@@ -6268,108 +6268,17 @@ function bkIn(){
    ══════════════════════════════════════════════════ */
 (function(){
 
-/* ══ 样式 ══ */
-var st=document.createElement('style');
-st.textContent=
- /* 头像浮在一侧，正文两边占满 */
- '#ms .m{position:relative}'
-+'#ms .mside{position:absolute;top:2px;width:34px;padding:0}'
-+'#ms .m.ai .mside{left:0}'
-+'#ms .m.me .mside{right:0}'
-+'#ms .mbody{width:100%;flex:none}'
-+'#ms .m.ai .mnm{padding-left:45px}'
-+'#ms .m.me .mnm{padding-right:45px}'
-+'#ms .m.pick .mbody{width:auto;flex:1}'
-+'#ms .m.pick .mside{display:none}'
+/* ══ 迁旧设置 ══ */
+try{
+  if(!D.ftm){
+    D.cft=({0:0,1:2,2:3,3:2})[D.cft]||0;
+    D.ftm=1;}
+  if(!(D.cft>=0&&D.cft<=4))D.cft=0;
+  if(!(D.skin>=0&&D.skin<=3))D.skin=0;
+  if(!(D.csz>=13&&D.csz<=19))D.csz=16;
+  delete D.wait;delete D.cft2;delete D.multi;
+}catch(e){D.cft=0;D.skin=0;D.csz=16;}
 
- /* 名字压过时间 */
-+'#ms .mnm{font-size:12.5px;font-weight:600;letter-spacing:.07em;'
-+'color:var(--dim);line-height:1.2;margin:1px 0 12px}'
-+'#ms .mnm s{display:block;margin-top:4px;font-size:9.5px;'
-+'font-weight:400;letter-spacing:.05em;color:var(--dim2);'
-+'opacity:.8;font-variant-numeric:tabular-nums}'
-
- /* 字号 · 字体 · 字重，一处管 */
-+':root{--cs:16px;--cf:-apple-system,BlinkMacSystemFont,'
-+'"PingFang SC","Helvetica Neue",sans-serif;--clh:1.68;--cw:400}'
-+'#ms .bd,#ms .sg,#ms .bub{font-size:var(--cs);'
-+'font-family:var(--cf);line-height:var(--clh);font-weight:var(--cw)}'
-+'#ms .qt .qb{font-family:var(--cf)}'
-
- /* 拆开以后，外壳只是容器 */
-+'#ms .bd.hb{background:none!important;border:0!important;'
-+'padding:0!important;border-radius:0!important;'
-+'max-width:100%!important;display:block!important;'
-+'box-shadow:none!important}'
-+'#ms .bd.hb:before{display:none!important}'
-+'#ms .sg.hb{margin-bottom:0}'
-+'#ms .m.me .bd.hb{text-align:right}'
-
- /* 气泡本体：四种皮肤只改长相，尺寸一律相同 */
-+'#ms .bub{display:inline-block;max-width:88%;box-sizing:border-box;'
-+'text-align:left;word-break:break-word;overflow-wrap:anywhere;'
-+'white-space:pre-wrap;color:var(--ink2)}'
-+'#ms .bub+.bub{margin-top:8px}'
-+'#ms .m.ai .bub{max-width:94%}'
-
- /* 一 · 片側 */
-+'#ms .m.me .bub{background:var(--bub);border-radius:17px;'
-+'padding:9px 14px}'
-+'#ms .m.ai .bub{padding:0 1px}'
-+'#ms .m.ai .bub+.bub{margin-top:15px}'
-
- /* 二 · 両側 */
-+'html.sk1 #ms .m.ai .bub{background:var(--bub);'
-+'border-radius:17px;padding:9px 14px}'
-+'html.sk1 #ms .m.ai .bub+.bub{margin-top:8px}'
-
- /* 三 · 水雫 */
-+'html.sk2 #ms .bub{position:relative;overflow:hidden;'
-+'border-radius:19px;padding:9px 14px;'
-+'background:linear-gradient(168deg,var(--jel1),var(--jel2));'
-+'box-shadow:inset 0 1px 0 rgba(255,255,255,.7),'
-+'inset 0 -1px 0 rgba(255,255,255,.26),'
-+'0 1px 2px var(--sd),0 9px 20px -16px var(--sd2)}'
-+'html.sk2 #ms .bub:before{content:"";position:absolute;'
-+'left:0;right:0;top:0;height:52%;pointer-events:none;'
-+'border-radius:19px 19px 40% 40%/19px 19px 100% 100%;'
-+'background:linear-gradient(180deg,rgba(255,255,255,.46),'
-+'rgba(255,255,255,0))}'
-+'html.sk2 #ms .m.ai .bub+.bub{margin-top:8px}'
-+'html.dark.sk2 #ms .bub{'
-+'box-shadow:inset 0 1px 0 rgba(255,255,255,.13),'
-+'inset 0 -1px 0 rgba(255,255,255,.045),'
-+'0 1px 2px var(--sd),0 9px 20px -16px var(--sd2)}'
-+'html.dark.sk2 #ms .bub:before{'
-+'background:linear-gradient(180deg,rgba(255,255,255,.09),'
-+'rgba(255,255,255,0))}'
-
- /* 四 · 和紙 */
-+'html.sk3 #ms .bub{background:var(--sel2);border-radius:11px;'
-+'padding:9px 14px;box-shadow:0 1px 1px var(--sd),'
-+'0 6px 14px -12px var(--sd2)}'
-+'html.sk3 #ms .m.me .bub{border-top-right-radius:3px}'
-+'html.sk3 #ms .m.ai .bub{border-top-left-radius:3px}'
-+'html.sk3 #ms .m.ai .bub+.bub{margin-top:8px}'
-
- /* 一条一条冒出来 */
-+'@keyframes pop{from{opacity:0;transform:translateY(7px) scale(.985)}'
-+'to{opacity:1;transform:none}}'
-+'#ms .bub.po{animation:pop .26s cubic-bezier(.32,.72,0,1) both}'
-
- /* 附件卡那个小方块 */
-+'.att .a.af .fi{flex:none;width:26px;height:26px;border-radius:7px;'
-+'font:600 9px/26px ui-monospace,Menlo,monospace;text-align:center;'
-+'background:var(--cbx);color:var(--cbxt);overflow:hidden}'
-+'.att .a.af .fi.p{background:#B4453C;color:#fff}'
-
- /* 水雫的底色 */
-+':root{--jel1:rgba(255,255,255,.86);--jel2:rgba(112,124,138,.14)}'
-+'html.dark{--jel1:rgba(255,255,255,.085);'
-+'--jel2:rgba(226,232,240,.045)}';
-document.head.appendChild(st);
-
-/* ══ 字体 · 皮肤 ══ */
 var FONTS=[
  ['原本','-apple-system,BlinkMacSystemFont,"PingFang SC",'
   +'"Helvetica Neue",sans-serif',1.68,400],
@@ -6383,17 +6292,117 @@ var FONTS=[
   +'"Hiragino Maru Gothic ProN",cursive',1.8,400]];
 var SKIN=['片側','両側','水雫','和紙'];
 
-try{
-  /* 四种字体换成五种，只搬一次 */
-  if(!D.ftm){
-    D.cft=({0:0,1:2,2:3,3:2})[D.cft]||0;
-    D.ftm=1;}
-  if(!(D.cft>=0&&D.cft<=4))D.cft=0;
-  if(!(D.skin>=0&&D.skin<=3))D.skin=0;
-  if(!(D.csz>=13&&D.csz<=19))D.csz=16;
-  if(D.multi==null)D.multi=1;
-  delete D.wait;delete D.cft2;
-}catch(e){D.cft=0;D.skin=0;D.csz=16;D.multi=1;}
+/* ══ 样式 ══ */
+var st=document.createElement('style');
+st.textContent=
+ /* 头像浮在一侧，正文两边占满 */
+ '#ms .m{position:relative;margin-bottom:17px}'
++'#ms .m.cont{margin-top:-8px}'
++'#ms .gsep{margin:4px 0 18px}'
++'#ms .mside{position:absolute;top:2px;width:34px;padding:0}'
++'#ms .m.ai .mside{left:0}'
++'#ms .m.me .mside{right:0}'
++'#ms .mbody{width:100%;flex:none}'
++'#ms .m.ai .mnm{padding-left:45px}'
++'#ms .m.me .mnm{padding-right:45px}'
++'#ms .m.pick .mbody{width:auto;flex:1}'
++'#ms .m.pick .mside{display:none}'
+
+ /* 名字压过时间 */
++'#ms .mnm{font-size:12.5px;font-weight:600;letter-spacing:.07em;'
++'color:var(--dim);line-height:1.2;margin:1px 0 11px}'
++'#ms .mnm s{display:block;margin-top:4px;font-size:9.5px;'
++'font-weight:400;letter-spacing:.05em;color:var(--dim2);'
++'opacity:.8;font-variant-numeric:tabular-nums}'
+
+ /* 字号 · 字体 · 行高 · 字重，一处管 */
++':root{--cs:16px;--cf:-apple-system,BlinkMacSystemFont,'
++'"PingFang SC","Helvetica Neue",sans-serif;--clh:1.68;--cw:400}'
++'#ms .bd,#ms .sg{font-size:var(--cs);font-family:var(--cf);'
++'line-height:var(--clh);font-weight:var(--cw);'
++'letter-spacing:0}'
++'#ms .qt .qb{font-family:var(--cf)}'
+
+ /* 段落之间只空半行 */
++'#ms .pb{display:block;height:.55em}'
+
+ /* 我这边 */
++'#ms .m.me .bd{max-width:86%;background:var(--bub);'
++'border-radius:17px;padding:9px 14px;line-height:var(--clh)}'
++'#ms .m.me .bd.tight{padding:8px 13px;border-radius:15px}'
+
+ /* 一 · 片側 —— 我在泡里，他在纸上 */
++'#ms .m.ai .bd,#ms .m.ai .sg{max-width:100%;padding:0 1px}'
++'#ms .m.ai .sg{margin-bottom:12px}'
++'#ms .m.ai .sg:last-child{margin-bottom:0}'
++'#ms .m.ai .bd:empty{display:none}'
+
+ /* 二 · 両側 */
++'html.sk1 #ms .m.ai .bd,html.sk1 #ms .m.ai .sg{'
++'display:inline-block;max-width:96%;background:var(--bub);'
++'border-radius:17px;padding:9px 14px;box-sizing:border-box}'
++'html.sk1 #ms .m.ai .sg{margin-bottom:8px}'
+
+ /* 三 · 水雫 */
++'html.sk2 #ms .m .bd,html.sk2 #ms .m.ai .sg{'
++'position:relative;display:inline-block;overflow:hidden;'
++'border-radius:19px;padding:9px 14px;box-sizing:border-box;'
++'background:linear-gradient(168deg,var(--jel1),var(--jel2));'
++'box-shadow:inset 0 1px 0 rgba(255,255,255,.7),'
++'inset 0 -1px 0 rgba(255,255,255,.26),'
++'0 1px 2px var(--sd),0 9px 20px -16px var(--sd2)}'
++'html.sk2 #ms .m.ai .bd,html.sk2 #ms .m.ai .sg{max-width:96%}'
++'html.sk2 #ms .m .bd:before,html.sk2 #ms .m.ai .sg:before{'
++'content:"";position:absolute;left:0;right:0;top:0;height:52%;'
++'pointer-events:none;'
++'border-radius:19px 19px 40% 40%/19px 19px 100% 100%;'
++'background:linear-gradient(180deg,rgba(255,255,255,.46),'
++'rgba(255,255,255,0))}'
++'html.sk2 #ms .m.ai .sg{margin-bottom:8px}'
++'html.sk2 #ms .m.me .bd.tight{padding:8px 13px}'
++'html.dark.sk2 #ms .m .bd,html.dark.sk2 #ms .m.ai .sg{'
++'box-shadow:inset 0 1px 0 rgba(255,255,255,.13),'
++'inset 0 -1px 0 rgba(255,255,255,.045),'
++'0 1px 2px var(--sd),0 9px 20px -16px var(--sd2)}'
++'html.dark.sk2 #ms .m .bd:before,'
++'html.dark.sk2 #ms .m.ai .sg:before{'
++'background:linear-gradient(180deg,rgba(255,255,255,.09),'
++'rgba(255,255,255,0))}'
+
+ /* 四 · 和紙 */
++'html.sk3 #ms .m .bd,html.sk3 #ms .m.ai .sg{'
++'display:inline-block;background:var(--sel2);border-radius:11px;'
++'padding:9px 14px;box-sizing:border-box;'
++'box-shadow:0 1px 1px var(--sd),0 6px 14px -12px var(--sd2)}'
++'html.sk3 #ms .m.ai .bd,html.sk3 #ms .m.ai .sg{max-width:96%}'
++'html.sk3 #ms .m.me .bd{border-top-right-radius:3px}'
++'html.sk3 #ms .m.ai .bd,html.sk3 #ms .m.ai .sg{'
++'border-top-left-radius:3px}'
++'html.sk3 #ms .m.ai .sg{margin-bottom:8px}'
++'html.sk3 #ms .m.me .bd.tight{padding:8px 13px}'
+
+ /* 正文和输入条之间 */
++'#ms{padding-bottom:calc(12px + var(--kb))}'
++'html.kbot #ms{padding-bottom:12px}'
++'#ms>.m:last-child{margin-bottom:4px}'
++'.ib{padding-top:2px}'
+
+ /* 锁屏那行英文 */
++'#lk .jp{font-size:34px}'
++'#lk .en{font-size:12.5px;letter-spacing:.34em;'
++'font-weight:500;margin-top:18px}'
+
+ /* 水雫的底色 */
++':root{--jel1:rgba(255,255,255,.86);--jel2:rgba(112,124,138,.14)}'
++'html.dark{--jel1:rgba(255,255,255,.085);'
++'--jel2:rgba(226,232,240,.045)}'
+
+ /* 附件卡那个小方块 */
++'.att .a.af .fi{flex:none;width:26px;height:26px;border-radius:7px;'
++'font:600 9px/26px ui-monospace,Menlo,monospace;text-align:center;'
++'background:var(--cbx);color:var(--cbxt);overflow:hidden}'
++'.att .a.af .fi.p{background:#B4453C;color:#fff}';
+document.head.appendChild(st);
 
 function look(){
   var f=FONTS[D.cft]||FONTS[0];
@@ -6405,6 +6414,15 @@ function look(){
   de.classList.remove('sk1','sk2','sk3');
   if(v)de.classList.add('sk'+v);}
 look();
+
+/* ══ 段落之间的空行换成半行 ══ */
+var md0=md;
+md=function(t){
+  var h=md0(t);
+  if(h.indexOf('\n\n')<0)return h;
+  return h.split(/(<pre[\s\S]*?<\/pre>)/).map(function(s,i){
+    return(i%2)?s:s.replace(/\n{2,}/g,'<i class="pb"></i>');
+  }).join('');};
 
 /* ══ 界面上的时间：年月日时分 ══ */
 tstamp=function(ts){
@@ -6462,102 +6480,6 @@ drawAtt=function(){
       +'<button onclick="rmAtt('+i+')">×</button></div>';}).join('');
   e.style.display=ATT.length?'flex':'none';};
 
-/* ══ 拆气泡 ══ */
-var POPPED={};
-var BLOCK='.ccd,.tb,h4,.li,.bq,.hr,table,pre';
-function bubOne(host){
-  if(!host||host.dataset.bb)return 0;
-  if(host.classList.contains('clip'))return 0;
-  if(host.querySelector(BLOCK))return 0;
-  var raw=host.innerHTML;
-  if(!String(host.textContent||'').trim()){host.remove();return 0;}
-  host.dataset.bb='1';
-  var ps=D.multi?raw.split(/\n{2,}/):[raw];
-  ps=ps.map(function(x){
-    return String(x).replace(/^[\s\u3000]+|[\s\u3000]+$/g,'');
-  }).filter(function(x){
-    return x&&String(x).replace(/<[^>]*>/g,'').trim();});
-  if(!ps.length){host.remove();return 0;}
-  host.classList.add('hb');
-  host.innerHTML='';
-  ps.forEach(function(x){
-    var d=document.createElement('div');
-    d.className='bub';d.innerHTML=x;
-    host.appendChild(d);});
-  return ps.length;}
-function bubbly(){
-  var b=msBox();
-  if(!b)return;
-  [].forEach.call(b.querySelectorAll('.m'),function(w){
-    var id=(w.id||'').slice(2),m=find(id);
-    if(!m||m.st)return;
-    var mine=w.classList.contains('me'),n=0;
-    [].forEach.call(w.querySelectorAll('.sg,.bd'),function(el){
-      n+=bubOne(el);});
-    if(n<2||POPPED[id])return;
-    POPPED[id]=1;
-    if(mine||!D.multi)return;
-    var bs=w.querySelectorAll('.bub');
-    [].forEach.call(bs,function(el,i){
-      if(!i){el.classList.add('po');return;}
-      el.style.visibility='hidden';
-      setTimeout(function(){
-        if(!el.isConnected)return;
-        el.style.visibility='';
-        el.classList.add('po');
-        if(SC.pin&&!SC.hold)keepBottom(420);},i*520);});
-    keepBottom(bs.length*520+500);});}
-
-var BUBQ=0;
-window.BUBRUN=function(){try{bubbly();}catch(e){}};
-var paint0=paint;
-paint=function(keep){
-  var r=paint0(keep);
-  if(BUBQ){
-    if(window.__bubDefer)window.__bubDefer();
-  }else try{bubbly();}catch(e){keepErr('气泡',e);}
-  return r;};
-var useSnap0=useSnap;
-useSnap=function(m,v){
-  try{delete POPPED[m.id];}catch(e){}
-  return useSnap0(m,v);};
-
-/* ══ 教我在哪儿换气 ══ */
-var SPLIT=/\n[ \t]*(?:—{2,}|-{3,}|\/{2,}|‖|∥)[ \t]*\n/;
-var SEGCAP=4;
-var sp0=staticPart;
-staticPart=function(){
-  var s=sp0();
-  if(!D.multi)return s;
-  return s+'\n\n【分几条说】\n'
-   +'想像真的在发消息那样一条一条来，就在换气的地方空一行。\n'
-   +'页面会把空行拆成单独的一条，隔半秒一条冒出来，最多 '
-   +SEGCAP+' 条。\n'
-   +'短句、递进、突然想起来补一句——这些地方分。\n'
-   +'一段完整的话别硬拆，只说一句时也不用分。';};
-
-EXT_DONE.push(function(m,ab){
-  if(!m||m.err)return;
-  try{
-    var ch=0;
-    function fix(t){
-      var s=String(t||'');
-      if(!SPLIT.test(s))return null;
-      ch=1;
-      return s.split(SPLIT).map(function(x){return x.trim();})
-        .filter(function(x){return x;}).join('\n\n');}
-    if(m.parts&&m.parts.length)m.parts.forEach(function(p){
-      if(p.ty!=='t')return;
-      var v=fix(p.t);
-      if(v)p.t=v;});
-    var v2=fix(m.t);
-    if(v2)m.t=v2;
-    if(ch){
-      delete POPPED[m.id];
-      saveS(S().id);
-      if(CV==='chat')paint();}
-  }catch(e){}});
-
 /* ══ 面板 ══ */
 window.pkSkin=function(v){
   D.skin=Math.max(0,Math.min(3,v|0));saveD();look();
@@ -6576,10 +6498,6 @@ window.pkSize=function(v){
   saveD();look();
   var e=document.getElementById('cz');
   if(e)e.textContent=D.csz;};
-window.tgMulti=function(el){
-  D.multi=D.multi?0:1;saveD();
-  el.className='k'+(D.multi?' on':'');
-  POPPED={};vib(8);};
 window.shLook=function(){
   sheet({title:'気泡と文字',
     body:'<div class="lbs">气泡</div>'
@@ -6598,10 +6516,6 @@ window.shLook=function(){
   +'font-size:12px;color:var(--dim2)"><span>小</span>'
   +'<span id="cz" style="color:var(--ink2);font-weight:600">'
   +(D.csz||16)+'</span><span>大</span></div></div>'
-  +'<div class="cd cd0" style="margin-top:18px"><div class="sw">'
-  +'<span class="l">分几条说</span>'
-  +'<div class="k'+(D.multi?' on':'')
-  +'" onclick="tgMulti(this)"><i></i></div></div></div>'
   +'<div class="nt">改完回聊天页就能看见</div>'});};
 NOTE['気泡と文字']='改完回聊天页就能看见';
 
@@ -6794,31 +6708,8 @@ bsec=function(){
 var st=document.createElement('style');
 st.textContent=
 
- /* ── 气泡：一条一行，竖着叠 ── */
- '#ms .bub{display:block;width:-webkit-fit-content;width:fit-content;'
-+'max-width:88%;margin-left:0;margin-right:0}'
-+'#ms .m.me .bub{margin-left:auto;margin-right:0}'
-+'#ms .m.ai .bub{margin-right:auto;max-width:94%}'
-+'#ms .bub+.bub{margin-top:8px}'
-+'#ms .m.ai .bub+.bub{margin-top:14px}'
-+'html.sk1 #ms .m.ai .bub+.bub,html.sk2 #ms .m.ai .bub+.bub,'
-+'html.sk3 #ms .m.ai .bub+.bub{margin-top:8px}'
-
- /* ── 正文和输入框之间，别空那么一大块 ── */
-+'#ms{padding-bottom:calc(6px + var(--kb))}'
-+'html.kbot #ms{padding-bottom:6px}'
-+'#ms>.m:last-child{margin-bottom:2px}'
-+'#ms>.mfar+.m:last-child{margin-bottom:2px}'
-+'.ib{padding-top:0}'
-+'#ms .ops{margin-top:9px}'
-
- /* ── 锁屏那行英文，回到看得清的大小 ── */
-+'#lk .en{font-size:12.5px;letter-spacing:.34em;'
-+'font-weight:500;margin-top:18px}'
-+'#lk .jp{font-size:34px}'
-
- /* ── 機嫌 / 身体：一小截短杠加一行字 ── */
-+'.bsec .bdv{display:flex;align-items:center;gap:9px;'
+ /* 機嫌 / 身体：一小截短杠加一行字 */
+ '.bsec .bdv{display:flex;align-items:center;gap:9px;'
 +'margin:0 0 13px;padding:0;border:0}'
 +'.bsec .bdv i{flex:none;width:14px;height:1px;'
 +'background:var(--dim2);opacity:.55}'
@@ -6828,7 +6719,7 @@ st.textContent=
 +'.bsec .bdv span:after{display:none}'
 +'.bsec .bdv+.br{margin-top:0}'
 
- /* ── 面板：收紧一档 ── */
+ /* 面板收紧一档 */
 +'#sh .sw{padding:11px 14px;gap:10px}'
 +'#sh .sw .l{font-size:14px}'
 +'#sh .sw .k{width:42px;height:25px;border-radius:13px}'
@@ -6851,7 +6742,7 @@ st.textContent=
 +'#sh .bdy>*+.lbs{margin-top:17px}'
 +'#sh .lbs{padding:0 2px 7px}'
 
- /* ── 抽屉底部那块空地 ── */
+ /* 抽屉底部那块空地 */
 +'#sh .bdy{padding-bottom:max(10px,calc(var(--sb) - 20px))}'
 +'html.kbon #sh .bdy{padding-bottom:8px}'
 +'#sh .bdy>*:last-child{margin-bottom:0}'
@@ -6865,25 +6756,6 @@ window.shActs=function(){
   +'<div class="k'+(D.acts?' on':'')
   +'" onclick="tgActs(this)"><i></i></div></div></div>'
   +'<div class="nt">记忆库交给我，记改删我自己判断</div>'});};
-
-/* ══ 进聊天页不卡：先搭架子，气泡下一帧再拆 ══ */
-(function(){
-  var RAF=0,PEND=0;
-  var p0=paint;
-  paint=function(keep){
-    BUBQ=1;
-    var r=p0(keep);
-    BUBQ=0;
-    if(PEND){
-      PEND=0;
-      if(RAF)cancelAnimationFrame(RAF);
-      RAF=requestAnimationFrame(function(){
-        RAF=0;
-        try{BUBRUN();}catch(e){keepErr('气泡',e);}
-        if(SC.pin&&!SC.hold)keepBottom(260);});}
-    return r;};
-  window.__bubDefer=function(){PEND=1;};
-})();
 
 if(CV==='chat'){try{paint(1);}catch(e){}}
 if(CV==='home'){try{view('home');}catch(e){}}
