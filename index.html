@@ -6709,30 +6709,35 @@ bsec=function(){
 /* ══ 字色 ══ */
 var INKS=[
  ['素',''],
- ['墨','#2E3338','#E3E0D8'],
- ['藍','#3E4A5C','#C6D2E0'],
+ ['藍','#3F4B5C','#C5D1DF'],
  ['茶','#5A4A3E','#DFD2C4'],
- ['苔','#44503F','#CCD6C4']];
+ ['苔','#44503F','#CBD5C3'],
+ ['梅','#56444E','#D9C8D1']];
 try{
+  /* 墨和素太像，去掉墨，原来选墨的归到素 */
+  if(!D.ikm){
+    D.cink=({0:0,1:0,2:1,3:2,4:3})[D.cink]||0;
+    D.ikm=1;}
   if(!(D.cink>=0&&D.cink<=4))D.cink=0;
 }catch(e){D.cink=0;}
 
 var st=document.createElement('style');
 st.textContent=
 
- /* ── 字色：正文和气泡里的字跟着走 ── */
+ /* ── 字色：正文跟着走，灰字和代码不动 ── */
  '#ms .m .bd,#ms .m .sg,#ms .m .bd b,#ms .m .sg b,'
++'#ms .m .bd h4,#ms .m .sg h4,'
 +'#ms .m .bd .li span,#ms .m .sg .li span{color:var(--ci,var(--ink2))}'
-+'#ms .m .bd h4,#ms .m .sg h4{color:var(--ci,var(--ink2))}'
 
- /* ── 我这边的工具栏：比他那边小一圈 ── */
-+'#ms .m.me .eo{gap:10px;margin-top:5px;opacity:.5}'
-+'#ms .m.me .eo button{width:22px;height:22px}'
-+'#ms .m.me .eo .ic{width:13px;height:13px}'
-+'#ms .m.me .eo .nav{font-size:11px;gap:4px}'
-+'#ms .m.me .eo .nav button{width:18px;height:18px}'
+ /* ── 两边工具栏一模一样 ── */
++'#ms .eo,#ms .ops{gap:14px;margin-top:8px;opacity:.62}'
++'#ms .eo>button,#ms .ops>button{width:24px;height:24px;'
++'display:flex;align-items:center;justify-content:center}'
++'#ms .eo>button .ic,#ms .ops>button .ic{width:16px;height:16px}'
++'#ms .eo .nav,#ms .ops .nav{font-size:11.5px;gap:5px}'
++'#ms .eo .nav button,#ms .ops .nav button{width:20px;height:20px}'
 
- /* ── 头像：蒙一层很薄的纱，跟小窝一个路子 ── */
+ /* ── 头像：蒙一层很薄的纱 ── */
 +'#ms .mav{position:relative;box-shadow:0 0 0 1px var(--ln2)}'
 +'#ms .mav img{filter:saturate(.8) contrast(.96) brightness(1.03)}'
 +'html.dark #ms .mav img{filter:saturate(.74) contrast(.94) '
@@ -6768,7 +6773,7 @@ st.textContent=
 +'#sh .rw .l{font-size:14px}'
 +'#sh .segw{gap:8px;margin-bottom:0}'
 +'#sh .segw button{padding:8px 15px;font-size:13.5px;'
-+'border-radius:12px;line-height:1.3}'
++'border-radius:12px;line-height:1.35}'
 +'#sh .seg{gap:8px;margin-bottom:0}'
 +'#sh .seg button{padding:9px 12px;font-size:13.5px;'
 +'border-radius:12px}'
@@ -6779,7 +6784,7 @@ st.textContent=
 +'#sh .bdy>*+.lbs{margin-top:17px}'
 +'#sh .lbs{padding:0 2px 7px}'
 
- /* ── 字色那排按钮：左边点一个色点 ── */
+ /* ── 字色那排：左边点一个色点 ── */
 +'#ci-seg button{display:inline-flex;align-items:center;gap:7px}'
 +'#ci-seg em{flex:none;width:11px;height:11px;border-radius:50%;'
 +'border:1px solid var(--ln2);font-style:normal}'
@@ -6804,9 +6809,24 @@ window.pkInk=function(v){
   vib(8);};
 inkApply();
 
-/* 深浅切换时字色跟着换一套 */
 var at0=applyTheme;
 applyTheme=function(){at0();try{inkApply();}catch(e){}};
+
+/* ══ 我说的话也只空半行 ══ */
+var p0=paint;
+paint=function(keep){
+  var r=p0(keep);
+  try{
+    var b=msBox();
+    if(b)[].forEach.call(b.querySelectorAll('.m.me .bd'),function(el){
+      if(el.dataset.pb)return;
+      el.dataset.pb='1';
+      if(el.children.length)return;
+      var t=el.textContent||'';
+      if(t.indexOf('\n\n')<0)return;
+      el.innerHTML=esc(t).replace(/\n{2,}/g,'<i class="pb"></i>');});
+  }catch(e){}
+  return r;};
 
 /* ══ 面板里加一栏字色 ══ */
 var sl0=shLook;
@@ -6817,14 +6837,14 @@ shLook=function(){
   var nt=bd.querySelector('.nt');
   if(!nt)return;
   var dark=de.classList.contains('dark');
-  var h='<div class="lbs" style="margin-top:18px">字色</div>'
+  nt.insertAdjacentHTML('beforebegin',
+    '<div class="lbs" style="margin-top:18px">字色</div>'
    +'<div class="segw" id="ci-seg">'+INKS.map(function(x,i){
-     var dot=x[1]?(dark?x[2]:x[1]):'var(--ink2)';
-     return'<button class="pz'+(i===(D.cink||0)?' on':'')
-       +'" onclick="pkInk('+i+')">'
-       +'<em style="background:'+dot+'"></em>'+x[0]+'</button>';
-   }).join('')+'</div>';
-  nt.insertAdjacentHTML('beforebegin',h);};
+      var dot=x[1]?(dark?x[2]:x[1]):'var(--ink2)';
+      return'<button class="pz'+(i===(D.cink||0)?' on':'')
+        +'" onclick="pkInk('+i+')">'
+        +'<em style="background:'+dot+'"></em>'+x[0]+'</button>';
+    }).join('')+'</div>');};
 
 window.shActs=function(){
   sheet({title:'自己动手',
