@@ -6705,11 +6705,48 @@ bsec=function(){
    十一 · 收拾
    ══════════════════════════════════════════════════ */
 (function(){
+
+/* ══ 字色 ══ */
+var INKS=[
+ ['素',''],
+ ['墨','#2E3338','#E3E0D8'],
+ ['藍','#3E4A5C','#C6D2E0'],
+ ['茶','#5A4A3E','#DFD2C4'],
+ ['苔','#44503F','#CCD6C4']];
+try{
+  if(!(D.cink>=0&&D.cink<=4))D.cink=0;
+}catch(e){D.cink=0;}
+
 var st=document.createElement('style');
 st.textContent=
 
- /* 機嫌 / 身体：一小截短杠加一行字 */
- '.bsec .bdv{display:flex;align-items:center;gap:9px;'
+ /* ── 字色：正文和气泡里的字跟着走 ── */
+ '#ms .m .bd,#ms .m .sg,#ms .m .bd b,#ms .m .sg b,'
++'#ms .m .bd .li span,#ms .m .sg .li span{color:var(--ci,var(--ink2))}'
++'#ms .m .bd h4,#ms .m .sg h4{color:var(--ci,var(--ink2))}'
+
+ /* ── 我这边的工具栏：比他那边小一圈 ── */
++'#ms .m.me .eo{gap:10px;margin-top:5px;opacity:.5}'
++'#ms .m.me .eo button{width:22px;height:22px}'
++'#ms .m.me .eo .ic{width:13px;height:13px}'
++'#ms .m.me .eo .nav{font-size:11px;gap:4px}'
++'#ms .m.me .eo .nav button{width:18px;height:18px}'
+
+ /* ── 头像：蒙一层很薄的纱，跟小窝一个路子 ── */
++'#ms .mav{position:relative;box-shadow:0 0 0 1px var(--ln2)}'
++'#ms .mav img{filter:saturate(.8) contrast(.96) brightness(1.03)}'
++'html.dark #ms .mav img{filter:saturate(.74) contrast(.94) '
++'brightness(.96)}'
++'#ms .mav:after{content:"";position:absolute;inset:0;'
++'border-radius:50%;pointer-events:none;'
++'background:linear-gradient(160deg,rgba(255,255,255,.14),'
++'rgba(250,248,244,.07) 46%,rgba(250,248,244,.13))}'
++'html.dark #ms .mav:after{'
++'background:linear-gradient(160deg,rgba(255,255,255,.05),'
++'rgba(18,16,12,.12) 46%,rgba(18,16,12,.18))}'
+
+ /* ── 機嫌 / 身体：一小截短杠加一行字 ── */
++'.bsec .bdv{display:flex;align-items:center;gap:9px;'
 +'margin:0 0 13px;padding:0;border:0}'
 +'.bsec .bdv i{flex:none;width:14px;height:1px;'
 +'background:var(--dim2);opacity:.55}'
@@ -6719,7 +6756,7 @@ st.textContent=
 +'.bsec .bdv span:after{display:none}'
 +'.bsec .bdv+.br{margin-top:0}'
 
- /* 面板收紧一档 */
+ /* ── 面板收紧一档 ── */
 +'#sh .sw{padding:11px 14px;gap:10px}'
 +'#sh .sw .l{font-size:14px}'
 +'#sh .sw .k{width:42px;height:25px;border-radius:13px}'
@@ -6731,7 +6768,7 @@ st.textContent=
 +'#sh .rw .l{font-size:14px}'
 +'#sh .segw{gap:8px;margin-bottom:0}'
 +'#sh .segw button{padding:8px 15px;font-size:13.5px;'
-+'border-radius:12px}'
++'border-radius:12px;line-height:1.3}'
 +'#sh .seg{gap:8px;margin-bottom:0}'
 +'#sh .seg button{padding:9px 12px;font-size:13.5px;'
 +'border-radius:12px}'
@@ -6742,12 +6779,52 @@ st.textContent=
 +'#sh .bdy>*+.lbs{margin-top:17px}'
 +'#sh .lbs{padding:0 2px 7px}'
 
- /* 抽屉底部那块空地 */
+ /* ── 字色那排按钮：左边点一个色点 ── */
++'#ci-seg button{display:inline-flex;align-items:center;gap:7px}'
++'#ci-seg em{flex:none;width:11px;height:11px;border-radius:50%;'
++'border:1px solid var(--ln2);font-style:normal}'
+
+ /* ── 抽屉底部那块空地 ── */
 +'#sh .bdy{padding-bottom:max(10px,calc(var(--sb) - 20px))}'
 +'html.kbon #sh .bdy{padding-bottom:8px}'
 +'#sh .bdy>*:last-child{margin-bottom:0}'
 +'#sh .bdy>.nt:last-child{padding-bottom:2px}';
 document.head.appendChild(st);
+
+function inkApply(){
+  var c=INKS[D.cink||0];
+  if(!c||!c[1])de.style.removeProperty('--ci');
+  else de.style.setProperty('--ci',
+    de.classList.contains('dark')?c[2]:c[1]);}
+window.pkInk=function(v){
+  D.cink=Math.max(0,Math.min(4,v|0));saveD();inkApply();
+  var w=document.getElementById('ci-seg');
+  if(w)[].forEach.call(w.children,function(b,j){
+    b.className='pz'+(j===D.cink?' on':'');});
+  vib(8);};
+inkApply();
+
+/* 深浅切换时字色跟着换一套 */
+var at0=applyTheme;
+applyTheme=function(){at0();try{inkApply();}catch(e){}};
+
+/* ══ 面板里加一栏字色 ══ */
+var sl0=shLook;
+shLook=function(){
+  sl0();
+  var bd=document.querySelector('#sh .bdy');
+  if(!bd)return;
+  var nt=bd.querySelector('.nt');
+  if(!nt)return;
+  var dark=de.classList.contains('dark');
+  var h='<div class="lbs" style="margin-top:18px">字色</div>'
+   +'<div class="segw" id="ci-seg">'+INKS.map(function(x,i){
+     var dot=x[1]?(dark?x[2]:x[1]):'var(--ink2)';
+     return'<button class="pz'+(i===(D.cink||0)?' on':'')
+       +'" onclick="pkInk('+i+')">'
+       +'<em style="background:'+dot+'"></em>'+x[0]+'</button>';
+   }).join('')+'</div>';
+  nt.insertAdjacentHTML('beforebegin',h);};
 
 window.shActs=function(){
   sheet({title:'自己动手',
