@@ -6264,79 +6264,98 @@ function bkIn(){
       return false;}});}
 
 /* ══════════════════════════════════════════════════
-   九 · 气泡 · 分几条说
+   九 · 気泡と文字
    ══════════════════════════════════════════════════ */
 (function(){
 
-/* ══ 版式：正文贴着左边，名字压过时间 ══ */
+/* ══ 版式 ══ */
 var st=document.createElement('style');
 st.textContent=
- /* 头像和名字占一行，正文从最左边起 */
- '#ms .m.ai .in{margin-left:-45px}'
-+'#ms .m.me .in{margin-right:-45px}'
-+'#ms .m.ai.pick .in{margin-left:0}'
-+'#ms .m.me.pick .in{margin-right:0}'
-+'#ms .mnm{font-weight:600;letter-spacing:.09em;'
-+'color:var(--dim);margin:2px 0 9px}'
-+'#ms .mnm s{font-weight:400;font-size:9.5px;opacity:.72;'
-+'color:var(--dim2);margin-top:3px}'
-+'#ms .m.ai .bd:empty{display:none}'
-+'#ms .m.ai .sg:last-child{margin-bottom:0}'
+ /* 头像浮在一侧，正文两边都占满 */
+ '#ms .m{position:relative}'
++'#ms .mside{position:absolute;top:2px;width:34px;padding:0}'
++'#ms .m.ai .mside{left:0}'
++'#ms .m.me .mside{right:0}'
++'#ms .mbody{width:100%;flex:none}'
++'#ms .m.ai .mnm{padding-left:45px}'
++'#ms .m.me .mnm{padding-right:45px}'
++'#ms .m.pick .mbody{width:auto;flex:1}'
++'#ms .m.pick .mside{display:none}'
 
- /* 气泡收紧，跟字号配上 */
-+'#ms .m.me .bd{padding:8px 13px;border-radius:17px;'
-+'line-height:1.6;max-width:84%}'
-+'#ms .m.me .bd.tight{padding:7px 12px;border-radius:15px}'
+ /* 名字压过时间 */
++'#ms .mnm{font-size:12.5px;font-weight:600;letter-spacing:.07em;'
++'color:var(--dim);line-height:1.2;margin:1px 0 12px}'
++'#ms .mnm s{display:block;margin-top:4px;font-size:9.5px;'
++'font-weight:400;letter-spacing:.05em;color:var(--dim2);'
++'opacity:.8;font-variant-numeric:tabular-nums}'
 
- /* 一 · 一侧 —— 默认，不写 */
+ /* 字号字体一处管 */
++':root{--cs:16px;--cf:-apple-system,BlinkMacSystemFont,'
++'"PingFang SC","Helvetica Neue",sans-serif;--clh:1.68}'
++'#ms .bd,#ms .sg,#ms .bub{font-size:var(--cs);'
++'font-family:var(--cf);line-height:var(--clh)}'
++'#ms .qt .qb{font-family:var(--cf)}'
 
- /* 二 · 两侧 */
-+'html.sk1 #ms .m.ai .bd,html.sk1 #ms .m.ai .sg{'
-+'display:inline-block;max-width:94%;background:var(--bub);'
-+'border-radius:17px;padding:8px 13px;line-height:1.6;'
-+'box-sizing:border-box}'
+ /* 拆开以后，外壳只是容器 */
++'#ms .bd.hb{background:none!important;border:0!important;'
++'padding:0!important;border-radius:0!important;'
++'max-width:100%!important;display:block!important;'
++'box-shadow:none!important}'
++'#ms .bd.hb:before{display:none!important}'
++'#ms .sg.hb{margin-bottom:0}'
++'#ms .m.me .bd.hb{text-align:right}'
 
- /* 三 · 果冻 */
-+'html.sk2 #ms .m .bd,html.sk2 #ms .m.ai .sg{'
-+'position:relative;display:inline-block;max-width:88%;'
-+'border-radius:19px;padding:9px 15px;line-height:1.64;'
-+'box-sizing:border-box;overflow:hidden;'
+ /* 气泡本体：四种皮肤只改长相，尺寸一律相同 */
++'#ms .bub{display:inline-block;max-width:88%;box-sizing:border-box;'
++'text-align:left;word-break:break-word;overflow-wrap:anywhere;'
++'white-space:pre-wrap;color:var(--ink2)}'
++'#ms .bub+.bub{margin-top:8px}'
++'#ms .m.ai .bub{max-width:94%}'
+
+ /* 一 · 片側 —— 我在泡里，他在纸上 */
++'#ms .m.me .bub{background:var(--bub);border-radius:17px;'
++'padding:9px 14px}'
++'#ms .m.ai .bub{padding:0 1px}'
++'#ms .m.ai .bub+.bub{margin-top:15px}'
+
+ /* 二 · 両側 */
++'html.sk1 #ms .m.ai .bub{background:var(--bub);'
++'border-radius:17px;padding:9px 14px}'
++'html.sk1 #ms .m.ai .bub+.bub{margin-top:8px}'
+
+ /* 三 · 水雫 */
++'html.sk2 #ms .bub{position:relative;overflow:hidden;'
++'border-radius:19px;padding:9px 14px;'
 +'background:linear-gradient(168deg,var(--jel1),var(--jel2));'
 +'box-shadow:inset 0 1px 0 rgba(255,255,255,.7),'
 +'inset 0 -1px 0 rgba(255,255,255,.26),'
 +'0 1px 2px var(--sd),0 9px 20px -16px var(--sd2)}'
-+'html.sk2 #ms .m .bd:before,html.sk2 #ms .m.ai .sg:before{'
-+'content:"";position:absolute;left:0;right:0;top:0;height:52%;'
++'html.sk2 #ms .bub:before{content:"";position:absolute;'
++'left:0;right:0;top:0;height:52%;pointer-events:none;'
 +'border-radius:19px 19px 40% 40%/19px 19px 100% 100%;'
 +'background:linear-gradient(180deg,rgba(255,255,255,.46),'
-+'rgba(255,255,255,0));pointer-events:none}'
-+'html.sk2 #ms .m.me .bd.tight{padding:8px 14px}'
-+'html.dark.sk2 #ms .m .bd,html.dark.sk2 #ms .m.ai .sg{'
++'rgba(255,255,255,0))}'
++'html.sk2 #ms .m.ai .bub+.bub{margin-top:8px}'
++'html.dark.sk2 #ms .bub{'
 +'box-shadow:inset 0 1px 0 rgba(255,255,255,.13),'
 +'inset 0 -1px 0 rgba(255,255,255,.045),'
 +'0 1px 2px var(--sd),0 9px 20px -16px var(--sd2)}'
-+'html.dark.sk2 #ms .m .bd:before,'
-+'html.dark.sk2 #ms .m.ai .sg:before{'
++'html.dark.sk2 #ms .bub:before{'
 +'background:linear-gradient(180deg,rgba(255,255,255,.09),'
 +'rgba(255,255,255,0))}'
 
- /* 四 · 和纸：哑光、方一点、压一道薄影 */
-+'html.sk3 #ms .m .bd,html.sk3 #ms .m.ai .sg{'
-+'display:inline-block;max-width:89%;border-radius:10px;'
-+'padding:9px 14px;line-height:1.66;box-sizing:border-box;'
-+'background:var(--sel2);'
-+'box-shadow:0 1px 1px var(--sd),0 6px 14px -12px var(--sd2)}'
-+'html.sk3 #ms .m.me .bd{border-top-right-radius:3px}'
-+'html.sk3 #ms .m.ai .bd,html.sk3 #ms .m.ai .sg{'
-+'border-top-left-radius:3px}'
-+'html.sk3 #ms .m.me .bd.tight{padding:8px 13px}'
+ /* 四 · 和紙 */
++'html.sk3 #ms .bub{background:var(--sel2);border-radius:11px;'
++'padding:9px 14px;box-shadow:0 1px 1px var(--sd),'
++'0 6px 14px -12px var(--sd2)}'
++'html.sk3 #ms .m.me .bub{border-top-right-radius:3px}'
++'html.sk3 #ms .m.ai .bub{border-top-left-radius:3px}'
++'html.sk3 #ms .m.ai .bub+.bub{margin-top:8px}'
 
  /* 一条一条冒出来 */
 +'@keyframes pop{from{opacity:0;transform:translateY(7px) scale(.985)}'
 +'to{opacity:1;transform:none}}'
-+'#ms .sg.po,#ms .m.me .bd.po{animation:pop .26s '
-+'cubic-bezier(.32,.72,0,1) both}'
-+'#ms .m.me .bd+.bd{margin-top:7px}';
++'#ms .bub.po{animation:pop .26s cubic-bezier(.32,.72,0,1) both}';
 document.head.appendChild(st);
 
 var st2=document.createElement('style');
@@ -6346,183 +6365,198 @@ st2.textContent=
 +'--jel2:rgba(226,232,240,.045)}';
 document.head.appendChild(st2);
 
-/* ══ 换气泡 ══ */
-var SKIN=['一侧','两侧','果冻','和纸'];
-/* 老的五种挪过来 */
+/* ══ 旧设置迁过来 ══ */
 try{
-  if(D.skin===3)D.skin=2;
-  else if(D.skin===2||D.skin===4)D.skin=0;
-  if(D.skin==null)D.skin=0;
+  if(D.skin===4)D.skin=0;
+  else if(D.skin===3)D.skin=2;
+  else if(D.skin===2)D.skin=3;
+  if(!(D.skin>=0&&D.skin<=3))D.skin=0;
+  if(D.multi==null)D.multi=1;
+  if(!(D.csz>=13&&D.csz<=19))D.csz=16;
+  if(!(D.cft>=0&&D.cft<=3))D.cft=0;
   delete D.wait;
-}catch(e){}
-function skApply(){
+}catch(e){D.skin=0;D.multi=1;D.csz=16;D.cft=0;}
+
+var FONTS=[
+ ['原本','-apple-system,BlinkMacSystemFont,"PingFang SC",'
+  +'"Helvetica Neue",sans-serif',1.68],
+ ['明朝','"Hiragino Mincho ProN","Yu Mincho","Songti SC",serif',1.78],
+ ['丸','"Hiragino Maru Gothic ProN","Yuanti SC","PingFang SC",'
+  +'sans-serif',1.72],
+ ['楷','"Kaiti SC","Hiragino Mincho ProN",serif',1.8]];
+var SKIN=['片側','両側','水雫','和紙'];
+
+function look(){
+  var f=FONTS[D.cft]||FONTS[0];
+  de.style.setProperty('--cs',(D.csz||16)+'px');
+  de.style.setProperty('--cf',f[1]);
+  de.style.setProperty('--clh',String(f[2]));
   var v=Math.max(0,Math.min(3,D.skin||0));
   de.classList.remove('sk1','sk2','sk3');
   if(v)de.classList.add('sk'+v);}
-window.pkSkin=function(v){
-  D.skin=v;saveD();skApply();
-  var w=document.getElementById('sk-seg');
-  if(w)[].forEach.call(w.children,function(b,j){
-    b.className='pz'+(j===v?' on':'');});
-  vib(8);};
-window.shSkin=function(){
-  var v=D.skin||0;
-  sheet({title:'气泡',
-    body:'<div class="segw" id="sk-seg">'+SKIN.map(function(x,i){
-    return'<button class="pz'+(i===v?' on':'')
-      +'" onclick="pkSkin('+i+')">'+x+'</button>';}).join('')+'</div>'
-  +'<div class="nt">点一下立刻换，不用退出聊天页</div>'});};
-NOTE['气泡']='点一下立刻换，不用退出聊天页';
-skApply();
+look();
 
-/* ══ 分几条说 ══ */
-var SPLIT=/\n[ \t]*(?:—{2,}|-{3,}|\/{2,}|‖|∥)[ \t]*\n/;
-var SEGCAP=4,SEGMIN=2,SEGGAP=520;
+/* ══ 年月日时分 ══ */
+tstamp=function(ts){
+  var d=new Date(ts),p=function(n){return String(n).padStart(2,'0');};
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())
+    +' '+p(d.getHours())+':'+p(d.getMinutes());};
 
-var sp0=staticPart;
-staticPart=function(){
-  var s=sp0();
-  if(!D.multi)return s;
-  return s+'\n\n【分几条说】\n'
-   +'想像真的在发消息那样一条一条来，'
-   +'就在换气的地方单起一行写 ——（两个破折号）。\n'
-   +'页面会拆开，隔半秒一条冒出来。最多分 '+SEGCAP+' 条。\n'
-   +'短句、递进、突然想起来补一句——这些地方分。\n'
-   +'一段完整的话别硬拆，只说一句时不用分。';};
-
-function cutSegs(t){
-  var s=String(t||'');
-  if(!SPLIT.test(s))return null;
-  var out=s.split(SPLIT).map(function(x){return x.trim();})
-    .filter(function(x){return x;});
-  if(out.length<SEGMIN)return null;
-  if(out.length>SEGCAP){
-    var tail=out.slice(SEGCAP-1).join('\n\n');
-    out=out.slice(0,SEGCAP-1);
-    out.push(tail);}
-  return out;}
-
-EXT_DONE.push(function(m,ab){
-  if(!D.multi||!m||m.err)return;
-  try{
-    if(m.parts&&m.parts.length){
-      var ch=0,np=[];
-      m.parts.forEach(function(p){
-        if(p.ty!=='t'||!p.t){np.push(p);return;}
-        var g=cutSegs(p.t);
-        if(!g){np.push(p);return;}
-        ch=1;
-        g.forEach(function(x){np.push({ty:'t',t:x});});});
-      var g2=cutSegs(m.t||'');
-      if(g2){
-        ch=1;
-        g2.forEach(function(x){np.push({ty:'t',t:x});});
-        m.t='';}
-      if(ch){
-        m.parts=np;m.multi=1;
-        saveS(S().id);
-        if(CV==='chat')paint();}
-      return;}
-    var g3=cutSegs(m.t||'');
-    if(!g3)return;
-    m.parts=g3.map(function(x){return{ty:'t',t:x};});
-    m.t='';m.multi=1;
-    saveS(S().id);
-    if(CV==='chat')paint();
-  }catch(e){}});
-
-var POPPED={};
-function popSegs(){
+/* ══ 拆气泡：一处管全部 ══ */
+var BLOCK='.ccd,.tb,h4,.li,.bq,.hr,table,pre';
+function bubOne(host,mine){
+  if(!host||host.dataset.bb)return 0;
+  if(host.classList.contains('clip'))return 0;
+  if(host.querySelector(BLOCK))return 0;
+  var raw=host.innerHTML;
+  if(!String(host.textContent||'').trim()){
+    host.remove();return 0;}
+  host.dataset.bb='1';
+  var ps=D.multi
+    ? raw.split(/\n{2,}/)
+    : [raw];
+  ps=ps.map(function(x){
+    return String(x).replace(/^[\s\u3000]+|[\s\u3000]+$/g,'');
+  }).filter(function(x){
+    return x&&String(x).replace(/<[^>]*>/g,'').trim();});
+  if(!ps.length){host.remove();return 0;}
+  host.classList.add('hb');
+  host.innerHTML='';
+  ps.forEach(function(x){
+    var d=document.createElement('div');
+    d.className='bub';
+    d.innerHTML=x;
+    host.appendChild(d);});
+  return ps.length;}
+function bubbly(){
   var b=msBox();
   if(!b)return;
-  [].forEach.call(b.querySelectorAll('.m.ai'),function(w){
-    var id=(w.id||'').slice(2);
-    if(!id||POPPED[id])return;
-    var m=find(id);
-    if(!m||!m.multi||m.st)return;
+  [].forEach.call(b.querySelectorAll('.m'),function(w){
+    var id=(w.id||'').slice(2),m=find(id);
+    if(!m||m.st)return;
+    var mine=w.classList.contains('me'),n=0;
+    [].forEach.call(w.querySelectorAll('.sg,.bd'),function(el){
+      n+=bubOne(el,mine);});
+    if(n<2||POPPED[id])return;
     POPPED[id]=1;
-    var sg=w.querySelectorAll('.sg');
-    if(sg.length<2)return;
-    [].forEach.call(sg,function(el,i){
+    if(mine||!D.multi)return;
+    var bs=w.querySelectorAll('.bub');
+    [].forEach.call(bs,function(el,i){
       if(!i){el.classList.add('po');return;}
       el.style.visibility='hidden';
       setTimeout(function(){
         if(!el.isConnected)return;
         el.style.visibility='';
         el.classList.add('po');
-        if(SC.pin&&!SC.hold)keepBottom(400);},i*SEGGAP);});
-    keepBottom(sg.length*SEGGAP+500);});}
-
-/* 我发的：空一行就拆成两个气泡 */
-function splitMine(){
-  var b=msBox();
-  if(!b||SEL)return;
-  [].forEach.call(b.querySelectorAll('.m.me'),function(w){
-    if(w.dataset.ms)return;
-    var bd=w.querySelector('.bd');
-    if(!bd||bd.dataset.cl)return;
-    w.dataset.ms='1';
-    var t=bd.textContent||'';
-    if(t.indexOf('\n\n')<0)return;
-    var ps=t.split(/\n{2,}/).map(function(x){return x.trim();})
-      .filter(function(x){return x;});
-    if(ps.length<2||ps.length>6)return;
-    var box=bd.parentNode,ref=bd.nextSibling;
-    bd.remove();
-    ps.forEach(function(x){
-      var d=document.createElement('div');
-      d.className='bd'+(x.indexOf('\n')<0&&x.length<=14?' tight':'');
-      d.textContent=x;
-      d.dataset.tb='1';
-      box.insertBefore(d,ref);
-      box.insertBefore(document.createElement('br'),ref);});
-    var last=ref?ref.previousSibling:box.lastChild;
-    if(last&&last.tagName==='BR')last.remove();});}
+        if(SC.pin&&!SC.hold)keepBottom(420);},i*520);});
+    keepBottom(bs.length*520+500);});}
+var POPPED={};
 
 var paint0=paint;
 paint=function(keep){
   var r=paint0(keep);
-  try{
-    if(D.multi){splitMine();popSegs();}
-  }catch(e){keepErr('分条',e);}
+  try{bubbly();}catch(e){keepErr('气泡',e);}
   return r;};
-
 var useSnap0=useSnap;
 useSnap=function(m,v){
   try{delete POPPED[m.id];}catch(e){}
   return useSnap0(m,v);};
 
-window.shMulti=function(){
-  sheet({title:'分几条说',
-    body:'<div class="cd cd0"><div class="sw">'
-  +'<span class="l">一条一条发，不堆成一大段</span>'
-  +'<div class="k'+(D.multi?' on':'')
-  +'" onclick="tgMulti(this)"><i></i></div></div></div>'
-  +'<div class="nt">最多分四条，隔半秒一条冒出来</div>'});};
+/* ══ 教我在哪儿换气 ══ */
+var SPLIT=/\n[ \t]*(?:—{2,}|-{3,}|\/{2,}|‖|∥)[ \t]*\n/;
+var SEGCAP=4;
+var sp0=staticPart;
+staticPart=function(){
+  var s=sp0();
+  if(!D.multi)return s;
+  return s+'\n\n【分几条说】\n'
+   +'想像真的在发消息那样一条一条来，就在换气的地方空一行。\n'
+   +'页面会把空行拆成单独的一条，隔半秒一条冒出来，最多 '
+   +SEGCAP+' 条。\n'
+   +'短句、递进、突然想起来补一句——这些地方分。\n'
+   +'一段完整的话别硬拆，只说一句时也不用分。';};
+
+/* 写了 —— 也认，转成空行 */
+EXT_DONE.push(function(m,ab){
+  if(!m||m.err)return;
+  try{
+    var ch=0;
+    function fix(t){
+      var s=String(t||'');
+      if(!SPLIT.test(s))return null;
+      ch=1;
+      return s.split(SPLIT).map(function(x){return x.trim();})
+        .filter(function(x){return x;}).join('\n\n');}
+    if(m.parts&&m.parts.length)m.parts.forEach(function(p){
+      if(p.ty!=='t')return;
+      var v=fix(p.t);
+      if(v)p.t=v;});
+    var v2=fix(m.t);
+    if(v2)m.t=v2;
+    if(ch){
+      delete POPPED[m.id];
+      saveS(S().id);
+      if(CV==='chat')paint();}
+  }catch(e){}});
+
+/* ══ 面板 ══ */
+window.pkSkin=function(v){
+  D.skin=v;saveD();look();
+  var w=document.getElementById('sk-seg');
+  if(w)[].forEach.call(w.children,function(b,j){
+    b.className='pz'+(j===v?' on':'');});
+  vib(8);};
+window.pkFont=function(v){
+  D.cft=v;saveD();look();
+  var w=document.getElementById('cf-seg');
+  if(w)[].forEach.call(w.children,function(b,j){
+    b.className='pz'+(j===v?' on':'');});
+  vib(8);};
+window.pkSize=function(v){
+  D.csz=Math.max(13,Math.min(19,parseInt(v,10)||16));
+  look();saveD();
+  var e=document.getElementById('cz');
+  if(e)e.textContent=D.csz;};
 window.tgMulti=function(el){
   D.multi=D.multi?0:1;saveD();
   el.className='k'+(D.multi?' on':'');
+  POPPED={};
   vib(8);};
-NOTE['分几条说']='最多分四条，隔半秒一条冒出来';
-if(D.multi==null)D.multi=1;
+window.shLook=function(){
+  var sk=D.skin||0,cf=D.cft||0;
+  sheet({title:'気泡と文字',
+    body:'<div class="lbs">气泡</div>'
+  +'<div class="segw" id="sk-seg">'+SKIN.map(function(x,i){
+    return'<button class="pz'+(i===sk?' on':'')
+      +'" onclick="pkSkin('+i+')">'+x+'</button>';}).join('')+'</div>'
+  +'<div class="lbs" style="margin-top:18px">字体</div>'
+  +'<div class="segw" id="cf-seg">'+FONTS.map(function(x,i){
+    return'<button class="pz'+(i===cf?' on':'')
+      +'" onclick="pkFont('+i+')">'+x[0]+'</button>';}).join('')+'</div>'
+  +'<div class="lbs" style="margin-top:18px">字号</div>'
+  +'<div class="cd"><input type="range" min="13" max="19" step="1" '
+  +'value="'+(D.csz||16)+'" oninput="pkSize(this.value)">'
+  +'<div style="display:flex;justify-content:space-between;'
+  +'font-size:12px;color:var(--dim2)"><span>小</span>'
+  +'<span id="cz" style="color:var(--ink2);font-weight:600">'
+  +(D.csz||16)+'</span><span>大</span></div></div>'
+  +'<div class="cd cd0" style="margin-top:18px"><div class="sw">'
+  +'<span class="l">分几条说</span>'
+  +'<div class="k'+(D.multi?' on':'')
+  +'" onclick="tgMulti(this)"><i></i></div></div></div>'
+  +'<div class="nt">改完回聊天页就能看见</div>'});};
+NOTE['気泡と文字']='改完回聊天页就能看见';
 
-/* ══ 更多页：气泡进「样子」，分几条说进「我能做的」 ══ */
 var vMore0=vMore;
 vMore=function(){
   var h=vMore0();
   try{
-    var k1='<div class="rw pz" onclick="shTheme()">';
-    var i1=h.indexOf(k1);
-    if(i1>=0)h=h.slice(0,i1)
-      +'<div class="rw pz" onclick="shSkin()">'
-      +'<span class="l">气泡</span>'+I.chevD+'</div>'
-      +h.slice(i1);
-    var k2='<div class="rw pz" onclick="shHi()">';
-    var i2=h.indexOf(k2);
-    if(i2>=0)h=h.slice(0,i2)
-      +'<div class="rw pz" onclick="shMulti()">'
-      +'<span class="l">分几条说</span>'+I.chevD+'</div>'
-      +h.slice(i2);
+    var k='<div class="rw pz" onclick="shTheme()">';
+    var i=h.indexOf(k);
+    if(i>=0)h=h.slice(0,i)
+      +'<div class="rw pz" onclick="shLook()">'
+      +'<span class="l">気泡と文字</span>'+I.chevD+'</div>'
+      +h.slice(i);
   }catch(e){}
   return h;};
 
