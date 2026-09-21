@@ -6790,19 +6790,28 @@ bsec=function(){
 var st=document.createElement('style');
 st.textContent=
 
- /* ── 機嫌｜身体：改成小标，不再是一根同款细线 ── */
- '.bsec .bdv{display:block;margin:0 0 14px;padding:0 0 9px;'
-+'border-bottom:1px solid var(--ln2)}'
-+'.bsec .bdv i{display:none}'
-+'.bsec .bdv span{display:inline-block;font:400 11px/1 var(--min);'
-+'letter-spacing:.3em;color:var(--ink2);text-indent:.3em;'
-+'padding-left:1px;position:relative}'
-+'.bsec .bdv span:after{content:"";position:absolute;left:0;'
-+'bottom:-10px;width:16px;height:2px;background:var(--dim2);'
-+'opacity:.5}'
+ /* ── 气泡：一条一行，竖着叠 ── */
+ '#ms .bub{display:block;width:-webkit-fit-content;width:fit-content;'
++'max-width:88%;margin-left:0;margin-right:0}'
++'#ms .m.me .bub{margin-left:auto;margin-right:0}'
++'#ms .m.ai .bub{margin-right:auto;max-width:94%}'
++'#ms .bub+.bub{margin-top:8px}'
++'#ms .m.ai .bub+.bub{margin-top:14px}'
++'html.sk1 #ms .m.ai .bub+.bub,html.sk2 #ms .m.ai .bub+.bub,'
++'html.sk3 #ms .m.ai .bub+.bub{margin-top:8px}'
+
+ /* ── 機嫌 / 身体：只剩一小截短杠加一行字 ── */
++'.bsec .bdv{display:flex;align-items:center;gap:9px;'
++'margin:0 0 13px;padding:0;border:0}'
++'.bsec .bdv i{flex:none;width:14px;height:1px;'
++'background:var(--dim2);opacity:.55}'
++'.bsec .bdv i+span+i{display:none}'
++'.bsec .bdv span{flex:none;font:400 11px/1 var(--min);'
++'letter-spacing:.26em;color:var(--ink2);text-indent:.26em}'
++'.bsec .bdv span:after{display:none}'
 +'.bsec .bdv+.br{margin-top:0}'
 
- /* ── 面板里的开关和卡片，收紧一档 ── */
+ /* ── 面板：收紧一档 ── */
 +'#sh .sw{padding:11px 14px;gap:10px}'
 +'#sh .sw .l{font-size:14px}'
 +'#sh .sw .k{width:42px;height:25px;border-radius:13px}'
@@ -6812,27 +6821,20 @@ st.textContent=
 +'#sh .cd0{padding:0}'
 +'#sh .rw{padding:12px 15px}'
 +'#sh .rw .l{font-size:14px}'
-
- /* ── 选择块：小一号，间距也收 ── */
 +'#sh .segw{gap:8px;margin-bottom:0}'
 +'#sh .segw button{padding:8px 15px;font-size:13.5px;'
 +'border-radius:12px}'
 +'#sh .seg{gap:8px;margin-bottom:0}'
 +'#sh .seg button{padding:9px 12px;font-size:13.5px;'
 +'border-radius:12px}'
-
- /* ── 滑杆那张卡，别那么胖 ── */
 +'#sh .cd input[type=range]{height:22px}'
 +'#sh .cd input[type=range]::-webkit-slider-thumb{width:20px;'
 +'height:20px;margin-top:-8px}'
-
- /* ── 面板里两块之间的呼吸 ── */
 +'#sh .bdy>*+*{margin-top:10px}'
 +'#sh .bdy>*+.lbs{margin-top:17px}'
 +'#sh .lbs{padding:0 2px 7px}';
 document.head.appendChild(st);
 
-/* 「自己动手」那张卡的多余间距 */
 window.shActs=function(){
   sheet({title:'自己动手',
     body:'<div class="cd cd0"><div class="sw">'
@@ -6841,6 +6843,7 @@ window.shActs=function(){
   +'" onclick="tgActs(this)"><i></i></div></div></div>'
   +'<div class="nt">记忆库交给我，记改删我自己判断</div>'});};
 
+if(CV==='chat'){try{paint(1);}catch(e){}}
 if(CV==='home'){try{view('home');}catch(e){}}
 })();
 boot();
