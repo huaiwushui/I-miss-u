@@ -6714,28 +6714,57 @@ var INKS=[
  ['苔','#44503F','#CBD5C3'],
  ['梅','#56444E','#D9C8D1']];
 try{
-  /* 墨和素太像，去掉墨，原来选墨的归到素 */
   if(!D.ikm){
     D.cink=({0:0,1:0,2:1,3:2,4:3})[D.cink]||0;
     D.ikm=1;}
   if(!(D.cink>=0&&D.cink<=4))D.cink=0;
 }catch(e){D.cink=0;}
 
+/* ══ 送信键：猫爪 · 纸飞机 · 方块 ══ */
+I.wave='<svg class="ic cw" width="21" height="21" viewBox="0 0 24 24" '
++'fill="currentColor"><ellipse cx="12" cy="15.6" rx="5.3" ry="4.2"/>'
++'<ellipse cx="6.2" cy="10.4" rx="1.9" ry="2.4" '
++'transform="rotate(-18 6.2 10.4)"/>'
++'<ellipse cx="9.7" cy="7.4" rx="1.8" ry="2.4"/>'
++'<ellipse cx="14.3" cy="7.4" rx="1.8" ry="2.4"/>'
++'<ellipse cx="17.8" cy="10.4" rx="1.9" ry="2.4" '
++'transform="rotate(18 17.8 10.4)"/></svg>';
+I.send='<svg class="ic cw" width="20" height="20" viewBox="0 0 24 24" '
++'fill="none"><path d="M20.8 3.2 3.6 10.3a.5.5 0 0 0 .05.94l6.5 1.9 '
++'1.9 6.5a.5.5 0 0 0 .94.05L20.8 3.2Z" fill="currentColor" '
++'fill-opacity=".92"/><path d="M20.8 3.2 10.15 13.14" '
++'stroke="var(--ink)" stroke-width="1.5" stroke-linecap="round" '
++'opacity=".5"/></svg>';
+I.stop='<svg class="ic cw" width="18" height="18" viewBox="0 0 24 24">'
++'<rect x="6.5" y="6.5" width="11" height="11" rx="3.4" '
++'fill="currentColor"/></svg>';
+
 var st=document.createElement('style');
 st.textContent=
 
+ /* ── 送信键：花瓣形，左下角收一个尖 ── */
+ '.snd{width:40px;height:40px;'
++'border-radius:50% 50% 50% 13px;'
++'transition:opacity .18s,transform .16s cubic-bezier(.32,.72,0,1),'
++'border-radius .22s cubic-bezier(.32,.72,0,1)}'
++'.snd:active{transform:scale(.9) rotate(-4deg)}'
++'.snd.off{opacity:.3;border-radius:50%}'
++'.snd .ic{transition:none}'
+
  /* ── 字色：正文跟着走，灰字和代码不动 ── */
- '#ms .m .bd,#ms .m .sg,#ms .m .bd b,#ms .m .sg b,'
++'#ms .m .bd,#ms .m .sg,#ms .m .bd b,#ms .m .sg b,'
 +'#ms .m .bd h4,#ms .m .sg h4,'
 +'#ms .m .bd .li span,#ms .m .sg .li span{color:var(--ci,var(--ink2))}'
 
- /* ── 两边工具栏一模一样 ── */
-+'#ms .eo,#ms .ops{gap:14px;margin-top:8px;opacity:.62}'
-+'#ms .eo>button,#ms .ops>button{width:24px;height:24px;'
+ /* ── 两边工具栏：都按原来大的那一套 ── */
++'#ms .ops,#ms .eo{display:flex;align-items:center;gap:14px;'
++'margin-top:9px;opacity:.62}'
++'#ms .eo{justify-content:flex-end}'
++'#ms .ops>button,#ms .eo>button{width:25px;height:25px;'
 +'display:flex;align-items:center;justify-content:center}'
-+'#ms .eo>button .ic,#ms .ops>button .ic{width:16px;height:16px}'
-+'#ms .eo .nav,#ms .ops .nav{font-size:11.5px;gap:5px}'
-+'#ms .eo .nav button,#ms .ops .nav button{width:20px;height:20px}'
++'#ms .ops>button .ic,#ms .eo>button .ic{width:16px;height:16px}'
++'#ms .ops .nav,#ms .eo .nav{font-size:11.5px;gap:5px}'
++'#ms .ops .nav button,#ms .eo .nav button{width:20px;height:20px}'
 
  /* ── 头像：蒙一层很薄的纱 ── */
 +'#ms .mav{position:relative;box-shadow:0 0 0 1px var(--ln2)}'
@@ -6854,7 +6883,7 @@ window.shActs=function(){
   +'" onclick="tgActs(this)"><i></i></div></div></div>'
   +'<div class="nt">记忆库交给我，记改删我自己判断</div>'});};
 
-if(CV==='chat'){try{paint(1);}catch(e){}}
+if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='home'){try{view('home');}catch(e){}}
 })();
 boot();
