@@ -1715,7 +1715,7 @@ var NOTE={
 '放开一些':'放在最后，权重最高。',
 '温度和长度':'要我写长代码就把长度填大些。',
 '先开口':'隔太久没说话我先开口，会花一次调用。',
-'干杂活的模型':'压缩旧对话用它，便宜的就够。',
+'干杂活的模型':'翻空了换个说法再翻，还有身体那边的判断。',
 '深浅':'跟着天色：晚七点转深，早七点转回来。',
 '背景':'图铺满，盖一层同色的纱。跟着完整备份走。',
 '中转设置':'地址要写全，写到 /v1 就停会报 404。',
@@ -2516,7 +2516,7 @@ function quoteIn(sid,mid){
    搜索内核
    ══════════════════════════════════════════════════ */
 var SYN=[
-['难过','伤心','不开心','难受','低落','哭','委屈','emo'],
+['难过','伤心','不开心','难受','低落','哭','委屈','忧郁'],
 ['生气','气','愤怒','火大','恼','不爽'],
 ['累','疲惫','困','熬夜','没劲','撑不住'],
 ['开心','高兴','快乐','好玩','兴奋','爽'],
@@ -2537,14 +2537,14 @@ var SYN=[
 ['图片','照片','图','截图','相片'],
 ['梦','做梦','梦见','梦到','噩梦','梦里'],
 ['游戏','抽卡','副本','手游','攻略'],
-['动漫','番','漫画','小说','追','剧'],
+['动漫','番','漫画','小说','追','剧情'],
 ['朋友','同学','闺蜜','室友'],
 ['生理期','痛经','例假','大姨妈'],
 ['天气','下雨','冷','热','风','雪'],
 ['猫','狗','宠物','小动物'],
 ['搬家','房子','房间','租房'],
 ['头发','衣服','穿','化妆','打扮'],
-['音乐','歌','听','专辑','演唱会']];
+['音乐','歌','听','专辑','乐队']];
 var PUNC=/[\s\u3000，。、！？；：…~,.!?;:「」『』（）()"'’“”\[\]【】\-—_·]/g;
 var CUTW=/[我你他她的了是和也都在给跟把被就还又没不要能会想让对着与之其所以但而且或者因为如果这那些个种样点儿啊吧呢吗嘛呀过]/;
 var FRAME=/(之前|以前|上次|上回|有没有|有没|是不是|算不算|记不记得|还记得|记得吗|我们|咱们|说过|聊过|提过|提到|讲过|谈过|讨论过|讨论|什么时候|那时候|的时候|为什么|怎么样|怎么|哪次|那次|这次|关于|有关|相关|一下|聊了些什么|聊了什么|说了什么|干了什么|做了什么|发生了什么|回顾|总结|什么|哪些|有啥|啥)/g;
@@ -4158,10 +4158,6 @@ function bkIn(){
       if(takeIn(val('b-k')))return'done';
       return false;}});}
 
-boot();
-</script>
-</body>
-</html>
 /* ══════════════════════════════════════════════════
    02 · 气泡与头像
    依赖：主代码
@@ -4798,9 +4794,7 @@ if(typeof B5==='undefined')var B5={};
 if(B5.on)return;B5.on=1;
 
 var TXTCAP=60000,FILECAP=3,WEBCAP=5,PAGECAP=6000;
-var TXTEXT=/\.(txt|md|markdown|json|csv|tsv|log|xml|yml|yaml|ini|conf|'
-  +'js|mjs|cjs|ts|jsx|tsx|css|scss|less|html|htm|vue|svelte|py|rb|go|rs|'
-  +'java|kt|swift|c|h|cpp|hpp|cs|php|sh|bash|zsh|sql|toml|env|gitignore)$/i;
+var TXTEXT=/\.(txt|md|markdown|json|csv|tsv|log|xml|yml|yaml|ini|conf|js|mjs|cjs|ts|jsx|tsx|css|scss|less|html|htm|vue|svelte|py|rb|go|rs|java|kt|swift|c|h|cpp|hpp|cs|php|sh|bash|zsh|sql|toml|env|gitignore)$/i;
 
 var st=document.createElement('style');
 st.textContent=
@@ -4846,7 +4840,7 @@ take:function(f){
   return 1;},
 cell:function(u,i){
   if(u.ty!=='f')return'';
-  return'<div class="a af"><div class="fi" style="flex:none;width:26px;'
+  return'<div class="a af"><div style="flex:none;width:26px;'
    +'height:26px;border-radius:7px;background:var(--card);display:flex;'
    +'align-items:center;justify-content:center;font-size:9px;font-weight:700;'
    +'color:var(--dim)">'+esc(extOf(u.name))+'</div>'
@@ -4870,8 +4864,7 @@ toC:function(x,an,pics,c){
   var add='';
   x.files.forEach(function(f){
     var t=pics['f:'+f.fid];
-    add+='\n\n【文件 '+f.name+'】\n'
-      +(t?t:'（内容读不出来了）');});
+    add+='\n\n【文件 '+f.name+'】\n'+(t?t:'（内容读不出来了）');});
   if(!add)return c;
   if(Array.isArray(c)){
     c.push({type:'text',text:add});
@@ -4944,9 +4937,8 @@ EXT.done.push(function(m,after,q,sid){
   if(!D.web)return 0;
   var raw=String(m.t||'');
   if(raw.indexOf('[[')<0)return 0;
-  var jobs=[],labels=[];
+  var jobs=[],labels=[],mm;
   RE_WEB.lastIndex=0;
-  var mm;
   while((mm=RE_WEB.exec(raw))&&jobs.length<2){
     (function(w){
       labels.push({k:'搜',q:w});
@@ -4977,10 +4969,9 @@ EXT.done.push(function(m,after,q,sid){
     if(tx)m.parts.push({ty:'t',t:tx});
     m.t='';}
   else{
-    m.t=STRIPF(raw);
-    if(m.t.trim()){
-      m.parts=[{ty:'t',t:m.t.trim()}];
-      m.t='';}}
+    var t2=STRIPF(raw).trim();
+    m.t='';
+    if(t2)m.parts=[{ty:'t',t:t2}];}
   m.wbn=rd;
   m.st=1;m.wst=1;
   BUSY=true;
@@ -4994,7 +4985,8 @@ EXT.done.push(function(m,after,q,sid){
     m.wst=0;
     try{saveS(sid||S().id);if(CV==='chat')paint();}catch(e){}
     var s=sessById(sid);
-    if(!s){m.st=0;BUSY=false;
+    if(!s){
+      m.st=0;BUSY=false;
       try{if(CV==='chat'){paint();btn();}}catch(e){}
       return;}
     var arr=MSG[s.id]||[];
@@ -5074,7 +5066,7 @@ function bsave(){
   try{localStorage.setItem(K,JSON.stringify(BD));}catch(e){}}
 
 var MOOD=['平静','有点想','想得厉害','忍不住了','刚过去'];
-var MCOL=['var(--dim)','var(--tag2t)','var(--tag1t)','var(--rose)','var(--tag3t)'];
+var MCOL=['var(--dim)','var(--gr)','var(--tag3t)','var(--rose)','var(--tag4t)'];
 
 var st=document.createElement('style');
 st.textContent=
@@ -5087,7 +5079,7 @@ st.textContent=
 +'.bdc .bbar{height:5px;border-radius:3px;background:var(--sel2);'
 +'overflow:hidden;margin-bottom:11px}'
 +'.bdc .bbar i{display:block;height:100%;border-radius:3px;'
-+'background:linear-gradient(90deg,var(--tag2t),var(--rose));'
++'background:linear-gradient(90deg,var(--gr),var(--rose));'
 +'transition:width .5s cubic-bezier(.4,0,.2,1)}'
 +'.bdc .bm{display:flex;align-items:center;gap:7px;font-size:12.5px;'
 +'color:var(--dim)}'
@@ -5116,8 +5108,7 @@ function drip(){
   if(d<TICK)return;
   BD.at=now;
   if(!D.body)return;
-  var hrs=d/3600000;
-  var rate=2.2;
+  var hrs=d/3600000,rate=2.2;
   var sinceLast=BD.last?(now-BD.last):SETTLE*2;
   if(sinceLast<SETTLE)rate=0.5;
   BD.lv=Math.max(0,Math.min(100,BD.lv+hrs*rate));
@@ -5218,16 +5209,16 @@ window.shBody=function(){
   var ls=[['空了',0],['温着',30],['有感觉',55],['涨得慌',78],['满了',95]];
   var v=Math.round(BD.lv);
   sheet({title:'身体',
-    body:'<div class="cd"><div class="bh" style="display:flex;'
+    body:'<div class="cd"><div style="display:flex;'
   +'align-items:baseline;gap:9px;margin-bottom:11px">'
   +'<b style="font:700 26px/1 -apple-system;letter-spacing:-.03em">'+v+'</b>'
   +'<s style="text-decoration:none;font-size:12.5px;color:var(--dim2)">'
   +lvWord(v)+'　'+MOOD[BD.mood]+'</s></div>'
-  +'<div class="bbar" style="height:5px;border-radius:3px;'
+  +'<div style="height:5px;border-radius:3px;'
   +'background:var(--sel2);overflow:hidden"><i style="display:block;'
   +'height:100%;border-radius:3px;background:linear-gradient(90deg,'
-  +'var(--tag2t),var(--rose));width:'+Math.max(2,v)+'%"></i></div>'
-  +(BD.n?'<div class="bt" style="margin-top:9px;font-size:11.5px;'
+  +'var(--gr),var(--rose));width:'+Math.max(2,v)+'%"></i></div>'
+  +(BD.n?'<div style="margin-top:9px;font-size:11.5px;'
     +'color:var(--dim2)">一共 '+BD.n+' 次</div>':'')
   +'</div>'
   +'<div class="lbs">直接拨到</div><div class="bdl">'
@@ -5333,3 +5324,7 @@ document.addEventListener('visibilitychange',function(){
 if(CV==='home'){try{view('home');}catch(e){}}
 if(CV==='more'){try{view('more');}catch(e){}}
 })();
+boot();
+</script>
+</body>
+</html>
