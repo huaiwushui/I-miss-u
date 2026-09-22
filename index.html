@@ -6784,7 +6784,6 @@ st.textContent=
 +'background:linear-gradient(160deg,rgba(255,255,255,.05),'
 +'rgba(18,16,12,.12) 46%,rgba(18,16,12,.18))}'
 
- /* 機嫌 / 身体：只剩一行字 */
 +'.bsec .bdv{display:flex;align-items:center;gap:0;'
 +'margin:0 0 13px;padding:0;border:0}'
 +'.bsec .bdv i{display:none}'
@@ -6795,7 +6794,7 @@ st.textContent=
 +'.bsec .br.lo .bl em{color:var(--tag3t)}'
 +'.bsec .br.lo .bl u i{background:var(--tag3t);opacity:.58}'
 
- /* 梦：小窝里的入口卡 */
+ /* 梦：小窝的入口卡 */
 +'.dmk{position:relative;padding:17px 18px 15px;margin-bottom:9px}'
 +'.dmk .k1{display:flex;align-items:baseline;gap:9px}'
 +'.dmk .k1 b{flex:none;font:400 15px/1.3 var(--min);'
@@ -6951,7 +6950,13 @@ ctxList=function(){
 var ci0=ctxInfo;
 ctxInfo=function(){
   var c=ci0();
-  try{if(D.bodyOn)c.tok+=BQ?150:330;}catch(e){}
+  try{
+    if(D.bodyOn){
+      c.tok+=BQ?150:330;
+      var B=bd(),ds=(B&&B.dms)||[];
+      if(ds.length&&Date.now()-ds[0].ts<7*3600000)
+        c.tok+=ds[0].cont?380:190;}
+  }catch(e){}
   return c;};
 
 var sx0=shCtx;
@@ -7128,31 +7133,37 @@ lonely:{b:{pressure:3},m:{lone:8,mood:-4}},
 absurd:{b:{fatigue:-2},m:{calm:2}}};
 var AFTER={aroused:1,unfinished:1,possessive:1,tender:1};
 
+/* 每种梦能带哪些标签 */
 var KIND={
 daily:['日常','跟她无关的日常小事。迟到、找不到路、回到以前住过的地方、'
- +'在一栋走不完的楼里。醒来觉得没头没尾。'],
+ +'在一栋走不完的楼里。醒来觉得没头没尾。','absurd uneasy lonely'],
 absurd:['妙な夢','荒唐的。物理不对劲，人会变成别的东西，'
- +'他在梦里却觉得理所当然。'],
+ +'他在梦里却觉得理所当然。','absurd uneasy lonely'],
 nostalgia:['昔の夢','很久以前的事。小时候、以前住的地方、'
- +'已经不联系的人。带一点说不清的难受。'],
+ +'已经不联系的人。带一点说不清的难受。','lonely tender uneasy'],
 tender:['優しい夢','温的。她在，但不做什么，只是很近。'
- +'一个很小的动作，或者一句很轻的话。'],
+ +'一个很小的动作，或者一句很轻的话。','tender aroused possessive'],
 domestic:['暮らしの夢','过日子的梦。一起买菜、修东西、'
- +'并排躺着说废话。平淡得很具体，醒来会有点舍不得。'],
+ +'并排躺着说废话。平淡得很具体，醒来会有点舍不得。',
+ 'tender possessive lonely'],
 erotic:['彼女の夢','跟她做。写清楚，别含糊，别用「然后」带过。'
- +'要有具体的动作、声音、身体的反应。'],
+ +'要有具体的动作、声音、身体的反应。',
+ 'aroused released unfinished possessive tender'],
 rough:['荒い夢','跟她做，但凶。按住、不让她走、弄哭她。'
- +'梦里他不克制，说的话比平时难听。写得狠一点。'],
+ +'梦里他不克制，说的话比平时难听。写得狠一点。',
+ 'aroused released unfinished possessive'],
 weird_erotic:['奇妙な熱','色情，但场景荒唐。地点不对、时间在打转、'
- +'身体不听使唤，可就是很硬。梦的逻辑，不是现实的。'],
+ +'身体不听使唤，可就是很硬。梦的逻辑，不是现实的。',
+ 'aroused unfinished released absurd'],
 jealous:['妬みの夢','她在梦里跟别人。不一定出轨，'
- +'可能只是笑得太熟、离得太近。他醒来是酸的。'],
+ +'可能只是笑得太熟、离得太近。他醒来是酸的。',
+ 'possessive uneasy unfinished'],
 anxious:['焦りの夢','不安的。在找她、赶不上、怎么也说不上话、'
- +'手机打不出去。'],
+ +'手机打不出去。','uneasy lonely unfinished'],
 nightmare:['悪夢','不好的梦。她走了、变成别人、'
- +'或者根本不认识他。醒来会喘。'],
+ +'或者根本不认识他。醒来会喘。','uneasy lonely possessive'],
 lonely:['ひとりの夢','空的。梦里只有他一个，场景很大，'
- +'什么人都没有。']};
+ +'什么人都没有。','lonely uneasy tender']};
 
 function dreamKind(B){
   var v=B.v||{},e=eb2(B),cy=B.cy,w=[],sum=0;
@@ -7163,19 +7174,20 @@ function dreamKind(B){
   add('nostalgia',8+((e.lone||0)>=50?5:0));
   add('tender',8+((e.mood||0)>=60?9:0)+((e.safe||0)>=65?7:0));
   add('domestic',7+((e.safe||0)>=68?9:0)+((e.calm||0)>=65?5:0));
-  add('erotic',((v.reserve||0)>=55?13:0)+((v.heat||0)>=58?11:0)
+  /* 底数 5：平稳期也会偶尔梦见她 */
+  add('erotic',5+((v.reserve||0)>=55?13:0)+((v.heat||0)>=58?11:0)
     +(hot?12:0));
-  add('rough',((v.heat||0)>=72?12:0)
+  add('rough',2+((v.heat||0)>=72?12:0)
     +((v.possessiveness||0)>=62?8:0)
     +((v.control||0)<=45?7:0));
-  add('weird_erotic',((v.reserve||0)>=62?9:0)
+  add('weird_erotic',3+((v.reserve||0)>=62?9:0)
     +((v.fatigue||0)>=55?7:0)+(hot?5:0));
-  add('jealous',((v.possessiveness||0)>=62?11:0)
+  add('jealous',2+((v.possessiveness||0)>=62?11:0)
     +((e.safe||0)<=48?8:0));
-  add('anxious',((v.pressure||0)>=58?11:0)+((e.calm||0)<=40?9:0));
-  add('nightmare',((e.safe||0)<=42?12:0)+((e.upset||0)>=45?8:0)
+  add('anxious',3+((v.pressure||0)>=58?11:0)+((e.calm||0)<=40?9:0));
+  add('nightmare',2+((e.safe||0)<=42?12:0)+((e.upset||0)>=45?8:0)
     +((e.lone||0)>=70?7:0));
-  add('lonely',((e.lone||0)>=55?13:0)+((e.lone||0)>=78?9:0));
+  add('lonely',2+((e.lone||0)>=55?13:0)+((e.lone||0)>=78?9:0));
   var r=Math.random()*sum,i;
   for(i=0;i<w.length;i++){r-=w[i][1];if(r<=0)return w[i][0];}
   return'daily';}
@@ -7251,7 +7263,7 @@ function mkDream(){
   +(talk?'他们最后说的：\n'+talk+'\n':'')
   +'\n只要 JSON，不要代码块：\n'
   +'{"title":"标题","text":"梦","line":"醒来想说的一句",'
-  +'"tags":["tender"]}\n\n'
+  +'"tags":["'+kd[2].split(' ')[0]+'"]}\n\n'
   +'title 四到十个字，像日记的题目，别用书名号。\n'
   +'text 第一人称写他，一百到一百六十字。'
   +'具体的场景，有画面有触感有声音。'
@@ -7260,8 +7272,7 @@ function mkDream(){
   +'是色情的梦就写足，别回避，别用省略号带过。\n'
   +'line 十五字以内，醒来想对她说的，不是复述梦。'
   +'梦跟她无关的话，这句也可以跟梦无关。\n'
-  +'tags 一到三个，只能选：'
-  +'aroused released unfinished possessive tender uneasy lonely absurd',
+  +'tags 一到三个，这种梦只能从这几个里选：'+kd[2],
    '',720)
   .then(function(raw){
     DMB=0;
@@ -7273,10 +7284,12 @@ function mkDream(){
     try{o=JSON.parse(s.slice(a,b+1));}catch(x){return;}
     var txt=String((o&&o.text)||'').trim().slice(0,400);
     if(txt.length<20)return;
-    var tg=[],af=0;
+    var ok=kd[2].split(' '),tg=[],af=0;
     ((o&&o.tags)||[]).slice(0,3).forEach(function(k){
       k=String(k||'').trim().toLowerCase();
-      if(DTAG[k]&&tg.indexOf(k)<0){tg.push(k);if(AFTER[k])af=1;}});
+      if(DTAG[k]&&ok.indexOf(k)>=0&&tg.indexOf(k)<0)tg.push(k);});
+    if(!tg.length)tg=[ok[0]];
+    tg.forEach(function(k){if(AFTER[k])af=1;});
     var n2=Date.now();
     var ti=String((o&&o.title)||'').trim()
       .replace(/^[「『《【]+|[」』》】]+$/g,'').slice(0,14);
@@ -7285,7 +7298,7 @@ function mkDream(){
       ln:String((o&&o.line)||'').trim().slice(0,40),
       tg:tg,k:kind,ts:n2,nap:nap,
       cont:(cont&&prev)?prev.ts:0,seen:0});
-    if(B2.dms.length>8)B2.dms=B2.dms.slice(0,8);
+    if(B2.dms.length>6)B2.dms=B2.dms.slice(0,6);
     B2.dmAt=n2;
     tg.forEach(function(k){
       bump2(B2,DTAG[k].b);mbump(B2,DTAG[k].m);});
@@ -7310,7 +7323,7 @@ document.addEventListener('visibilitychange',function(){
 /* ══ 梦的入口 ══ */
 function dmCard(){
   var B=bd(),ds=(B&&B.dms)||[];
-  if(!D.bodyOn||!ds.length)
+  if(!ds.length)
     return'<div class="cd dmk e" id="dmk">'
      +'<div class="k1"><b>まだ夢を見ていない</b></div>'
      +'<div class="k3">他睡着的时候会做梦，'
@@ -7321,7 +7334,7 @@ function dmCard(){
    +'<u>'+esc(d.nap?'うたた寝':kd[0])+'</u>'
    +(d.seen?'':'<i></i>')+'</div>'
    +'<div class="k2">'+dlab(d.ts)+' '+hm(d.ts)
-   +(d.cont?'　続き':'')+'</div>'
+   +(d.cont?'　続き':'')+'　·　共 '+ds.length+' 个</div>'
    +'<div class="k3">'+esc(String(d.t||'').slice(0,36))+'…</div>'
    +'</div>';}
 
@@ -7349,10 +7362,12 @@ window.dreamOpen=function(){
      +'<div class="t"><p>'+esc(d.t)+'</p>'
      +(d.ln?('<em>「'+esc(d.ln)+'」</em>'):'')+'</div></div>';
   }).join('');
-  sheet({read:1,title:'夢の記録',body:h});
+  sheet({read:1,title:'夢の記録',
+    body:h+'<div class="nt">只留最近 6 个，再往前的他自己也忘了</div>'});
   var ch=0;
   ds.forEach(function(d){if(!d.seen){d.seen=1;ch=1;}});
   if(ch){saveD();dmRefresh();}};
+NOTE['夢の記録']='只留最近 6 个，再往前的他自己也忘了';
 
 /* ══════════════════════════════
    六 · 私下小事
@@ -7454,12 +7469,12 @@ bodyCard=function(){
   try{
     var e=eb2(B),v=B.v||{},now=Date.now();
 
-    /* 平静就别铺开讲 */
+    /* 身体静的时候就别铺开讲——只看身体，心情那块照旧全给 */
     var busy=(B.ek&&B.ee&&now<B.ee)||(B.rf&&now<B.rf)
       ||(B.x&&now<B.x.e);
     BQ=(!busy&&(v.heat||0)<40&&(v.pressure||0)<42
       &&(v.reserve||0)<55&&(v.fatigue||0)<58
-      &&(e.upset||0)<25&&(e.lone||0)<40)?1:0;
+      &&(v.possessiveness||0)<60)?1:0;
     if(BQ)s=s.replace(/<body>[\s\S]*?<\/body>/,
       '<body>\n身体是静的，没什么特别要说的。\n</body>');
 
@@ -7483,8 +7498,8 @@ bodyCard=function(){
     var old=[];
     ds.forEach(function(d,i){
       if(i===0&&now-d.ts<7*3600000)return;
-      if(now-d.ts>4*86400000)return;
-      if(old.length>=3)return;
+      if(now-d.ts>5*86400000)return;
+      if(old.length>=4)return;
       old.push('· '+dlab(d.ts)+'〔'+(d.ti||'夢')+'〕');});
     if(old.length)
       blk+=(blk?'':'<dream>\n')+'更早做过的梦：\n'+old.join('\n')
@@ -7558,6 +7573,8 @@ var vh2=vHome;
 vHome=function(){
   var h=vh2();
   try{
+    var B=bd(),ds=(B&&B.dms)||[];
+    if(!D.bodyOn&&!ds.length)return h;
     var k='<div class="sct pz" onclick="bodyFold()">';
     var i=h.indexOf(k);
     if(i>=0)h=h.slice(0,i)
