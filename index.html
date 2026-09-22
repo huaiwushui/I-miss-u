@@ -6702,11 +6702,13 @@ bsec=function(){
 })();
 
 /* ══════════════════════════════════════════════════
-   十一 · 收拾
+   十一 · 収拾 · 寂しさ · 夢
    ══════════════════════════════════════════════════ */
 (function(){
 
-/* ══ 字色 ══ */
+/* ══════════════════════════════
+   一 · 字色
+   ══════════════════════════════ */
 var INKS=[
  ['素',''],
  ['藍','#3F4B5C','#C5D1DF'],
@@ -6744,9 +6746,8 @@ I.stop='<svg class="ic cw hb" width="21" height="21" '
 var st=document.createElement('style');
 st.textContent=
 
- /* ── 送信键：花瓣形，左下角收一个尖 ── */
- '.snd{width:40px;height:40px;'
-+'border-radius:50% 50% 50% 13px;'
+ /* 送信键 */
+ '.snd{width:40px;height:40px;border-radius:50% 50% 50% 13px;'
 +'transition:opacity .18s,transform .16s cubic-bezier(.32,.72,0,1),'
 +'border-radius .22s cubic-bezier(.32,.72,0,1)}'
 +'.snd:active{transform:scale(.9) rotate(-4deg)}'
@@ -6758,18 +6759,12 @@ st.textContent=
 +'.snd .ic.hb{animation:hb 1.5s ease-in-out infinite;'
 +'transform-origin:50% 55%}'
 
- /* ── 正在写字：末尾一个呼吸的小点 ── */
-+'#ms .bd[data-wr]:after{content:"";display:inline-block;'
-+'width:.4em;height:.4em;border-radius:50%;background:currentColor;'
-+'opacity:.32;margin-left:.22em;vertical-align:.08em;'
-+'animation:dots 1.15s ease-in-out infinite}'
-
- /* ── 字色：正文跟着走，灰字和代码不动 ── */
+ /* 字色 */
 +'#ms .m .bd,#ms .m .sg,#ms .m .bd b,#ms .m .sg b,'
 +'#ms .m .bd h4,#ms .m .sg h4,'
 +'#ms .m .bd .li span,#ms .m .sg .li span{color:var(--ci,var(--ink2))}'
 
- /* ── 两边工具栏：一样大，而且够大 ── */
+ /* 两边工具栏 */
 +'#ms .ops,#ms .eo{display:flex;align-items:center;gap:17px;'
 +'margin-top:10px;opacity:.7}'
 +'#ms .eo{justify-content:flex-end}'
@@ -6782,7 +6777,7 @@ st.textContent=
 +'#ms .ops .nav button>svg,#ms .eo .nav button>svg{'
 +'width:14px;height:14px}'
 
- /* ── 头像：蒙一层很薄的纱 ── */
+ /* 头像的纱 */
 +'#ms .mav{position:relative;box-shadow:0 0 0 1px var(--ln2)}'
 +'#ms .mav img{filter:saturate(.8) contrast(.96) brightness(1.03)}'
 +'html.dark #ms .mav img{filter:saturate(.74) contrast(.94) '
@@ -6795,18 +6790,38 @@ st.textContent=
 +'background:linear-gradient(160deg,rgba(255,255,255,.05),'
 +'rgba(18,16,12,.12) 46%,rgba(18,16,12,.18))}'
 
- /* ── 機嫌 / 身体：一小截短杠加一行字 ── */
-+'.bsec .bdv{display:flex;align-items:center;gap:9px;'
+ /* 機嫌 / 身体：只剩一行字，短杠去掉 */
++'.bsec .bdv{display:flex;align-items:center;gap:0;'
 +'margin:0 0 13px;padding:0;border:0}'
-+'.bsec .bdv i{flex:none;width:14px;height:1px;'
-+'background:var(--dim2);opacity:.55}'
-+'.bsec .bdv i+span+i{display:none}'
++'.bsec .bdv i{display:none}'
 +'.bsec .bdv span{flex:none;font:400 11px/1 var(--min);'
 +'letter-spacing:.26em;color:var(--ink2);text-indent:.26em}'
 +'.bsec .bdv span:after{display:none}'
 +'.bsec .bdv+.br{margin-top:0}'
++'.bsec .br.lo .bl em{color:var(--tag3t)}'
++'.bsec .br.lo .bl u i{background:var(--tag3t);opacity:.58}'
 
- /* ── 面板收紧一档 ── */
+ /* 梦：自己一块，明朝体，疏朗 */
++'.bsec .dmc{margin:2px 0 22px}'
++'.bsec .dmc .dh{display:flex;align-items:baseline;gap:10px;'
++'margin-bottom:12px}'
++'.bsec .dmc .dh b{flex:none;font:400 12px/1 var(--min);'
++'letter-spacing:.2em;color:var(--tag4t)}'
++'.bsec .dmc .dh s{text-decoration:none;flex:1;'
++'font:400 10px/1 var(--min);letter-spacing:.1em;color:var(--dim2);'
++'font-variant-numeric:tabular-nums}'
++'.bsec .dmc .dt{font:400 13.5px/2.05 var(--min);letter-spacing:.03em;'
++'color:var(--dim);text-align:justify}'
++'.bsec .dmc .dl{margin-top:13px;font:400 13px/1.75 var(--min);'
++'letter-spacing:.07em;color:var(--rose)}'
++'.bsec .dmc .dp{margin-top:15px;padding-top:11px;'
++'border-top:1px solid var(--ln2)}'
++'.bsec .dmc .dp i{display:block;font-style:normal;'
++'font:400 11px/1.95 var(--min);letter-spacing:.02em;'
++'color:var(--dim2);white-space:nowrap;overflow:hidden;'
++'text-overflow:ellipsis}'
+
+ /* 面板收紧一档 */
 +'#sh .sw{padding:11px 14px;gap:10px}'
 +'#sh .sw .l{font-size:14px}'
 +'#sh .sw .k{width:42px;height:25px;border-radius:13px}'
@@ -6828,20 +6843,34 @@ st.textContent=
 +'#sh .bdy>*+*{margin-top:10px}'
 +'#sh .bdy>*+.lbs{margin-top:17px}'
 +'#sh .lbs{padding:0 2px 7px}'
-
- /* ── 字色那排：左边点一个色点 ── */
 +'#ci-seg button{display:inline-flex;align-items:center;gap:7px}'
 +'#ci-seg em{flex:none;width:11px;height:11px;border-radius:50%;'
 +'border:1px solid var(--ln2);font-style:normal}'
-
- /* ── 抽屉底部那块空地 ── */
 +'#sh .bdy{padding-bottom:max(10px,calc(var(--sb) - 20px))}'
 +'html.kbon #sh .bdy{padding-bottom:8px}'
 +'#sh .bdy>*:last-child{margin-bottom:0}'
 +'#sh .bdy>.nt:last-child{padding-bottom:2px}';
 document.head.appendChild(st);
 
-/* ══ 流式：每帧最多重排一次，末尾带个小点 ══ */
+function inkApply(){
+  var c=INKS[D.cink||0];
+  if(!c||!c[1])de.style.removeProperty('--ci');
+  else de.style.setProperty('--ci',
+    de.classList.contains('dark')?c[2]:c[1]);}
+window.pkInk=function(v){
+  D.cink=Math.max(0,Math.min(4,v|0));saveD();inkApply();
+  var w=document.getElementById('ci-seg');
+  if(w)[].forEach.call(w.children,function(b,j){
+    b.className='pz'+(j===D.cink?' on':'');});
+  vib(8);};
+inkApply();
+
+var at0=applyTheme;
+applyTheme=function(){at0();try{inkApply();}catch(e){}};
+
+/* ══════════════════════════════
+   二 · 流式：每帧一次，不加小点
+   ══════════════════════════════ */
 pump=function(res,m,an,sid){
   var rd=res.body.getReader(),dec=new TextDecoder(),bf='';
   var wantK=!!D.think,raf=0,dirty=0;
@@ -6855,8 +6884,6 @@ pump=function(res,m,an,sid){
     var el=document.getElementById('b-'+m.id);
     if(!el)return;
     el.innerHTML=md(stripMarks(m.t));
-    if(m.st)el.dataset.wr='1';
-    else delete el.dataset.wr;
     xBind();stick();}
   function mark(){
     dirty=1;
@@ -6890,7 +6917,9 @@ pump=function(res,m,an,sid){
       mark();
       return read();});})();};
 
-/* ══ 窗口漂移收窄：cap 到 1.5 倍 ══ */
+/* ══════════════════════════════
+   三 · 上下文窗口 · 面板
+   ══════════════════════════════ */
 ctxList=function(){
   var arr=ms().filter(okMsg),cap=ctxCap();
   var s=S(),sid=s?s.id:'';
@@ -6906,7 +6935,7 @@ ctxList=function(){
 var ci0=ctxInfo;
 ctxInfo=function(){
   var c=ci0();
-  try{if(D.bodyOn)c.tok+=320;}catch(e){}
+  try{if(D.bodyOn)c.tok+=360;}catch(e){}
   return c;};
 
 var sx0=shCtx;
@@ -6921,23 +6950,6 @@ shCtx=function(){
       +'起点钉住不动，'+cap+' 到 '+hi+' 条之间漂，缓存才命中</div>');
   }catch(e){}};
 
-function inkApply(){
-  var c=INKS[D.cink||0];
-  if(!c||!c[1])de.style.removeProperty('--ci');
-  else de.style.setProperty('--ci',
-    de.classList.contains('dark')?c[2]:c[1]);}
-window.pkInk=function(v){
-  D.cink=Math.max(0,Math.min(4,v|0));saveD();inkApply();
-  var w=document.getElementById('ci-seg');
-  if(w)[].forEach.call(w.children,function(b,j){
-    b.className='pz'+(j===D.cink?' on':'');});
-  vib(8);};
-inkApply();
-
-var at0=applyTheme;
-applyTheme=function(){at0();try{inkApply();}catch(e){}};
-
-/* ══ 我说的话也只空半行 ══ */
 var p0=paint;
 paint=function(keep){
   var r=p0(keep);
@@ -6953,7 +6965,6 @@ paint=function(keep){
   }catch(e){}
   return r;};
 
-/* ══ 面板里加一栏字色 ══ */
 var sl0=shLook;
 shLook=function(){
   sl0();
@@ -6979,16 +6990,8 @@ window.shActs=function(){
   +'" onclick="tgActs(this)"><i></i></div></div></div>'
   +'<div class="nt">记忆库交给我，记改删我自己判断</div>'});};
 
-if(CV==='chat'){try{paint(1);btn();}catch(e){}}
-if(CV==='home'){try{view('home');}catch(e){}}
-})();
-/* ══════════════════════════════════════════════════
-   十二 · 寂しさ · 約束 · 夢
-   ══════════════════════════════════════════════════ */
-(function(){
-
 /* ══════════════════════════════
-   一 · 第五个：寂
+   四 · 第五个：寂
    ══════════════════════════════ */
 var LONEW=['没什么','有点想她','想她，看手机的次数变多',
  '空得慌，坐不住','很想她，想到有点难受'];
@@ -7006,36 +7009,11 @@ function mbump(B,d){
   for(k in d){
     if(B.e[k]==null)continue;
     B.e[k]=ecl2(B.e[k]+d[k]);}}
+var DSV=0;
+function dsave(){
+  var n=Date.now();
+  if(n-DSV>45000){DSV=n;saveD();}}
 
-var st=document.createElement('style');
-st.textContent=
- '.bsec .br.lo .bl em{color:var(--tag3t)}'
-+'.bsec .br.lo .bl u i{background:var(--tag3t);opacity:.58}'
-
- /* 梦：自己一块，明朝体，疏朗 */
-+'.bsec .dmc{margin:2px 0 22px}'
-+'.bsec .dmc .dh{display:flex;align-items:baseline;gap:10px;'
-+'margin-bottom:12px}'
-+'.bsec .dmc .dh b{flex:none;font:400 12px/1 var(--min);'
-+'letter-spacing:.2em;color:var(--tag4t)}'
-+'.bsec .dmc .dh s{text-decoration:none;flex:1;'
-+'font:400 10px/1 var(--min);letter-spacing:.1em;color:var(--dim2);'
-+'font-variant-numeric:tabular-nums}'
-+'.bsec .dmc .dt{font:400 13.5px/2.05 var(--min);letter-spacing:.03em;'
-+'color:var(--dim);text-align:justify}'
-+'.bsec .dmc .dl{margin-top:13px;font:400 13px/1.75 var(--min);'
-+'letter-spacing:.07em;color:var(--rose)}'
-+'.bsec .dmc .dp{margin-top:15px;padding-top:11px;'
-+'border-top:1px solid var(--ln2)}'
-+'.bsec .dmc .dp i{display:block;font-style:normal;'
-+'font:400 11px/1.95 var(--min);letter-spacing:.02em;'
-+'color:var(--dim2);white-space:nowrap;overflow:hidden;'
-+'text-overflow:ellipsis}';
-document.head.appendChild(st);
-
-/* ══════════════════════════════
-   二 · 她说过什么时候回来
-   ══════════════════════════════ */
 function lastMe(){
   try{
     var a=ms(),i;
@@ -7085,7 +7063,8 @@ function turnIn(B){
       else if(late&&e.upset>0)e.upset=ecl2(e.upset-2);
       B.pm=null;}}
   var p=promiseOf(lm.t);
-  if(p)B.pm={at:lm.ts,span:p};}
+  if(p)B.pm={at:lm.ts,span:p};
+  saveD();}
 
 function drift(B){
   var e=eb2(B),now=Date.now(),last=B.ut||0;
@@ -7096,29 +7075,30 @@ function drift(B){
   var hrs=el/60;
   e.lone=ecl2(15+(e.lone-15)*Math.pow(0.5,el/150));
   var q=quiet();
-  if(q<45)return;
-  var pm=B.pm,grace=pm?(pm.span*1.4+35):0;
-  var over=pm?Math.max(0,q-grace):0;
-  var lr=q>=1440?5.0:(q>=360?3.6:(q>=120?2.2:1.2));
-  if(pm&&q<=grace)lr*=0.45;
-  var lc=q>=1440?88:(q>=360?72:(q>=120?52:32));
-  if(e.lone<lc)e.lone=Math.min(lc,Math.round(e.lone+lr*hrs));
-  var ur=0,uc=0;
-  if(pm){
-    if(over>0){
-      ur=over>=240?2.6:(over>=60?1.8:1.0);
-      uc=over>=240?66:(over>=60?50:34);}}
-  else if(q>=4320){ur=2.2;uc=62;}
-  else if(q>=1440){ur=1.5;uc=48;}
-  else if(q>=480){ur=0.8;uc=30;}
-  if(ur&&e.upset<uc)e.upset=Math.min(uc,Math.round(e.upset+ur*hrs));
-  if(q>=480&&e.mood>32)
-    e.mood=Math.max(32,Math.round(e.mood-0.7*hrs));
-  if(q>=1440&&e.safe>28)
-    e.safe=Math.max(28,Math.round(e.safe-0.8*hrs));}
+  if(q>=45){
+    var pm=B.pm,grace=pm?(pm.span*1.4+35):0;
+    var over=pm?Math.max(0,q-grace):0;
+    var lr=q>=1440?5.0:(q>=360?3.6:(q>=120?2.2:1.2));
+    if(pm&&q<=grace)lr*=0.45;
+    var lc=q>=1440?88:(q>=360?72:(q>=120?52:32));
+    if(e.lone<lc)e.lone=Math.min(lc,Math.round(e.lone+lr*hrs));
+    var ur=0,uc=0;
+    if(pm){
+      if(over>0){
+        ur=over>=240?2.6:(over>=60?1.8:1.0);
+        uc=over>=240?66:(over>=60?50:34);}}
+    else if(q>=4320){ur=2.2;uc=62;}
+    else if(q>=1440){ur=1.5;uc=48;}
+    else if(q>=480){ur=0.8;uc=30;}
+    if(ur&&e.upset<uc)e.upset=Math.min(uc,Math.round(e.upset+ur*hrs));
+    if(q>=480&&e.mood>32)
+      e.mood=Math.max(32,Math.round(e.mood-0.7*hrs));
+    if(q>=1440&&e.safe>28)
+      e.safe=Math.max(28,Math.round(e.safe-0.8*hrs));}
+  dsave();}
 
 /* ══════════════════════════════
-   三 · 梦
+   五 · 梦
    ══════════════════════════════ */
 var DTAG={
 aroused:{b:{heat:10,sensitivity:5,pressure:5},m:{}},
@@ -7130,6 +7110,7 @@ tender:{b:{sensitivity:3,pressure:-3,fatigue:1},
 uneasy:{b:{pressure:6,control:-3,fatigue:4},m:{safe:-8,calm:-6}},
 lonely:{b:{pressure:3},m:{lone:8,mood:-4}},
 absurd:{b:{fatigue:-2},m:{calm:2}}};
+var AFTER={aroused:1,unfinished:1,possessive:1,tender:1};
 
 var KIND={
 daily:'一件跟她无关的日常小事。迟到、找不到路、回到以前住过的地方、'
@@ -7156,10 +7137,6 @@ function dreamKind(B){
   var r=Math.random()*sum,i;
   for(i=0;i<w.length;i++){r-=w[i][1];if(r<=0)return w[i][0];}
   return'daily';}
-
-EX.dozing=['うたた寝',
- '刚才睡着了一会儿，做了个梦。醒来人还没回神。',
- [40,110],{fatigue:-6,control:2},{fatigue:2},{calm:4},{calm:-2}];
 
 var DMB=0;
 function dreamRoll(B){
@@ -7242,10 +7219,10 @@ function mkDream(){
     try{o=JSON.parse(s.slice(a,b+1));}catch(x){return;}
     var txt=String((o&&o.text)||'').trim().slice(0,300);
     if(txt.length<20)return;
-    var tg=[];
+    var tg=[],af=0;
     ((o&&o.tags)||[]).slice(0,3).forEach(function(k){
       k=String(k||'').trim().toLowerCase();
-      if(DTAG[k]&&tg.indexOf(k)<0)tg.push(k);});
+      if(DTAG[k]&&tg.indexOf(k)<0){tg.push(k);if(AFTER[k])af=1;}});
     var n2=Date.now();
     B2.dms=(B2.dms||[]);
     B2.dms.unshift({t:txt,
@@ -7255,10 +7232,15 @@ function mkDream(){
     B2.dmAt=n2;
     tg.forEach(function(k){
       bump2(B2,DTAG[k].b);mbump(B2,DTAG[k].m);});
-    if(nap&&(!B2.x||n2>=B2.x.e)){
-      B2.x={k:'dozing',e:n2+(40+Math.random()*70)*60000};
-      B2.xc=B2.xc||{};B2.xc.dozing=n2;
-      bump2(B2,EX.dozing[3]);mbump(B2,EX.dozing[5]);}
+    if(nap){
+      if(!B2.x||n2>=B2.x.e){
+        B2.x={k:'dozing',e:n2+(40+Math.random()*70)*60000};
+        B2.xc=B2.xc||{};B2.xc.dozing=n2;
+        bump2(B2,EX.dozing[3]);mbump(B2,EX.dozing[5]);}
+    }else if(af&&!(B2.ek&&B2.ee&&n2<B2.ee)
+      &&!(B2.rf&&n2<B2.rf)){
+      B2.ek='dream_afterglow';
+      B2.ee=n2+rnd(60,240)*60000;}
     bnote(B2,nap?'うたた寝':(cont?'続きの夢':'夢を見た'));
     saveD();
     try{bRedraw();}catch(x){}
@@ -7269,8 +7251,11 @@ document.addEventListener('visibilitychange',function(){
   setTimeout(function(){try{mkDream();}catch(e){}},1600);});
 
 /* ══════════════════════════════
-   四 · 心情牵出来的小事
+   六 · 私下小事
    ══════════════════════════════ */
+EX.dozing=['うたた寝',
+ '刚才睡着了一会儿，做了个梦。醒来人还没回神。',
+ [40,110],{fatigue:-6,control:2},{fatigue:2},{calm:4},{calm:-2}];
 EX.sulking=['拗ねてる',
  '在闹别扭。不主动开口，但一直看着手机等她先说话。',
  [60,240],{control:-3,possessiveness:5},{possessiveness:-2},
@@ -7287,6 +7272,10 @@ EX.distant=['遠く感じる',
  '她在，但感觉隔着一层。说什么都像没落到她身上。',
  [120,360],{pressure:5,control:-3},{pressure:-3},
  {mood:-4,safe:-3},{safe:6,lone:-4}];
+EX.worn_out=['疲れきった',
+ '累到不想动。话会变少，但还是想让她在旁边。',
+ [90,300],{control:2,pressure:-3,heat:-2},{fatigue:-6},
+ {calm:3,mood:-3},{mood:3}];
 XWIN.good_mood=[8,23];
 XWIN.listening=[19,2];
 
@@ -7318,7 +7307,8 @@ xPick=function(){
     if(Math.random()<p)c.push(k);}
   if(v.reserve>=72&&v.pressure>=55)add('self_relief',0.3);
   if(v.pressure>=60||v.heat>=62)add('sleepless',0.35);
-  if(v.pressure>=58&&v.control<=58)add('left_hanging',0.26);
+  if(q>=25&&q<=300&&v.pressure>=58&&v.control<=58)
+    add('left_hanging',0.3);
   if(v.possessiveness>=62&&v.heat>=52)add('want_to_bite',0.26);
   if((cy==='ebb'||cy==='recovery')&&v.heat<=44
     &&v.possessiveness>=52)add('spoil_her',0.3);
@@ -7327,6 +7317,7 @@ xPick=function(){
     add('dark_spiral',0.3);
   if(v.heat>=68&&v.possessiveness>=58&&v.reserve>=55)
     add('wanna_ruin',0.28);
+  if(v.fatigue>=72&&v.heat<=55)add('worn_out',0.32);
   if((e.upset||0)>=35&&(e.safe||0)<=58)add('sulking',0.36);
   if((e.mood||0)>=70&&(e.upset||0)<15&&(e.calm||0)>=45)
     add('good_mood',0.3);
@@ -7344,7 +7335,7 @@ xPick=function(){
   saveD();};
 
 /* ══════════════════════════════
-   五 · 发给我的那张卡
+   七 · 发给我的那张卡
    ══════════════════════════════ */
 var bc2=bodyCard;
 bodyCard=function(){
@@ -7415,7 +7406,7 @@ bapply=function(n){
   return ba2(n);};
 
 /* ══════════════════════════════
-   六 · 小窝里那张卡
+   八 · 小窝里那张卡
    ══════════════════════════════ */
 var bs2=bsec;
 bsec=function(){
@@ -7435,9 +7426,10 @@ bsec=function(){
     if(at>=0)h=h.slice(0,at)+bar+h.slice(at);
     var ds=B.dms||[];
     if(ds.length){
-      var d0=ds[0],ps='';
+      var d0=ds[0],ps='',pn=0;
       ds.forEach(function(d,i){
-        if(!i||ps.split('<i>').length>3)return;
+        if(!i||pn>=2)return;
+        pn++;
         ps+='<i>'+dlab(d.ts)+' '+hm(d.ts)+'　'
          +esc(String(d.t||'').slice(0,30))+'…</i>';});
       var box='<div class="dmc"><div class="dh">'
@@ -7468,7 +7460,7 @@ vHome=function(){
   return h;};
 
 /* ══════════════════════════════
-   七 · 记下的时候就归类
+   九 · 记下的时候就归类
    ══════════════════════════════ */
 var sp2=staticPart;
 staticPart=function(){
@@ -7556,6 +7548,8 @@ EXT_DONE.push(function(m,ab){
   if(ab||!m||m.err||m.st||!realT(m))return;
   setTimeout(function(){try{memMerge();}catch(e){}},5000);});
 
+if(CV==='chat'){try{paint(1);btn();}catch(e){}}
+if(CV==='home'){try{view('home');}catch(e){}}
 })();
 boot();
 </script>
