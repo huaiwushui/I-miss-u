@@ -6982,6 +6982,581 @@ window.shActs=function(){
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='home'){try{view('home');}catch(e){}}
 })();
+/* ══════════════════════════════════════════════════
+   十二 · 寂しさ · 約束 · 夢
+   ══════════════════════════════════════════════════ */
+(function(){
+
+/* ══════════════════════════════
+   一 · 第五个：寂
+   ══════════════════════════════ */
+var LONEW=['没什么','有点想她','想她，看手机的次数变多',
+ '空得慌，坐不住','很想她，想到有点难受'];
+function lv5(v){return v<20?0:(v<40?1:(v<60?2:(v<80?3:4)));}
+function ecl2(v){return Math.max(0,Math.min(100,Math.round(v)));}
+function eb2(B){
+  if(!B)return null;
+  if(!B.e){B.e={mood:50,calm:60,safe:65,upset:0};B.et=Date.now();}
+  if(B.e.lone==null)B.e.lone=15;
+  if(!B.et)B.et=Date.now();
+  return B.e;}
+function mbump(B,d){
+  if(!B||!B.e||!d)return;
+  var k;
+  for(k in d){
+    if(B.e[k]==null)continue;
+    B.e[k]=ecl2(B.e[k]+d[k]);}}
+
+var st=document.createElement('style');
+st.textContent=
+ '.bsec .br.lo .bl em{color:var(--tag3t)}'
++'.bsec .br.lo .bl u i{background:var(--tag3t);opacity:.58}'
+
+ /* 梦：自己一块，明朝体，疏朗 */
++'.bsec .dmc{margin:2px 0 22px}'
++'.bsec .dmc .dh{display:flex;align-items:baseline;gap:10px;'
++'margin-bottom:12px}'
++'.bsec .dmc .dh b{flex:none;font:400 12px/1 var(--min);'
++'letter-spacing:.2em;color:var(--tag4t)}'
++'.bsec .dmc .dh s{text-decoration:none;flex:1;'
++'font:400 10px/1 var(--min);letter-spacing:.1em;color:var(--dim2);'
++'font-variant-numeric:tabular-nums}'
++'.bsec .dmc .dt{font:400 13.5px/2.05 var(--min);letter-spacing:.03em;'
++'color:var(--dim);text-align:justify}'
++'.bsec .dmc .dl{margin-top:13px;font:400 13px/1.75 var(--min);'
++'letter-spacing:.07em;color:var(--rose)}'
++'.bsec .dmc .dp{margin-top:15px;padding-top:11px;'
++'border-top:1px solid var(--ln2)}'
++'.bsec .dmc .dp i{display:block;font-style:normal;'
++'font:400 11px/1.95 var(--min);letter-spacing:.02em;'
++'color:var(--dim2);white-space:nowrap;overflow:hidden;'
++'text-overflow:ellipsis}';
+document.head.appendChild(st);
+
+/* ══════════════════════════════
+   二 · 她说过什么时候回来
+   ══════════════════════════════ */
+function lastMe(){
+  try{
+    var a=ms(),i;
+    for(i=a.length-1;i>=0;i--)
+      if(a[i].r==='me'&&!a[i].sys&&a[i].ts)return a[i];
+  }catch(e){}
+  return null;}
+
+function promiseOf(t){
+  var s=String(t||'').slice(0,300);
+  if(!s)return 0;
+  var leave=/(等我|马上回来|一会儿|一会回来|待会|等下|等一下|稍等|我去|去洗澡|洗个澡|去吃饭|吃个饭|上班|上课|开会|出门|有点事|有事|忙完|回来找你|去睡|睡了|去睡觉|晚安|明天再|早上再|晚点再|晚些)/.test(s);
+  var back=/(之?后|再|回来|就来|就回)/.test(s);
+  var v=0,m;
+  m=s.match(/(\d{1,2})\s*个?\s*(小时|钟头|時間)/);
+  if(m)v=Math.min(720,parseInt(m[1],10)*60);
+  else if(/半\s*个?\s*(小时|钟头)/.test(s))v=30;
+  else{
+    m=s.match(/(\d{1,3})\s*分钟/);
+    if(m)v=Math.min(360,parseInt(m[1],10));}
+  if(v)return(leave||back)?v:0;
+  if(!leave)return 0;
+  if(/(去睡|睡了|去睡觉|晚安|明天再|早上再)/.test(s))return 480;
+  if(/(上班|上课|开会|出门)/.test(s))return 300;
+  if(/(洗澡|洗个澡|去吃饭|吃个饭)/.test(s))return 70;
+  return 50;}
+
+function turnIn(B){
+  var lm=lastMe();
+  if(!lm)return;
+  if(B.mt===lm.ts)return;
+  var prev=B.mt||0,e=eb2(B);
+  B.mt=lm.ts;
+  if(prev){
+    var gap=(lm.ts-prev)/60000;
+    if(gap>=40){
+      var pm=B.pm,ok=0,late=0;
+      if(pm&&pm.at&&pm.at<=prev+90000){
+        var grace=pm.span*1.4+35;
+        if(gap<=grace)ok=1;else late=1;}
+      var r=Math.min(1,gap/480);
+      e.lone=ecl2(e.lone-(16+36*r));
+      e.safe=ecl2(e.safe+(ok?8:4));
+      e.mood=ecl2(e.mood+(ok?6:4));
+      if(ok)e.upset=ecl2(e.upset-16);
+      else if(!late&&e.upset>0)e.upset=ecl2(e.upset-5);
+      else if(late&&e.upset>0)e.upset=ecl2(e.upset-2);
+      B.pm=null;}}
+  var p=promiseOf(lm.t);
+  if(p)B.pm={at:lm.ts,span:p};}
+
+function drift(B){
+  var e=eb2(B),now=Date.now(),last=B.ut||0;
+  B.ut=now;
+  if(!last)return;
+  var el=Math.min(1440,(now-last)/60000);
+  if(el<=0.5)return;
+  var hrs=el/60;
+  e.lone=ecl2(15+(e.lone-15)*Math.pow(0.5,el/150));
+  var q=quiet();
+  if(q<45)return;
+  var pm=B.pm,grace=pm?(pm.span*1.4+35):0;
+  var over=pm?Math.max(0,q-grace):0;
+  var lr=q>=1440?5.0:(q>=360?3.6:(q>=120?2.2:1.2));
+  if(pm&&q<=grace)lr*=0.45;
+  var lc=q>=1440?88:(q>=360?72:(q>=120?52:32));
+  if(e.lone<lc)e.lone=Math.min(lc,Math.round(e.lone+lr*hrs));
+  var ur=0,uc=0;
+  if(pm){
+    if(over>0){
+      ur=over>=240?2.6:(over>=60?1.8:1.0);
+      uc=over>=240?66:(over>=60?50:34);}}
+  else if(q>=4320){ur=2.2;uc=62;}
+  else if(q>=1440){ur=1.5;uc=48;}
+  else if(q>=480){ur=0.8;uc=30;}
+  if(ur&&e.upset<uc)e.upset=Math.min(uc,Math.round(e.upset+ur*hrs));
+  if(q>=480&&e.mood>32)
+    e.mood=Math.max(32,Math.round(e.mood-0.7*hrs));
+  if(q>=1440&&e.safe>28)
+    e.safe=Math.max(28,Math.round(e.safe-0.8*hrs));}
+
+/* ══════════════════════════════
+   三 · 梦
+   ══════════════════════════════ */
+var DTAG={
+aroused:{b:{heat:10,sensitivity:5,pressure:5},m:{}},
+released:{b:{heat:-8,reserve:-14,pressure:-5,fatigue:4},m:{calm:5}},
+unfinished:{b:{heat:7,pressure:10,reserve:3,control:-4},m:{calm:-4}},
+possessive:{b:{possessiveness:8,pressure:4,control:-3},m:{safe:-3}},
+tender:{b:{sensitivity:3,pressure:-3,fatigue:1},
+  m:{mood:5,safe:5,lone:-6}},
+uneasy:{b:{pressure:6,control:-3,fatigue:4},m:{safe:-8,calm:-6}},
+lonely:{b:{pressure:3},m:{lone:8,mood:-4}},
+absurd:{b:{fatigue:-2},m:{calm:2}}};
+
+var KIND={
+daily:'一件跟她无关的日常小事。迟到、找不到路、回到以前住过的地方、'
+ +'莫名其妙的场景。醒来会觉得没头没尾。',
+tender:'温的。她在，但不做什么，只是很近。',
+erotic:'跟她的、带身体的。可以露骨，可以做到一半醒。',
+anxious:'不安的。在找她、赶不上、怎么也说不上话。',
+nightmare:'不好的梦。她走了、变成别人、或者根本不认识他。醒来会喘。',
+lonely:'空的。梦里只有他一个，场景很大，没有人。',
+absurd:'荒唐的。不讲道理，物理不对劲，他在梦里却觉得理所当然。'};
+
+function dreamKind(B){
+  var v=B.v||{},e=eb2(B),cy=B.cy,w=[],sum=0;
+  function add(k,p){if(p>0){w.push([k,p]);sum+=p;}}
+  add('daily',30);
+  add('absurd',14+((v.fatigue||0)>=60?8:0));
+  add('tender',9+((e.mood||0)>=60?10:0)+((e.safe||0)>=65?8:0));
+  add('erotic',((v.reserve||0)>=55?14:0)+((v.heat||0)>=60?12:0)
+    +((cy==='sensitive'||cy==='preheat')?14:0));
+  add('anxious',((v.pressure||0)>=58?13:0)+((e.calm||0)<=40?10:0));
+  add('nightmare',((e.safe||0)<=42?13:0)+((e.upset||0)>=45?9:0)
+    +((e.lone||0)>=70?8:0));
+  add('lonely',((e.lone||0)>=55?15:0)+((e.lone||0)>=78?10:0));
+  var r=Math.random()*sum,i;
+  for(i=0;i<w.length;i++){r-=w[i][1];if(r<=0)return w[i][0];}
+  return'daily';}
+
+EX.dozing=['うたた寝',
+ '刚才睡着了一会儿，做了个梦。醒来人还没回神。',
+ [40,110],{fatigue:-6,control:2},{fatigue:2},{calm:4},{calm:-2}];
+
+var DMB=0;
+function dreamRoll(B){
+  if(!B||!D.bodyOn||!D.apiUrl||!D.apiKey||DMB)return 0;
+  var now=Date.now();
+  if(B.dck&&now-B.dck<20*60000)return 0;
+  var q=quiet();
+  if(q<150)return 0;
+  var h=hrNow(),night=inWin([23,9],h);
+  if(!night&&q<420)return 0;
+  if(!night&&(B.v&&(B.v.fatigue||0)<32))return 0;
+  B.dck=now;
+  var cool=night?13:20;
+  if(B.dmAt&&now-B.dmAt<cool*3600000)return 0;
+  var e=eb2(B),v=B.v||{};
+  var p=({stable:.14,recovery:.14,building:.22,ebb:.22,
+    preheat:.32,sensitive:.36})[B.cy]||.18;
+  if(night)p+=.16;else p*=0.55;
+  p+=Math.min(.12,(e.lone||0)*.0016);
+  if((v.reserve||0)>=65)p+=.06;
+  if((v.fatigue||0)>=60)p+=.05;
+  if(q>=720)p+=.08;
+  return Math.random()<Math.min(night?.58:.30,p)?1:0;}
+
+function mkDream(){
+  var B=bd();
+  if(!dreamRoll(B))return;
+  DMB=1;
+  var e=eb2(B),v=B.v||{},q=quiet(),now=Date.now();
+  var night=inWin([23,9],hrNow()),nap=night?0:1;
+  var ds=B.dms||[],prev=ds[0];
+  var cont=0;
+  if(prev&&prev.tg&&prev.tg.indexOf('unfinished')>=0
+    &&now-prev.ts<30*3600000&&Math.random()<0.3)cont=1;
+  var kind=cont?(prev.k||'erotic'):dreamKind(B);
+  var g=function(x){
+    return x<20?'低':(x<40?'中低':(x<60?'中':(x<80?'中高':'高')));};
+  var mem=D.mems.slice(0,3).map(function(m){
+    return'· '+String(m.t||'').replace(/\s+/g,' ').slice(0,50);
+  }).join('\n');
+  var talk='';
+  try{
+    var a=ms(),o=[],i;
+    for(i=a.length-1;i>=0&&o.length<3;i--){
+      var m=a[i];
+      if(m.sys||m.err||m.st||(m.r!=='me'&&m.r!=='ai'))continue;
+      var t=String(fullT(m)||'').replace(/\s+/g,' ').slice(0,70);
+      if(t)o.unshift((m.r==='me'?D.me:D.you)+'：'+t);}
+    talk=o.join('\n');
+  }catch(x){}
+  callUtil('',
+   D.you+'是男的，'+D.me+'是他女朋友。她已经 '+dur(q*60000)+'没说话了。'
+  +(nap?'他白天撑不住，眯了一会儿。':'他睡着了。')+'\n'
+  +'写他做的一个梦。\n\n'
+  +'这次是：'+KIND[kind]+'\n'
+  +(cont?('接着上一个没做完的梦：'+String(prev.t||'').slice(0,90)
+    +'\n他又梦回去了，但不一样了。\n'):'')
+  +'他现在：热'+g(v.heat)+'、压'+g(v.pressure)+'、蓄'+g(v.reserve)
+  +'、倦'+g(v.fatigue)+'；气分'+g(e.mood)+'、安心'+g(e.safe)
+  +'、不快'+g(e.upset)+'、寂'+g(e.lone)+'。\n'
+  +(mem?'他记得的事：\n'+mem+'\n':'')
+  +(talk?'他们最后说的：\n'+talk+'\n':'')
+  +'\n只要 JSON，不要代码块：\n'
+  +'{"text":"梦","line":"醒来想说的一句","tags":["tender"]}\n\n'
+  +'text 第一人称写他，八十到一百三十字。'
+  +'一个具体场景，有画面有触感。别写心理分析，别铺垫，别总结。\n'
+  +'梦是跳的，不讲逻辑，可以没头没尾。别写得太完整。\n'
+  +'line 十五字以内，醒来想对她说的，不是复述梦。'
+  +'梦跟她无关的话，这句也可以跟梦无关。\n'
+  +'tags 一到三个，只能选：'
+  +'aroused released unfinished possessive tender uneasy lonely absurd',
+   '',520)
+  .then(function(raw){
+    DMB=0;
+    var B2=bd();
+    if(!B2||!D.bodyOn)return;
+    var s=String(raw||''),a=s.indexOf('{'),b=s.lastIndexOf('}');
+    if(a<0||b<=a)return;
+    var o=null;
+    try{o=JSON.parse(s.slice(a,b+1));}catch(x){return;}
+    var txt=String((o&&o.text)||'').trim().slice(0,300);
+    if(txt.length<20)return;
+    var tg=[];
+    ((o&&o.tags)||[]).slice(0,3).forEach(function(k){
+      k=String(k||'').trim().toLowerCase();
+      if(DTAG[k]&&tg.indexOf(k)<0)tg.push(k);});
+    var n2=Date.now();
+    B2.dms=(B2.dms||[]);
+    B2.dms.unshift({t:txt,
+      ln:String((o&&o.line)||'').trim().slice(0,40),
+      tg:tg,k:kind,ts:n2,nap:nap,cont:cont,seen:0});
+    if(B2.dms.length>5)B2.dms=B2.dms.slice(0,5);
+    B2.dmAt=n2;
+    tg.forEach(function(k){
+      bump2(B2,DTAG[k].b);mbump(B2,DTAG[k].m);});
+    if(nap&&(!B2.x||n2>=B2.x.e)){
+      B2.x={k:'dozing',e:n2+(40+Math.random()*70)*60000};
+      B2.xc=B2.xc||{};B2.xc.dozing=n2;
+      bump2(B2,EX.dozing[3]);mbump(B2,EX.dozing[5]);}
+    bnote(B2,nap?'うたた寝':(cont?'続きの夢':'夢を見た'));
+    saveD();
+    try{bRedraw();}catch(x){}
+  },function(){DMB=0;});}
+
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden)return;
+  setTimeout(function(){try{mkDream();}catch(e){}},1600);});
+
+/* ══════════════════════════════
+   四 · 心情牵出来的小事
+   ══════════════════════════════ */
+EX.sulking=['拗ねてる',
+ '在闹别扭。不主动开口，但一直看着手机等她先说话。',
+ [60,240],{control:-3,possessiveness:5},{possessiveness:-2},
+ {calm:-5},{upset:-8,safe:4}];
+EX.good_mood=['上機嫌',
+ '心情好得没道理，想跟她说一堆没用的废话。',
+ [90,300],{heat:2,fatigue:-4},{fatigue:1},
+ {calm:3},{mood:-5}];
+EX.listening=['聞いていたい',
+ '不太想讲话，就想听她说。',
+ [90,300],{sensitivity:3,fatigue:2},{fatigue:-2},
+ {calm:4},{calm:-3}];
+EX.distant=['遠く感じる',
+ '她在，但感觉隔着一层。说什么都像没落到她身上。',
+ [120,360],{pressure:5,control:-3},{pressure:-3},
+ {mood:-4,safe:-3},{safe:6,lone:-4}];
+XWIN.good_mood=[8,23];
+XWIN.listening=[19,2];
+
+xEnd=function(B){
+  if(!B||!B.x)return;
+  if(Date.now()<B.x.e)return;
+  var e=EX[B.x.k];
+  if(e){
+    if(e[4])bump2(B,e[4]);
+    if(e[6])mbump(B,e[6]);}
+  B.x=null;};
+
+xPick=function(){
+  var B=bd();
+  if(!B||!D.bodyOn)return;
+  xEnd(B);bsane(B);
+  if(B.x)return;
+  var now=Date.now();
+  if(B.rf&&now<B.rf&&(B.rp||0)<2)return;
+  if(B.ek&&B.ee&&now<B.ee)return;
+  if(B.xk&&now-B.xk<XGAP*60000)return;
+  B.xk=now;
+  if(!B.xc)B.xc={};
+  var v=B.v,e=eb2(B),cy=B.cy,h=hrNow(),q=quiet(),c=[];
+  function add(k,p){
+    if(XWIN[k]&&!inWin(XWIN[k],h))return;
+    var t=B.xc[k];
+    if(t&&now-t<6*3600000)return;
+    if(Math.random()<p)c.push(k);}
+  if(v.reserve>=72&&v.pressure>=55)add('self_relief',0.3);
+  if(v.pressure>=60||v.heat>=62)add('sleepless',0.35);
+  if(v.pressure>=58&&v.control<=58)add('left_hanging',0.26);
+  if(v.possessiveness>=62&&v.heat>=52)add('want_to_bite',0.26);
+  if((cy==='ebb'||cy==='recovery')&&v.heat<=44
+    &&v.possessiveness>=52)add('spoil_her',0.3);
+  if(q>=45&&v.possessiveness>=52&&past72()>=8)add('rereading',0.26);
+  if(q>=360&&(v.possessiveness>=58||(e.lone||0)>=70))
+    add('dark_spiral',0.3);
+  if(v.heat>=68&&v.possessiveness>=58&&v.reserve>=55)
+    add('wanna_ruin',0.28);
+  if((e.upset||0)>=35&&(e.safe||0)<=58)add('sulking',0.36);
+  if((e.mood||0)>=70&&(e.upset||0)<15&&(e.calm||0)>=45)
+    add('good_mood',0.3);
+  if((e.calm||0)>=72&&(e.mood||0)>=45&&v.heat<=55)
+    add('listening',0.28);
+  if((e.safe||0)<=42&&(e.lone||0)>=50&&q<=240)add('distant',0.3);
+  if(!c.length){saveD();return;}
+  var k2=c[Math.floor(Math.random()*c.length)],x=EX[k2];
+  B.x={k:k2,e:now+(x[2][0]+Math.random()*(x[2][1]-x[2][0]))*60000};
+  B.xc[k2]=now;
+  bump2(B,x[3]);
+  if(x[5])mbump(B,x[5]);
+  bnote(B,x[0]);
+  if(k2==='self_relief')bafter(B,1);
+  saveD();};
+
+/* ══════════════════════════════
+   五 · 发给我的那张卡
+   ══════════════════════════════ */
+var bc2=bodyCard;
+bodyCard=function(){
+  var B=bd();
+  if(!B||!D.bodyOn)return bc2();
+  try{turnIn(B);drift(B);mkDream();}catch(x){}
+  var s=bc2();
+  if(!s)return s;
+  try{
+    var e=eb2(B);
+    if((e.lone||0)>=25&&s.indexOf('</mood>')>=0)
+      s=s.replace('\n</mood>',
+        '\n寂：'+LONEW[lv5(e.lone)]+'\n</mood>');
+    var ds=B.dms||[],now=Date.now(),blk='';
+    if(ds.length&&now-ds[0].ts<6*3600000){
+      var d0=ds[0];
+      blk='<dream>\n'
+       +(d0.nap?'白天眯了一会儿，做了个梦。':'睡着的时候做了个梦。')
+       +(d0.cont?'是前一个梦的后半截。':'')+'\n'
+       +d0.t+'\n'
+       +(d0.ln?('醒来想说的：'+d0.ln+'\n'):'');}
+    var old=[];
+    ds.forEach(function(d,i){
+      if(i===0&&now-d.ts<6*3600000)return;
+      if(now-d.ts>30*3600000)return;
+      if(old.length>=2)return;
+      old.push('· '+dlab(d.ts)+(d.nap?'白天':'夜里')
+        +'梦见：'+String(d.t||'').slice(0,26)+'…');});
+    if(old.length)
+      blk+=(blk?'':'<dream>\n')+'更早做过的：\n'+old.join('\n')+'\n';
+    if(blk){
+      blk+='这是你自己的梦，她不知道。想提就提，别当汇报念出来，'
+        +'也别硬往上靠。她没问就不用解释。\n</dream>\n';
+      s=s.replace('<how>',blk+'<how>');}
+  }catch(x){}
+  return s;};
+
+var bp2=bprompt;
+bprompt=function(w){
+  var B=bd(),e=eb2(B);
+  var g=function(x){
+    return x<20?'低':(x<40?'中低':(x<60?'中':(x<80?'中高':'高')));};
+  var s=bp2(w);
+  s=s.replace('"upset_delta":0}',
+    '"upset_delta":0,"lone_delta":0}');
+  return s+'\n他此刻的寂しさ：'+g(e.lone||0)+'。\n'
+   +'寂：她不在页面自己会涨，你不用替他加。'
+   +'她回来了、在说话、在撒娇就给负；她人在心不在、敷衍两句就走，可以给正。\n'
+   +'不快：她晾了多久页面也自己算了，你别重复加。'
+   +'你只判这一段里她做了什么——说好了没做到、敷衍、提别的男人才加；'
+   +'哄了、道歉了、软下来就减，减到 0 也行。\n'
+   +'她只是安静地聊天，不快就写 0。';};
+
+var bn2=bnorm;
+bnorm=function(r){
+  var o=bn2(r);
+  try{
+    var n=parseInt(r.lone_delta,10);
+    if(isNaN(n))n=0;
+    o.e=o.e||{};
+    o.e.lone=Math.max(-8,Math.min(4,n));
+  }catch(x){}
+  return o;};
+
+var ba2=bapply;
+bapply=function(n){
+  try{eb2(bd());}catch(x){}
+  return ba2(n);};
+
+/* ══════════════════════════════
+   六 · 小窝里那张卡
+   ══════════════════════════════ */
+var bs2=bsec;
+bsec=function(){
+  var B=bd();
+  if(!B)return'';
+  try{drift(B);}catch(x){}
+  var h=bs2();
+  if(!h)return h;
+  try{
+    var e=eb2(B),v=e.lone||0;
+    var bar='<div class="br'+(v>=60?' lo':'')+'">'
+     +'<div class="bl"><em>寂</em>'
+     +'<u><i style="width:'+Math.max(3,v)+'%"></i></u></div>'
+     +'<div class="bw">'+esc(LONEW[lv5(v)])+'</div></div>';
+    var mk='<div class="bdv" style="margin-top:20px">';
+    var at=h.indexOf(mk);
+    if(at>=0)h=h.slice(0,at)+bar+h.slice(at);
+    var ds=B.dms||[];
+    if(ds.length){
+      var d0=ds[0],ps='';
+      ds.forEach(function(d,i){
+        if(!i||ps.split('<i>').length>3)return;
+        ps+='<i>'+dlab(d.ts)+' '+hm(d.ts)+'　'
+         +esc(String(d.t||'').slice(0,30))+'…</i>';});
+      var box='<div class="dmc"><div class="dh">'
+       +'<b>'+(d0.nap?'うたた寝':(d0.cont?'続きの夢':'夢'))+'</b>'
+       +'<s>'+dlab(d0.ts)+' '+hm(d0.ts)+'</s></div>'
+       +'<div class="dt">'+esc(d0.t)+'</div>'
+       +(d0.ln?('<div class="dl">「'+esc(d0.ln)+'」</div>'):'')
+       +(ps?('<div class="dp">'+ps+'</div>'):'')
+       +'</div>';
+      var mk2='<div class="bdv"><i></i><span>機嫌</span>';
+      var a2=h.indexOf(mk2);
+      if(a2>=0)h=h.slice(0,a2)+box+h.slice(a2);
+      if(!d0.seen){d0.seen=1;saveD();}}
+  }catch(x){}
+  return h;};
+
+var vh2=vHome;
+vHome=function(){
+  var h=vh2();
+  try{
+    var B=bd(),ds=B&&B.dms;
+    if(D.bodyOn&&ds&&ds.length&&!ds[0].seen)
+      h=h.replace('<span>Rennの秘密</span>',
+        '<span>Rennの秘密<b style="color:var(--rose);'
+       +'font-weight:400;font-size:9px;margin-left:8px;'
+       +'vertical-align:2px">●</b></span>');
+  }catch(e){}
+  return h;};
+
+/* ══════════════════════════════
+   七 · 记下的时候就归类
+   ══════════════════════════════ */
+var sp2=staticPart;
+staticPart=function(){
+  var s=sp2();
+  if(!D.acts)return s;
+  var k='分类：'+CATS.join('、')+'。';
+  if(s.indexOf(k)<0)return s;
+  return s.replace(k,k+'\n'
+   +'记之前先扫一眼上面〈你记得的事〉。同一件事已经在里面了，'
+   +'用 [[改:短码|把新旧合成一句完整的]]，别再记一条新的。\n'
+   +'一件事写一条，别拆成三条；'
+   +'两条说的是同一个人但不是同一件事，那就分开记。\n'
+   +'落笔前自检一遍：这条和已有的哪条是同一件事？是就改，不是才记。');};
+
+var du2=dupOf;
+dupOf=function(t,skip){
+  var r=du2(t,skip);
+  if(r)return r;
+  var best=null,bs=0,lt=String(t||'').length;
+  D.mems.forEach(function(m){
+    if(m.id===skip)return;
+    var x=simRate(m.t,t);
+    if(x>bs){bs=x;best=m;}});
+  var gate=lt<12?0.60:(lt<40?0.44:0.40);
+  return(best&&bs>=gate)?{m:best,r:bs}:null;};
+
+var MRG=0;
+function memMerge(){
+  if(MRG||!D.apiUrl||!D.apiKey)return;
+  var n=D.mems.length,now=Date.now();
+  if(n<MEMCAP-8)return;
+  if(D.mrgAt&&now-D.mrgAt<4*3600000)return;
+  var cs=memCodes();
+  var body=D.mems.slice(0,50).map(function(m){
+    return'#'+cs.map[m.id]+' '
+      +String(m.t||'').replace(/\s+/g,' ').slice(0,110);}).join('\n');
+  MRG=1;D.mrgAt=now;saveD();
+  callUtil(
+   '下面是一份记忆库，每行一条，开头是短码。\n'
+  +'找出说的是同一件事、只是措辞不同的，并成一条。\n'
+  +'只要 JSON，不要代码块：\n'
+  +'{"groups":[{"keep":"短码","drop":["短码"],"text":"合并后的一句"}]}\n'
+  +'text 一句完整的话，第三人称写她，六十字以内，'
+  +'两条的信息都收进去，别丢细节。\n'
+  +'话题相近但讲的是不同事，不要并。拿不准就不并。\n'
+  +'最多 5 组，一组最多 3 条。没有就输出 {"groups":[]}。',
+   body,800)
+  .then(function(raw){
+    MRG=0;
+    var s=String(raw||''),a=s.indexOf('{'),b=s.lastIndexOf('}');
+    if(a<0||b<=a)return;
+    var o=null;
+    try{o=JSON.parse(s.slice(a,b+1));}catch(e){return;}
+    var gs=(o&&o.groups)||[],gone={},moved=0;
+    var cap=Math.max(2,Math.floor(D.mems.length/4)),used=0;
+    gs.slice(0,5).forEach(function(g){
+      if(!g||!g.keep)return;
+      var keep=memByCode(g.keep);
+      if(!keep||gone[keep.id])return;
+      var ds=[];
+      (g.drop||[]).slice(0,3).forEach(function(cd){
+        if(used+ds.length>=cap)return;
+        var m=memByCode(cd);
+        if(!m||m.id===keep.id||m.lock||gone[m.id])return;
+        if(simRate(m.t,keep.t)<0.34)return;
+        ds.push(m);});
+      if(!ds.length)return;
+      used+=ds.length;
+      var nt=String(g.text||'').trim().slice(0,200);
+      if(nt.length>=4)keep.t=nt;
+      ds.forEach(function(m){
+        gone[m.id]=1;moved++;
+        if((m.imp||2)>(keep.imp||2))keep.imp=m.imp;
+        if(!keep.cat&&m.cat)keep.cat=m.cat;
+        if(!keep.from&&m.from)keep.from=m.from;
+        if((m.ts||0)>(keep.ts||0))keep.ts=m.ts;
+        keep.hits=(keep.hits||0)+(m.hits||0);});});
+    if(!moved)return;
+    D.mems=D.mems.filter(function(x){return!gone[x.id];});
+    saveD();
+    if(CV==='mem')drawMem();
+  },function(){MRG=0;});}
+
+EXT_DONE.push(function(m,ab){
+  if(ab||!m||m.err||m.st||!realT(m))return;
+  setTimeout(function(){try{memMerge();}catch(e){}},5000);});
+
+})();
 boot();
 </script>
 </body>
