@@ -7615,6 +7615,230 @@ dupOf=function(t,skip){
 if(CV==='chat'){try{paint(1);btn();}catch(e){}}
 if(CV==='home'){try{view('home');}catch(e){}}
 })();
+
+/* ══════════════════════════════════════════════════
+   十二 · 点検
+   ══════════════════════════════════════════════════ */
+(function(){
+
+/* ══════════════════════════════
+   一 · 时间基准跨会话
+   ══════════════════════════════ */
+function lastMeAll(){
+  var best=null;
+  SS.forEach(function(s){
+    var a=MSG[s.id]||[],i;
+    for(i=a.length-1;i>=0;i--){
+      var m=a[i];
+      if(m.r==='me'&&!m.sys&&m.ts){
+        if(!best||m.ts>best.ts)best=m;
+        break;}}});
+  return best;}
+
+var QC={t:0,v:0};
+quiet=function(){
+  var n=Date.now();
+  if(n-QC.t<800)return QC.v;
+  QC.t=n;
+  var lm=lastMeAll();
+  QC.v=lm?Math.max(0,(n-lm.ts)/60000):0;
+  return QC.v;};
+
+past72=function(){
+  var n=0,t0=Date.now()-72*3600000;
+  SS.forEach(function(s){
+    var a=MSG[s.id]||[],i;
+    for(i=0;i<a.length&&n<200;i++)
+      if(a[i].r==='me'&&!a[i].sys&&(a[i].ts||0)<t0)n++;});
+  return n;};
+
+/* 寂和约定也跟着走全局，并且时间只许往前 */
+window.__lastMeAll=lastMeAll;
+var bc3=bodyCard;
+bodyCard=function(){
+  try{
+    var B=bd();
+    if(B&&D.bodyOn){
+      var lm=lastMeAll();
+      if(lm&&(B.mt||0)>lm.ts)B.mt=lm.ts;}
+  }catch(e){}
+  return bc3();};
+
+/* ══════════════════════════════
+   二 · 只渲染窗口内的消息
+   ══════════════════════════════ */
+var st=document.createElement('style');
+st.textContent=
+ '.mfar2{display:block;width:100%;margin:2px 0 24px;padding:10px 0;'
++'font-size:11.5px;letter-spacing:.12em;color:var(--dim2);'
++'text-align:center;font-family:var(--min)}';
+document.head.appendChild(st);
+
+var p1=paint;
+paint=function(keep){
+  var s=S(),sid=s?s.id:'',arr=sid?(MSG[sid]||[]):[];
+  var full=arr.length;
+  if(RALL[sid]||full<=RCAP+30)return p1(keep);
+  var cut=arr.slice(full-RCAP),hid=full-RCAP;
+  var ms0=ms;
+  ms=function(){
+    var cur=S();
+    return(cur&&cur.id===sid)?cut:ms0();};
+  try{p1(keep);}
+  catch(e){keepErr('重画',e);}
+  finally{ms=ms0;}
+  try{
+    var box=msBox();
+    if(!box)return;
+    var ch=box.children,i,first=null;
+    for(i=0;i<ch.length;i++){
+      var cl=ch[i].classList;
+      if(cl&&(cl.contains('m')||cl.contains('gsep'))){
+        first=ch[i];break;}}
+    if(!first)return;
+    var bt=document.createElement('button');
+    bt.className='mfar2 pz';
+    bt.textContent='看更早的 '+hid+' 条';
+    bt.onclick=function(){
+      var b2=msBox();
+      var off=b2?(first.offsetTop-b2.scrollTop):0;
+      var fid=first.id;
+      RALL[sid]=1;SC.pin=0;SC.el=null;
+      paint(1);
+      var b3=msBox(),e3=fid?document.getElementById(fid):null;
+      if(b3&&e3){b3.scrollTop=Math.max(0,e3.offsetTop-off);scAnchor();}};
+    box.insertBefore(bt,first);
+  }catch(e){}};
+
+/* ══════════════════════════════
+   三 · 搜索提速
+   ══════════════════════════════ */
+var EXC={},EXN=0;
+expand=function(w){
+  if(EXC[w])return EXC[w];
+  var o=[w];
+  SYN.forEach(function(g){if(g.indexOf(w)>=0)o=o.concat(g);});
+  o=o.filter(function(x,i,a){return a.indexOf(x)===i;});
+  if(++EXN>300){EXC={};EXN=1;}
+  EXC[w]=o;
+  return o;};
+
+var HAYC=(typeof WeakMap!=='undefined')?new WeakMap():null;
+function hayN(m){
+  var len=(m.t||'').length+((m.parts||[]).length*7)
+    +((m.pics||[]).length);
+  if(HAYC){
+    var c=HAYC.get(m);
+    if(c&&c.l===len)return c.v;}
+  var v=nrm(hay(m));
+  if(HAYC)HAYC.set(m,{l:len,v:v});
+  return v;}
+
+function prepKw(kw){
+  var out=[];
+  (kw||[]).forEach(function(w){
+    var nw=nrm(w);
+    if(!nw)return;
+    var alts=[];
+    expand(w).forEach(function(x){
+      var nx=nrm(x);
+      if(nx!==nw&&nx.length>=2&&alts.indexOf(nx)<0)alts.push(nx);});
+    out.push({n:nw,a:alts});});
+  return out;}
+
+function scoreP(low,pk,tot){
+  if(!pk.length)return 1;
+  var sc=0,got=0,exact=0,i,j;
+  for(i=0;i<pk.length;i++){
+    var hit=0;
+    if(low.indexOf(pk[i].n)>=0){hit=10;exact++;}
+    else for(j=0;j<pk[i].a.length;j++)
+      if(low.indexOf(pk[i].a[j])>=0){hit=4;break;}
+    if(hit)got++;
+    sc+=hit;}
+  if(!got)return 0;
+  if(SOFTQ)return sc+got*3;
+  if(!KWSHOW&&got<tot)return 0;
+  return sc+got*4+(exact===tot?6:0);}
+
+scanAll=function(sp,soft){
+  var was=SOFTQ;
+  SOFTQ=soft?1:0;
+  var res=[],tot=(sp.kw||[]).length,pk=prepKw(sp.kw),dr=sp.dr;
+  SS.forEach(function(s){
+    var a=MSG[s.id]||[],ix;
+    for(ix=0;ix<a.length;ix++){
+      var m=a[ix];
+      if(m.sys||!alive(m)||m.r==='quote'||m.st||m.err)continue;
+      if(dr&&!(m.ts>=dr.a&&m.ts<dr.b))continue;
+      var sc=tot?scoreP(hayN(m),pk,tot):1;
+      if(sc<=0)continue;
+      res.push({s:s,m:m,i:ix,sc:sc});}});
+  SOFTQ=was;
+  if(tot)res.sort(function(a,b){
+    return b.sc-a.sc||b.m.ts-a.m.ts;});
+  else res.sort(function(a,b){return b.m.ts-a.m.ts;});
+  return res;};
+
+var FT=0,rf1=runFind;
+runFind=function(){
+  var el=document.getElementById('fq');
+  if(el)FQ=el.value;
+  clearTimeout(FT);
+  FT=setTimeout(function(){
+    try{rf1();}catch(e){keepErr('翻查',e);}},150);};
+
+/* ══════════════════════════════
+   四 · 提示词与估算
+   ══════════════════════════════ */
+var SPC='',SPK='\u0000';
+var sp3=staticPart;
+staticPart=function(){
+  var k=[D.acts,D.web,D.you,D.me,D.voice||'',D.free||'']
+    .join('\u0001');
+  if(k===SPK)return SPC;
+  SPK=k;SPC=sp3();
+  return SPC;};
+spLen=function(){
+  try{return staticPart().length;}catch(e){return 0;}};
+
+var ci2=ctxInfo;
+ctxInfo=function(){
+  var c=ci2();
+  try{
+    var ex=0;
+    LKMEM.forEach(function(x){ex+=String(x.txt||'').length+24;});
+    if(ex)c.tok+=Math.round(ex/2.5);
+  }catch(e){}
+  return c;};
+
+/* ══════════════════════════════
+   五 · 记忆库兜底
+   ══════════════════════════════ */
+var mt1=memTrim;
+memTrim=function(){
+  try{mt1();}catch(e){}
+  if(D.mems.length<=MEMCAP+20)return;
+  var now=Date.now(),worst=null,ws=1e9;
+  D.mems.forEach(function(m){
+    if(m.lock)return;
+    var sc=(m.imp||2)*10+Math.min(10,m.hits||0)
+      +(m.used?Math.max(0,10-(now-m.used)/(7*MS)):0)
+      -Math.min(12,(now-m.ts)/(30*MS));
+    if(sc<ws){ws=sc;worst=m;}});
+  if(worst)D.mems=D.mems.filter(function(x){return x.id!==worst.id;});};
+
+/* ══════════════════════════════
+   六 · 收尾
+   ══════════════════════════════ */
+var bst1=bodyStop;
+bodyStop=function(){
+  bst1();
+  setTimeout(function(){
+    try{if(CV==='home')view('home');}catch(e){}},420);};
+
+if(CV==='chat'){try{paint(1);}catch(e){}}
+})();
 boot();
 </script>
 </body>
