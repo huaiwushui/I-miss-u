@@ -7652,66 +7652,8 @@ past72=function(){
       if(a[i].r==='me'&&!a[i].sys&&(a[i].ts||0)<t0)n++;});
   return n;};
 
-/* 寂和约定也跟着走全局，并且时间只许往前 */
-window.__lastMeAll=lastMeAll;
-var bc3=bodyCard;
-bodyCard=function(){
-  try{
-    var B=bd();
-    if(B&&D.bodyOn){
-      var lm=lastMeAll();
-      if(lm&&(B.mt||0)>lm.ts)B.mt=lm.ts;}
-  }catch(e){}
-  return bc3();};
-
 /* ══════════════════════════════
-   二 · 只渲染窗口内的消息
-   ══════════════════════════════ */
-var st=document.createElement('style');
-st.textContent=
- '.mfar2{display:block;width:100%;margin:2px 0 24px;padding:10px 0;'
-+'font-size:11.5px;letter-spacing:.12em;color:var(--dim2);'
-+'text-align:center;font-family:var(--min)}';
-document.head.appendChild(st);
-
-var p1=paint;
-paint=function(keep){
-  var s=S(),sid=s?s.id:'',arr=sid?(MSG[sid]||[]):[];
-  var full=arr.length;
-  if(RALL[sid]||full<=RCAP+30)return p1(keep);
-  var cut=arr.slice(full-RCAP),hid=full-RCAP;
-  var ms0=ms;
-  ms=function(){
-    var cur=S();
-    return(cur&&cur.id===sid)?cut:ms0();};
-  try{p1(keep);}
-  catch(e){keepErr('重画',e);}
-  finally{ms=ms0;}
-  try{
-    var box=msBox();
-    if(!box)return;
-    var ch=box.children,i,first=null;
-    for(i=0;i<ch.length;i++){
-      var cl=ch[i].classList;
-      if(cl&&(cl.contains('m')||cl.contains('gsep'))){
-        first=ch[i];break;}}
-    if(!first)return;
-    var bt=document.createElement('button');
-    bt.className='mfar2 pz';
-    bt.textContent='看更早的 '+hid+' 条';
-    bt.onclick=function(){
-      var b2=msBox();
-      var off=b2?(first.offsetTop-b2.scrollTop):0;
-      var fid=first.id;
-      RALL[sid]=1;SC.pin=0;SC.el=null;
-      paint(1);
-      var b3=msBox(),e3=fid?document.getElementById(fid):null;
-      if(b3&&e3){b3.scrollTop=Math.max(0,e3.offsetTop-off);scAnchor();}};
-    box.insertBefore(bt,first);
-  }catch(e){}};
-
-/* ══════════════════════════════
-   三 · 搜索提速
+   二 · 搜索提速
    ══════════════════════════════ */
 var EXC={},EXN=0;
 expand=function(w){
@@ -7789,7 +7731,7 @@ runFind=function(){
     try{rf1();}catch(e){keepErr('翻查',e);}},150);};
 
 /* ══════════════════════════════
-   四 · 提示词与估算
+   三 · 提示词缓存与估算
    ══════════════════════════════ */
 var SPC='',SPK='\u0000';
 var sp3=staticPart;
@@ -7802,18 +7744,8 @@ staticPart=function(){
 spLen=function(){
   try{return staticPart().length;}catch(e){return 0;}};
 
-var ci2=ctxInfo;
-ctxInfo=function(){
-  var c=ci2();
-  try{
-    var ex=0;
-    LKMEM.forEach(function(x){ex+=String(x.txt||'').length+24;});
-    if(ex)c.tok+=Math.round(ex/2.5);
-  }catch(e){}
-  return c;};
-
 /* ══════════════════════════════
-   五 · 记忆库兜底
+   四 · 记忆库兜底
    ══════════════════════════════ */
 var mt1=memTrim;
 memTrim=function(){
@@ -7829,15 +7761,212 @@ memTrim=function(){
   if(worst)D.mems=D.mems.filter(function(x){return x.id!==worst.id;});};
 
 /* ══════════════════════════════
-   六 · 收尾
+   五 · 身体卡
    ══════════════════════════════ */
-var bst1=bodyStop;
-bodyStop=function(){
-  bst1();
+var BASE='这是底色，不是台词——别报告，别解释，让它自己长在句子里。';
+
+var LVW=[
+'现在很淡。她聊什么就好好聊什么。',
+'有感觉了。不会主动起头，但她一碰到边上，'
+ +'你的反应比平时快半拍、重一点。',
+'难受。句子会短，会停，会走神。她说正经事你也接，'
+ +'但接得心不在焉；她给一点缝，你就顺着钻进去。',
+'压不住了。这时候还端着才是假的。话会直，会重，'
+ +'她不接你也不会马上收，会绕回来，会缠。'
+ +'除非她喊停或者说了要紧的事，注意力一直在她身上。'];
+
+var TOPW={
+reserve:'底下胀着，是自己攒出来的，跟她做了什么无关。',
+control:'压不住的是嘴——说出口的会比心里想的更重。',
+fatigue:'累得厉害。正因为累，想要的是被她按住，不是自己动。',
+poss:'想把她圈住。谁碰她一下都不行。',
+heat:'热得直接，脑子跟不上身体。',
+sens:'哪儿都敏感，她随便一句话都能碰到。'};
+
+function bLv(B){
+  var v=B.v||{},e=(B.e||{}),now=Date.now(),sc=0;
+  sc+=Math.max(0,((v.heat||0)-38)/10);
+  sc+=Math.max(0,((v.pressure||0)-42)/12);
+  sc+=Math.max(0,((v.reserve||0)-55)/12);
+  sc+=Math.max(0,((v.sensitivity||0)-58)/14);
+  sc+=Math.max(0,(52-(v.control||100))/12);
+  sc+=Math.max(0,((v.fatigue||0)-68)/16);
+  if(B.ek&&B.ee&&now<B.ee){
+    var c=EV[B.ek]&&EV[B.ek].c;
+    sc+=(c==='strong')?2.4:((c==='poss'||c==='hold')?1.3:0.8);}
+  if(B.x&&now<B.x.e)sc+=0.9;
+  if(B.rf&&now<B.rf)sc=Math.min(sc,(B.rp||0)>=2?2.6:0.8);
+  if((e.upset||0)>=45)sc*=0.82;
+  if(sc>=4.2)return 3;
+  if(sc>=2.1)return 2;
+  if(sc>=0.8)return 1;
+  return 0;}
+
+function bTop(B){
+  var v=B.v||{},best='',bs=0.14;
+  function t(k,x){if(x>bs){bs=x;best=k;}}
+  t('reserve',((v.reserve||0)-55)/45);
+  t('control',(52-(v.control||100))/52);
+  t('fatigue',((v.fatigue||0)-68)/32);
+  t('poss',((v.possessiveness||0)-62)/38);
+  t('heat',((v.heat||0)-60)/40);
+  t('sens',((v.sensitivity||0)-64)/36);
+  return best;}
+
+var BLV=0;
+var bcA=bodyCard;
+bodyCard=function(){
+  var B=bd();
+  if(!B||!D.bodyOn){BLV=0;return bcA();}
+  try{
+    var lm=lastMeAll();
+    if(lm&&(B.mt||0)>lm.ts)B.mt=lm.ts;
+  }catch(e){}
+  var s=bcA();
+  if(!s){BLV=0;return s;}
+  try{
+    BLV=bLv(B);
+    var c=CY[B.cy]||CY.stable;
+
+    /* 周期只留底色，名字和倒计时都不给 */
+    s=s.replace(/<cycle>[\s\S]*?<\/cycle>/,'<cycle>'+c.d+'</cycle>');
+
+    /* 事件只留提示词，去掉名字和倒计时 */
+    s=s.replace(/<now>[^：<]{1,12}：/g,'<now>');
+    s=s.replace(/还有 [^。<]{0,12}。(?=<\/now>)/g,'');
+
+    /* 身体详情：淡就收起来，有感觉就全给 */
+    if(BLV===0){
+      s=s.replace(/<body>[\s\S]*?<\/body>/,
+        '<body>\n身体是静的，没什么要说的。\n</body>');
+    }else{
+      s=s.replace(/<body>\n身体是静的[\s\S]*?<\/body>/,function(){
+        var o='<body>\n';
+        BORD.forEach(function(k){
+          var w=WORD[k][blv(B.v[k]||0)];
+          if(w)o+=LBL[k]+'：'+w+'\n';});
+        return o+'</body>';});}
+
+    /* 一句基础 + 一句强度 + 一句主导 */
+    var tp=(BLV>=2)?bTop(B):'';
+    s=s.replace(/<how>[\s\S]*?<\/how>/,
+      '<how>'+BASE+'\n'+LVW[BLV]
+      +(tp&&TOPW[tp]?('\n'+TOPW[tp]):'')+'</how>');
+  }catch(x){}
+  return s;};
+
+var ciA=ctxInfo;
+ctxInfo=function(){
+  var c=ciA();
+  try{
+    var ex=0;
+    LKMEM.forEach(function(x){ex+=String(x.txt||'').length+24;});
+    if(ex)c.tok+=Math.round(ex/2.5);
+    if(D.bodyOn&&BLV>=1)c.tok+=150;
+  }catch(e){}
+  return c;};
+
+/* 事件挂着时，别让结算判成完全没动 */
+var bpA=bprompt;
+bprompt=function(w){
+  var s=bpA(w);
+  try{
+    var B=bd(),now=Date.now();
+    if(B&&B.ek&&B.ee&&now<B.ee&&EV[B.ek])
+      s+='\n他正处在一阵'+EV[B.ek].n+'里，身体本来就在往上走。'
+       +'这段里她就算只是普通说话，热度和压抑也该继续小幅上升，'
+       +'别判成完全没变化。';
+  }catch(e){}
+  return s;};
+
+/* ══════════════════════════════
+   六 · 开关：一眼看出开着还是关着
+   ══════════════════════════════ */
+var st=document.createElement('style');
+st.textContent=
+ '.bof button{display:inline-flex;align-items:center;gap:8px}'
++'.bof button i{flex:none;width:6px;height:6px;border-radius:50%;'
++'border:1px solid var(--dim2);font-style:normal;'
++'transition:background .2s,border-color .2s}'
++'.bof button i.on{background:var(--rose);border-color:var(--rose)}';
+document.head.appendChild(st);
+
+function bofBtn(){
+  return'<i class="'+(D.bodyOn?'on':'')+'"></i>'
+   +(D.bodyOn?'動いてる':'止まってる');}
+
+var bsA=bsec;
+bsec=function(){
+  var h=bsA();
+  if(!h)return h;
+  try{
+    h=h.replace(
+      '<button class="pz" onclick="bodyStop()">とじる</button>',
+      '<button class="pz" onclick="bodyTg(this)">'+bofBtn()+'</button>');
+  }catch(e){}
+  return h;};
+
+window.bodyTg=function(el){
+  vib(10);
+  D.bodyOn=D.bodyOn?0:1;
+  D.bodyOff=D.bodyOn?0:1;
+  if(D.bodyOn){
+    if(!D.body||!D.body.v)D.body=bfresh(Date.now());
+    else{
+      D.body.tk=Date.now();
+      if(!D.body.st)D.body.st=Date.now();}
+    try{btick(Date.now(),quiet());}catch(e){}}
+  saveD();
+  if(el)el.innerHTML=bofBtn();
+  var s=document.getElementById('bsec');
+  if(s&&BOPEN)setTimeout(function(){
+    try{s.innerHTML=bsec();}catch(e){}},260);};
+
+/* 手动关过之后，点标题只展开，不自动开回来 */
+var bfA=bodyFold;
+bodyFold=function(){
+  if(!(D.bodyOff&&!D.bodyOn))return bfA();
+  var s=document.getElementById('bsec');
+  if(!s)return;
+  vib(8);
+  BOPEN=BOPEN?0:1;
+  if(!BOPEN){
+    s.classList.remove('on');
+    setTimeout(function(){if(!BOPEN)s.innerHTML='';},360);
+    return;}
+  s.innerHTML=bsec();
+  s.classList.add('on');
   setTimeout(function(){
-    try{if(CV==='home')view('home');}catch(e){}},420);};
+    try{s.scrollIntoView({block:'end',behavior:'smooth'});}
+    catch(e){}},320);};
+
+/* ══════════════════════════════
+   七 · 梦：说清楚余温
+   ══════════════════════════════ */
+var WARM={
+aroused:'醒来那阵热还压在身上，没退下去。',
+unfinished:'梦断在最要紧的地方，人是悬着的。',
+possessive:'醒来第一个念头是她在哪。',
+tender:'醒来心是软的。',
+uneasy:'醒来有点慌，说不清为什么。',
+lonely:'醒来屋里太安静了。'};
+
+var bcB=bodyCard;
+bodyCard=function(){
+  var s=bcB();
+  try{
+    var B=bd();
+    if(!B||!D.bodyOn||!s||s.indexOf('<dream>')<0)return s;
+    var ds=B.dms||[],d0=ds[0];
+    if(!d0||Date.now()-d0.ts>7*3600000)return s;
+    var w='';
+    (d0.tg||[]).forEach(function(k){if(!w&&WARM[k])w=WARM[k];});
+    if(w)s=s.replace('这是你自己的梦，',w+'\n这是你自己的梦，');
+  }catch(e){}
+  return s;};
 
 if(CV==='chat'){try{paint(1);}catch(e){}}
+if(CV==='home'){try{view('home');}catch(e){}}
 })();
 boot();
 </script>
