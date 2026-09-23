@@ -8192,6 +8192,31 @@ if(CV==='chat'){try{paint(1);}catch(e){}}
     }catch(e){}
     return mk0();};
 })();
+
+/* ══ 补丁 · 去掉多余的时间提示 ══ */
+(function(){
+  var TAG='（几点只看这一行）';
+  var up0=usPart;
+  usPart=function(q){
+    var s=up0(q);
+    try{
+      var i=s.indexOf(TAG);
+      if(i<0)return s;
+      var head=s.slice(0,i+TAG.length),tail=s.slice(i+TAG.length);
+      if(!tail.trim())return head;
+      tail=tail.split('　').filter(function(x){
+        x=String(x||'').trim();
+        if(!x)return false;
+        if(x==='这个点她该睡了。')return false;
+        if(x==='一大早。')return false;
+        if(/^(今天|明天)是.{1,16}。$/.test(x))return false;
+        /* 想连「她隔了多久才回来」一起删，就把下面这行的注释去掉 */
+        /* if(/^她隔了 .{1,14}才回来。$/.test(x))return false; */
+        return true;}).join('　');
+      s=head+(tail.trim()?('\n'+tail.trim()):'');
+    }catch(e){}
+    return s;};
+})();
 boot();
 </script>
 </body>
