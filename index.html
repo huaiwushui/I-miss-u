@@ -8074,58 +8074,7 @@ bodyCard=function(){
   return s;};
 
 /* ══════════════════════════════
-   四 · 梦：多给几次机会
-   ══════════════════════════════ */
-var drC=dreamRoll;
-dreamRoll=function(B){
-  try{
-    if(!B||!D.bodyOn)return drC(B);
-    var now=Date.now(),h=hrNow(),night=inWin([23,9],h);
-    /* 夜里 roll 冷却缩到 7 分钟，一晚能试好几次 */
-    if(night&&B.dck&&now-B.dck<20*60000
-      &&now-B.dck>=7*60000)B.dck=now-21*60000;
-    /* 静默门槛：夜里 100 分钟就够 */
-    if(night&&quiet()>=100&&quiet()<150&&!B.dmAt)
-      B.dmAt=0;
-  }catch(e){}
-  return drC(B);};
-
-/* 夜里放宽静默门槛和概率 */
-var DRB=0;
-(function(){
-  var orig=dreamRoll;
-  dreamRoll=function(B){
-    if(!B||!D.bodyOn||!D.apiUrl||!D.apiKey||DRB)return 0;
-    var now=Date.now(),h=hrNow(),night=inWin([23,9],h);
-    var q=quiet();
-    var need=night?100:400;
-    if(q<need)return 0;
-    if(!night&&(B.v&&(B.v.fatigue||0)<30))return 0;
-    if(B.dck&&now-B.dck<(night?7:20)*60000)return 0;
-    B.dck=now;
-    var cool=night?11:18;
-    if(B.dmAt&&now-B.dmAt<cool*3600000)return 0;
-    var e=(B.e||{}),v=B.v||{};
-    var p=({stable:.20,recovery:.20,building:.28,ebb:.28,
-      preheat:.38,sensitive:.42})[B.cy]||.24;
-    if(night)p+=.20;else p*=0.5;
-    p+=Math.min(.12,(e.lone||0)*.0016);
-    if((v.reserve||0)>=62)p+=.07;
-    if((v.fatigue||0)>=58)p+=.06;
-    if(q>=600)p+=.10;
-    return Math.random()<Math.min(night?.72:.28,p)?1:0;};
-})();
-
-/* 每次打开聊天页也试一次，不只靠切前台 */
-var vw3=view;
-view=function(v){
-  var r=vw3(v);
-  if(v==='chat')setTimeout(function(){
-    try{if(typeof mkDream==='function')mkDream();}catch(e){}},2200);
-  return r;};
-
-/* ══════════════════════════════
-   五 · 记忆：写清楚什么该记
+   四 · 记忆：写清楚什么该记
    ══════════════════════════════ */
 var sp4=staticPart;
 staticPart=function(){
