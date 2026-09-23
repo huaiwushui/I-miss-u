@@ -8092,6 +8092,106 @@ staticPart=function(){
 
 if(CV==='chat'){try{paint(1);}catch(e){}}
 })();
+
+/* ══ 补丁 · PDF 打得开 + 文件卡瘦身 ══ */
+(function(){
+  var st=document.createElement('style');
+  st.textContent=
+   '#ms .fcd{max-width:min(78%,290px);padding:9px 12px;border-radius:12px}'
+  +'#ms .fcd .fi{width:24px;height:24px;line-height:24px}';
+  document.head.appendChild(st);
+
+  window.pdfOpen=function(fid){
+    dbGet('pic','pdf:'+fid).then(function(v){
+      if(!v||!v.d){toast('这份 PDF 不在了');return;}
+      var url;
+      try{
+        var bin=atob(String(v.d)),n=bin.length,arr=new Uint8Array(n),i;
+        for(i=0;i<n;i++)arr[i]=bin.charCodeAt(i);
+        url=URL.createObjectURL(new Blob([arr],{type:'application/pdf'}));
+      }catch(e){toast('这份读不出来');return;}
+      var old=document.getElementById('crun');if(old)old.remove();
+      var box=document.createElement('div');box.id='crun';
+      box.innerHTML='<div class="rh"><b>PDF</b><button>关闭</button></div>'
+        +'<iframe></iframe>';
+      document.body.appendChild(box);
+      box.querySelector('iframe').src=url;
+      box.querySelector('button').onclick=function(){
+        box.remove();
+        setTimeout(function(){try{URL.revokeObjectURL(url);}catch(e){}},1000);};
+    },function(){toast('读不出来');});};
+
+  var pf0=paint;
+  paint=function(keep){
+    var r=pf0(keep);
+    try{
+      var b=msBox();
+      if(b)ms().forEach(function(m){
+        if(!m.pdfs||!m.pdfs.length)return;
+        var el=document.getElementById('m-'+m.id);
+        if(!el)return;
+        var pi=0;
+        [].forEach.call(el.querySelectorAll('.fcd'),function(cd){
+          if(!cd.querySelector('.fi.p')||cd.dataset.pdf)return;
+          var pf=m.pdfs[pi++];
+          if(!pf)return;
+          cd.dataset.pdf='1';
+          cd.classList.add('pz');
+          cd.onclick=function(){pdfOpen(pf.fid);};});});
+    }catch(e){}
+    return r;};
+
+  if(CV==='chat'){try{paint(1);}catch(e){}}
+})();
+
+/* ══ 补丁 · 思考交织 · 跨轮累积 ══ */
+(function(){
+  var st=document.createElement('style');
+  st.textContent=
+   '#sh .kb+.kb{margin-top:0;padding-top:15px;position:relative}'
+  +'#sh .kb+.kb:before{content:"";position:absolute;top:0;left:0;'
+  +'width:14px;height:1px;background:var(--dl)}';
+  document.head.appendChild(st);
+
+  /* 开新一轮前，把这一轮的思考存进 kk，别让它被冲掉 */
+  var nr0=nextRound;
+  nextRound=function(m,after,q,sid,hint){
+    if(m&&m.k&&String(m.k).trim()){
+      m.kk=(m.kk||[]);m.kk.push(m.k);}
+    return nr0(m,after,q,sid,hint);};
+
+  /* 面板按顺序摞：想 → 翻 → 又想 */
+  var sk0=shThink;
+  window.shThink=function(id){
+    var m=find(id);
+    if(!m)return;
+    var segs=(m.kk||[]).concat(
+      (m.k&&String(m.k).trim())?[m.k]:[]);
+    if(segs.length<2)return sk0(id);
+    sheet({read:1,title:'偷偷想的',
+      body:segs.map(function(k){
+        return'<div class="kb">'+esc(k)+'</div>';}).join('')});};
+
+  /* 快照带上 kk，切版本不丢 */
+  var sn0=snap;
+  snap=function(m){
+    var o=sn0(m);
+    if(m.kk&&m.kk.length)o.kk=deep(m.kk);
+    return o;};
+  var us0=useSnap;
+  useSnap=function(m,v){
+    us0(m,v);
+    if(v.kk)m.kk=deep(v.kk);else delete m.kk;};
+
+  /* 有累积就别再标「没给思考过程」 */
+  var mk0=markNew;
+  markNew=function(){
+    try{
+      ms().forEach(function(m){
+        if(m.nothink&&m.kk&&m.kk.length)delete m.nothink;});
+    }catch(e){}
+    return mk0();};
+})();
 boot();
 </script>
 </body>
