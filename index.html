@@ -8217,6 +8217,24 @@ if(CV==='chat'){try{paint(1);}catch(e){}}
     }catch(e){}
     return s;};
 })();
+
+/* ══ 补丁 · 天数并进时间行 ══ */
+(function(){
+  var TAG='（几点只看这一行）';
+  var up1=usPart;
+  usPart=function(q){
+    var s=up1(q);
+    try{
+      var m=s.match(/在一起第 (\d+) 天。\n?/);
+      if(!m)return s;
+      s=s.replace(m[0],'').replace(/^【你们】\n(?=\n|$)/,'');
+      var i=s.indexOf(TAG);
+      if(i<0)return s;
+      s=s.slice(0,i+TAG.length)+'　第 '+m[1]+' 天'
+        +s.slice(i+TAG.length);
+    }catch(e){}
+    return s;};
+})();
 boot();
 </script>
 </body>
