@@ -7224,7 +7224,7 @@ function mkDream(){
   if(!dreamRoll(B))return;
   DMB=1;
   var e=eb2(B),v=B.v||{},q=quiet(),now=Date.now();
-  var night=inWin([23,9],hrNow()),nap=night?0:1;
+  var night=inWin([22.5,10],hrNow()),nap=night?0:1;
   var ds=B.dms||[],prev=ds[0];
   var cont=0;
   if(prev&&prev.tg&&prev.tg.indexOf('unfinished')>=0
@@ -8234,6 +8234,53 @@ if(CV==='chat'){try{paint(1);}catch(e){}}
         +s.slice(i+TAG.length);
     }catch(e){}
     return s;};
+})();
+/* ══ 补丁 · 思考面板段距 + 按钮兜底 ══ */
+(function(){
+  var st=document.createElement('style');
+  st.textContent='#sh .kb .kp{display:block;height:.5em}';
+  document.head.appendChild(st);
+
+  /* 面板：段间半行，多段照旧摞着 */
+  function one(t){
+    return'<div class="kb">'
+      +esc(String(t||'')).replace(/\n{2,}/g,'<i class="kp"></i>')
+      +'</div>';}
+  window.shThink=function(id){
+    var m=find(id);
+    if(!m)return;
+    var segs=(m.kk||[]).concat(
+      (m.k&&String(m.k).trim())?[m.k]:[]);
+    if(!segs.length)return;
+    sheet({read:1,title:'偷偷想的',
+      body:segs.map(one).join('')});};
+
+  /* 末轮没给思考流时，也得留个入口 */
+  var pf=paint;
+  paint=function(keep){
+    var r=pf(keep);
+    try{
+      ms().forEach(function(m){
+        if(m.r!=='ai'||m.st)return;
+        if(!(m.kk&&m.kk.length))return;
+        if(m.k&&String(m.k).trim())return;
+        var el=document.getElementById('m-'+m.id);
+        if(!el)return;
+        var box=el.querySelector('.in');
+        if(!box)return;
+        var th=box.querySelector('.thk');
+        if(th&&th.querySelector('button'))return;
+        var h='<button class="pz" onclick="shThink(\''+m.id+'\')">'
+          +I.clock+'<span>偷偷想的</span>'+I.chev+'</button>';
+        if(th)th.innerHTML=h;
+        else{
+          var d=document.createElement('div');
+          d.className='thk';d.innerHTML=h;
+          box.insertBefore(d,box.firstChild);}});
+    }catch(e){}
+    return r;};
+
+  if(CV==='chat'){try{paint(1);}catch(e){}}
 })();
 boot();
 </script>
