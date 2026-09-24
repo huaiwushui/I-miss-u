@@ -8234,6 +8234,180 @@ if(CV==='chat'){try{paint(1);}catch(e){}}
 
   if(CV==='chat'){try{paint(1);}catch(e){}}
 })();
+
+/* ══════════════════════════════════════════════════
+   十四 · 上网：我自己开口才查
+   ══════════════════════════════════════════════════ */
+(function(){
+
+if(MKKEY.indexOf('搜')<0)MKKEY.push('搜');
+var WMAX=2,WCAPR=2,WLEN=200;
+function wKey(){return!!(D.jkey||(D.gkey&&D.gcx));}
+
+/* ══════════════════════════════
+   一 · 页面不再每句替我搜
+   ══════════════════════════════ */
+ask=function(after){
+  try{
+    STOPPED=0;BUMPED=0;TURNN++;
+    lookReset();stickHard();
+    var sid=S().id,q=lastQ();
+    BUSY=true;
+    WEBTXT='';PAGETXT='';HINT='';
+    if(!D.apiUrl||!D.apiKey){fake(after);return;}
+    var m={id:uid(),r:'ai',t:'',k:'',st:1,ts:Date.now()};
+    ms().push(m);
+    var jobs=[];
+    if(q&&grabUrl(q).length){
+      m.wst=1;
+      jobs.push(readPages(q).then(function(ls){
+        if(!ls||!ls.length)return;
+        var a=ms(),i;
+        for(i=a.length-1;i>=0;i--)
+          if(a[i].r==='me'&&!a[i].sys){
+            a[i].urls=ls;saveS(sid);break;}},function(){}));}
+    paint();btn();
+    if(!jobs.length)return go(m,after,q,sid);
+    Promise.all(jobs).then(function(){
+      m.wst=0;paint();go(m,after,q,sid);},
+      function(){m.wst=0;paint();go(m,after,q,sid);});
+  }catch(e){
+    var a2=ms(),mm=a2.length?a2[a2.length-1]:null;
+    if(!mm||mm.r!=='ai'){
+      mm={id:uid(),r:'ai',t:'',k:'',ts:Date.now()};
+      try{ms().push(mm);}catch(x){}}
+    fail(mm,e,'发送');}};
+
+/* ══════════════════════════════
+   二 · 把 [[搜:]] 摘出来
+   ══════════════════════════════ */
+function takeW(m){
+  var raw=m.t||'';
+  if(raw.indexOf('[')<0)return null;
+  var out=[],pos=0,o='',hit=0;
+  scanMarks(raw).forEach(function(x){
+    if(x.k!=='搜')return;
+    hit=1;
+    o+=raw.slice(pos,x.a);pos=x.b;
+    var s=String(x.v||'').replace(/\s+/g,' ').trim().slice(0,WLEN);
+    if(!s||out.length>=WMAX)return;
+    var dup=0;
+    out.forEach(function(y){if(nrm(y)===nrm(s))dup=1;});
+    if(!dup)out.push(s);});
+  if(!hit)return null;
+  m.t=o+raw.slice(pos);
+  return out;}
+
+/* ══════════════════════════════
+   三 · 查完接着说
+   ══════════════════════════════ */
+var ra0=runActs;
+runActs=function(m,after,q,sid){
+  var qs=[];
+  try{
+    if(m.wq&&m.wq.length){qs=m.wq.slice();delete m.wq;}
+    var got=takeW(m);
+    if(got)got.forEach(function(x){
+      var dup=0;
+      qs.forEach(function(y){if(nrm(y)===nrm(x))dup=1;});
+      if(!dup&&qs.length<WMAX)qs.push(x);});
+  }catch(e){keepErr('上网',e);}
+
+  var again=ra0(m,after,q,sid);
+  if(!qs.length)return again;
+  if(again){m.wq=qs;return 1;}
+  if(m.err||!D.web||!wKey()||(m.wbn||0)>=WCAPR)return 0;
+
+  m.parts=m.parts||[];
+  if(m.t&&m.t.trim())m.parts.push({ty:'t',t:m.t});
+  var said=realT(m);
+  m.wbn=(m.wbn||0)+1;
+  m.st=1;m.wst=1;BUSY=true;
+  saveS(sid||S().id);
+  if(CV==='chat'){paint();btn();}
+
+  function fire(n){
+    m.wst=0;
+    nextRound(m,after,q,sid,
+      (n?'网上查到的在下面。':'网上没查到。别编，不确定就跟她说没查到。')
+      +(said?'接着往下说。':'你还没开口，这轮说点什么。'));}
+
+  Promise.all(qs.map(function(x){
+    return webSearch(x).then(function(r){return{q:x,r:r};},
+      function(){return{q:x,r:null};});
+  })).then(function(rs){
+    var txt=[],links=[],n=0;
+    rs.forEach(function(it){
+      if(it.r&&it.r.txt){
+        n++;
+        txt.push('〔搜「'+it.q+'」〕\n'+it.r.txt);
+        (it.r.links||[]).forEach(function(l){
+          if(links.length<6)links.push(l);});
+      }else txt.push('〔搜「'+it.q+'」〕\n（没查到。）');});
+    WEBTXT=txt.join('\n\n');
+    if(links.length){
+      m.web=(m.web||[]).concat(links);
+      delete m.webNo;}
+    else if(!n)m.webNo=1;
+    fire(n);
+  },function(){fire(0);});
+  return 1;};
+
+/* ══════════════════════════════
+   四 · 提示词：三件事分开说
+   ══════════════════════════════ */
+var OLDWEB='【联网】\n'
+ +'她每说一句，页面会先替你搜一遍，结果放在下面。'
+ +'用不上就别硬提，也别说「我搜到」。\n'
+ +'她发的链接页面会自己读，内容也在下面。';
+var NEWWEB='【上网查】\n'
+ +'页面不会自动替你搜。想查就自己写 [[搜:一整句问题]]，'
+ +'写完整的话，别只丢两三个字。\n'
+ +'跟 [[查:]] 一样不打断你——你这段话照样发出去，'
+ +'资料随后给你，你接着往下说。一轮最多两个 [[搜:]]。\n'
+ +'她发来的链接页面会自己读，内容在下面。\n'
+ +'用不上就别硬提，也别说「我搜到」。没查到就说没查到，别编。';
+
+var sp5=staticPart;
+staticPart=function(){
+  var s=sp5();
+  if(!D.acts)return s;
+  try{
+    var w=!!D.web;
+    s=s.replace('[[查:词]]　[[展开:编号]]　[[引用:编号]]',
+      '[[查:词或整句]]　[[展开:编号]]　[[引用:编号]]'
+      +(w?'　[[搜:一整句问题]]':''));
+    s=s.replace('短码是记忆前面的 #。翻查编号半小时内有效。括号要配对。',
+      '短码是记忆前面的 #。翻查编号半小时内有效。括号要配对。\n'
+      +'[[查:]] 翻的是你们俩以前的聊天记录，存在这台手机里；'
+      +(w?'[[搜:]] 才是上网查外面的资料；':'')
+      +'记住 / 改 / 忘掉 是记忆库。分开的三件事，别混。');
+    s=s.replace('【翻不翻】\n',
+      '【翻以前的对话】\n'
+      +'这是翻你们俩的聊天记录，跟上网没关系。\n');
+    s=s.replace(
+      '一个 [[查:]] 一个词，写要找的那几个字，别写整句问话，一条最多五个。',
+      '一个 [[查:]] 一件事。短词、长句都行，'
+      +'写整句页面会自己挑关键词，一条最多五个。');
+    if(w&&s.indexOf(OLDWEB)>=0)s=s.replace(OLDWEB,NEWWEB);
+  }catch(e){}
+  return s;};
+
+/* ══════════════════════════════
+   五 · 开关的说法
+   ══════════════════════════════ */
+NOTE['联网查资料']='开着我才能上网，不再每句都替我搜';
+window.tgWeb=function(){
+  if(!D.web&&!wKey()){
+    toast('先填一个搜索的 key');
+    setTimeout(shWeb,400);return;}
+  D.web=D.web?0:1;saveD();
+  var b=document.getElementById('wb');
+  if(b)b.className='mini pz'+(D.web?' on':'');
+  toast(D.web?'要查我自己开口，不再每句都搜':'不上网了');};
+
+if(CV==='chat'){try{paint(1);btn();}catch(e){}}
+})();
 boot();
 </script>
 </body>
