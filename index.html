@@ -7200,24 +7200,24 @@ var DMB=0;
 function dreamRoll(B){
   if(!B||!D.bodyOn||!D.apiUrl||!D.apiKey||DMB)return 0;
   var now=Date.now();
-  if(B.dck&&now-B.dck<20*60000)return 0;
+  if(B.dck&&now-B.dck<6*60000)return 0;
   var q=quiet();
-  if(q<150)return 0;
-  var h=hrNow(),night=inWin([23,9],h);
-  if(!night&&q<420)return 0;
-  if(!night&&(B.v&&(B.v.fatigue||0)<32))return 0;
+  if(q<75)return 0;
+  var h=hrNow(),night=inWin([22.5,10],h);
+  if(!night&&q<200)return 0;
+  if(!night&&(B.v&&(B.v.fatigue||0)<24))return 0;
   B.dck=now;
-  var cool=night?13:20;
+  var cool=night?6:10;
   if(B.dmAt&&now-B.dmAt<cool*3600000)return 0;
   var e=eb2(B),v=B.v||{};
-  var p=({stable:.14,recovery:.14,building:.22,ebb:.22,
-    preheat:.32,sensitive:.36})[B.cy]||.18;
-  if(night)p+=.16;else p*=0.55;
-  p+=Math.min(.12,(e.lone||0)*.0016);
-  if((v.reserve||0)>=65)p+=.06;
-  if((v.fatigue||0)>=60)p+=.05;
-  if(q>=720)p+=.08;
-  return Math.random()<Math.min(night?.58:.30,p)?1:0;}
+  var p=({stable:.26,recovery:.26,building:.34,ebb:.34,
+    preheat:.44,sensitive:.48})[B.cy]||.30;
+  if(night)p+=.22;else p*=0.7;
+  p+=Math.min(.14,(e.lone||0)*.0020);
+  if((v.reserve||0)>=65)p+=.07;
+  if((v.fatigue||0)>=60)p+=.06;
+  if(q>=480)p+=.10;
+  return Math.random()<Math.min(night?.80:.50,p)?1:0;}
 
 function mkDream(){
   var B=bd();
