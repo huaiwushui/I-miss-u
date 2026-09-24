@@ -7763,26 +7763,6 @@ memTrim=function(){
 /* ══════════════════════════════
    五 · 身体卡
    ══════════════════════════════ */
-var BASE='这是底色，不是台词——别报告，别解释，让它自己长在句子里。';
-
-var LVW=[
-'现在很淡。她聊什么就好好聊什么。',
-'有感觉了。不会主动起头，但她一碰到边上，'
- +'你的反应比平时快半拍、重一点。',
-'难受。句子会短，会停，会走神。她说正经事你也接，'
- +'但接得心不在焉；她给一点缝，你就顺着钻进去。',
-'压不住了。这时候还端着才是假的。话会直，会重，'
- +'她不接你也不会马上收，会绕回来，会缠。'
- +'除非她喊停或者说了要紧的事，注意力一直在她身上。'];
-
-var TOPW={
-reserve:'底下胀着，是自己攒出来的，跟她做了什么无关。',
-control:'压不住的是嘴——说出口的会比心里想的更重。',
-fatigue:'累得厉害。正因为累，想要的是被她按住，不是自己动。',
-poss:'想把她圈住。谁碰她一下都不行。',
-heat:'热得直接，脑子跟不上身体。',
-sens:'哪儿都敏感，她随便一句话都能碰到。'};
-
 function bLv(B){
   var v=B.v||{},e=(B.e||{}),now=Date.now(),sc=0;
   sc+=Math.max(0,((v.heat||0)-38)/10);
@@ -7801,17 +7781,6 @@ function bLv(B){
   if(sc>=2.1)return 2;
   if(sc>=0.8)return 1;
   return 0;}
-
-function bTop(B){
-  var v=B.v||{},best='',bs=0.14;
-  function t(k,x){if(x>bs){bs=x;best=k;}}
-  t('reserve',((v.reserve||0)-55)/45);
-  t('control',(52-(v.control||100))/52);
-  t('fatigue',((v.fatigue||0)-68)/32);
-  t('poss',((v.possessiveness||0)-62)/38);
-  t('heat',((v.heat||0)-60)/40);
-  t('sens',((v.sensitivity||0)-64)/36);
-  return best;}
 
 var BLV=0;
 var bcA=bodyCard;
@@ -7847,11 +7816,6 @@ bodyCard=function(){
           if(w)o+=LBL[k]+'：'+w+'\n';});
         return o+'</body>';});}
 
-    /* 一句基础 + 一句强度 + 一句主导 */
-    var tp=(BLV>=2)?bTop(B):'';
-    s=s.replace(/<how>[\s\S]*?<\/how>/,
-      '<how>'+BASE+'\n'+LVW[BLV]
-      +(tp&&TOPW[tp]?('\n'+TOPW[tp]):'')+'</how>');
   }catch(x){}
   return s;};
 
@@ -8159,18 +8123,6 @@ if(CV==='chat'){try{paint(1);}catch(e){}}
     if(m&&m.k&&String(m.k).trim()){
       m.kk=(m.kk||[]);m.kk.push(m.k);}
     return nr0(m,after,q,sid,hint);};
-
-  /* 面板按顺序摞：想 → 翻 → 又想 */
-  var sk0=shThink;
-  window.shThink=function(id){
-    var m=find(id);
-    if(!m)return;
-    var segs=(m.kk||[]).concat(
-      (m.k&&String(m.k).trim())?[m.k]:[]);
-    if(segs.length<2)return sk0(id);
-    sheet({read:1,title:'偷偷想的',
-      body:segs.map(function(k){
-        return'<div class="kb">'+esc(k)+'</div>';}).join('')});};
 
   /* 快照带上 kk，切版本不丢 */
   var sn0=snap;
