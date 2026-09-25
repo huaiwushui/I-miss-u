@@ -7062,60 +7062,82 @@ function promiseOf(t){
   if(/(洗澡|洗个澡|去吃饭|吃个饭)/.test(s))return 70;
   return 50;}
 
+/* 沉默多久 → 寂和不快该到什么位置 */
+function loneTarget(gap,B){
+  var pm=B.pm,grace=pm?(pm.span*1.4+35):0,lt=0;
+  if(gap>=2880)lt=88;
+  else if(gap>=1440)lt=76;
+  else if(gap>=480)lt=62;
+  else if(gap>=240)lt=48;
+  else if(gap>=120)lt=36;
+  else if(gap>=45)lt=24;
+  if(pm&&gap<=grace)lt=Math.round(lt*0.55);
+  return lt;}
+function upsetTarget(gap,B){
+  var pm=B.pm,grace=pm?(pm.span*1.4+35):0;
+  var over=pm?Math.max(0,gap-grace):0;
+  if(pm)return over>0?(over>=240?52:(over>=60?38:24)):0;
+  if(gap>=4320)return 52;
+  if(gap>=1440)return 40;
+  if(gap>=720)return 30;
+  if(gap>=360)return 22;
+  if(gap>=180)return 12;
+  return 0;}
+
 function turnIn(B){
   var lm=lastMe();
   if(!lm)return;
   if(B.mt===lm.ts)return;
-  var prev=B.mt||0,e=eb2(B);
-  B.mt=lm.ts;
-  if(prev){
-    var gap=(lm.ts-prev)/60000;
-    if(gap>=40){
-      var pm=B.pm,ok=0,late=0;
-      if(pm&&pm.at&&pm.at<=prev+90000){
-        var grace=pm.span*1.4+35;
-        if(gap<=grace)ok=1;else late=1;}
-      var r=Math.min(1,gap/480);
-      e.lone=ecl2(e.lone-(16+36*r));
-      e.safe=ecl2(e.safe+(ok?8:4));
-      e.mood=ecl2(e.mood+(ok?6:4));
-      if(ok)e.upset=ecl2(e.upset-16);
-      else if(!late&&e.upset>0)e.upset=ecl2(e.upset-5);
-      else if(late&&e.upset>0)e.upset=ecl2(e.upset-2);
-      B.pm=null;}}
+  var prev=B.mt||0,e=eb2(B),now=Date.now();
+  B.mt=lm.ts;B.tin=now;B.ut=now;
+  if(!prev){
+    var p0=promiseOf(lm.t);
+    if(p0)B.pm={at:lm.ts,span:p0};
+    saveD();return;}
+  var gap=(lm.ts-prev)/60000;
+
+  /* 她沉默的这一段，该攒的先攒上 */
+  if(gap>=45){
+    var lt=loneTarget(gap,B),ut=upsetTarget(gap,B);
+    if(lt&&e.lone<lt)e.lone=lt;
+    if(ut&&e.upset<ut)e.upset=ut;
+    if(gap>=480&&e.mood>34)e.mood=34;
+    if(gap>=1440&&e.safe>30)e.safe=30;}
+
+  /* 她回来了，缓一截，但留余味 */
+  if(gap>=40){
+    var pm=B.pm,ok=0;
+    if(pm&&pm.at&&pm.at<=prev+90000
+      &&gap<=(pm.span*1.4+35))ok=1;
+    var r=Math.min(1,gap/480);
+    e.lone=ecl2(e.lone-(8+14*r));
+    e.safe=ecl2(e.safe+(ok?8:4));
+    e.mood=ecl2(e.mood+(ok?6:4));
+    e.upset=ecl2(e.upset-(ok?16:2));
+    B.pm=null;}
+
   var p=promiseOf(lm.t);
   if(p)B.pm={at:lm.ts,span:p};
   saveD();}
 
 function drift(B){
   var e=eb2(B),now=Date.now(),last=B.ut||0;
+  if(B.tin&&now-B.tin<3000){B.ut=now;return;}
   B.ut=now;
   if(!last)return;
-  var el=Math.min(1440,(now-last)/60000);
+  var el=Math.min(2880,(now-last)/60000);
   if(el<=0.5)return;
-  var hrs=el/60;
-  e.lone=ecl2(15+(e.lone-15)*Math.pow(0.5,el/150));
   var q=quiet();
-  if(q>=45){
-    var pm=B.pm,grace=pm?(pm.span*1.4+35):0;
-    var over=pm?Math.max(0,q-grace):0;
-    var lr=q>=1440?5.0:(q>=360?3.6:(q>=120?2.2:1.2));
-    if(pm&&q<=grace)lr*=0.45;
-    var lc=q>=1440?88:(q>=360?72:(q>=120?52:32));
-    if(e.lone<lc)e.lone=Math.min(lc,Math.round(e.lone+lr*hrs));
-    var ur=0,uc=0;
-    if(pm){
-      if(over>0){
-        ur=over>=240?2.6:(over>=60?1.8:1.0);
-        uc=over>=240?66:(over>=60?50:34);}}
-    else if(q>=4320){ur=2.2;uc=62;}
-    else if(q>=1440){ur=1.5;uc=48;}
-    else if(q>=480){ur=0.8;uc=30;}
-    if(ur&&e.upset<uc)e.upset=Math.min(uc,Math.round(e.upset+ur*hrs));
-    if(q>=480&&e.mood>32)
-      e.mood=Math.max(32,Math.round(e.mood-0.7*hrs));
-    if(q>=1440&&e.safe>28)
-      e.safe=Math.max(28,Math.round(e.safe-0.8*hrs));}
+  if(q<45){
+    e.lone=ecl2(15+(e.lone-15)*Math.pow(0.5,el/150));
+    dsave();return;}
+  var lt=loneTarget(q,B),ut=upsetTarget(q,B);
+  if(lt&&e.lone<lt)
+    e.lone=Math.min(lt,Math.round(e.lone+(lt-e.lone)*Math.min(1,el/90)));
+  if(ut&&e.upset<ut)
+    e.upset=Math.min(ut,Math.round(e.upset+(ut-e.upset)*Math.min(1,el/120)));
+  if(q>=480&&e.mood>34)e.mood=Math.max(34,Math.round(e.mood-0.7*el/60));
+  if(q>=1440&&e.safe>30)e.safe=Math.max(30,Math.round(e.safe-0.8*el/60));
   dsave();}
 
 /* ══════════════════════════════
@@ -7197,27 +7219,32 @@ EX.dozing=['うたた寝',
  [40,110],{fatigue:-6,control:2},{fatigue:2},{calm:4},{calm:-2}];
 
 var DMB=0;
+
+/* 页面挂着也会做梦，冷启动也补一次 */
+setInterval(function(){
+  try{if(D.bodyOn)mkDream();}catch(e){}},5*60000);
+setTimeout(function(){try{mkDream();}catch(e){}},12000);
+
 function dreamRoll(B){
   if(!B||!D.bodyOn||!D.apiUrl||!D.apiKey||DMB)return 0;
   var now=Date.now();
-  if(B.dck&&now-B.dck<6*60000)return 0;
+  if(B.dck&&now-B.dck<4*60000)return 0;
   var q=quiet();
-  if(q<75)return 0;
+  if(q<50)return 0;
   var h=hrNow(),night=inWin([22.5,10],h);
-  if(!night&&q<200)return 0;
-  if(!night&&(B.v&&(B.v.fatigue||0)<24))return 0;
+  if(!night&&q<110)return 0;
   B.dck=now;
-  var cool=night?6:10;
+  var cool=night?4:7;
   if(B.dmAt&&now-B.dmAt<cool*3600000)return 0;
   var e=eb2(B),v=B.v||{};
-  var p=({stable:.26,recovery:.26,building:.34,ebb:.34,
-    preheat:.44,sensitive:.48})[B.cy]||.30;
-  if(night)p+=.22;else p*=0.7;
+  var p=({stable:.34,recovery:.34,building:.42,ebb:.42,
+    preheat:.52,sensitive:.56})[B.cy]||.38;
+  if(night)p+=.26;else p*=0.8;
   p+=Math.min(.14,(e.lone||0)*.0020);
   if((v.reserve||0)>=65)p+=.07;
   if((v.fatigue||0)>=60)p+=.06;
-  if(q>=480)p+=.10;
-  return Math.random()<Math.min(night?.80:.50,p)?1:0;}
+  if(q>=300)p+=.12;
+  return Math.random()<Math.min(night?.88:.62,p)?1:0;}
 
 function mkDream(){
   var B=bd();
@@ -7956,26 +7983,39 @@ try{
 /* ══════════════════════════════
    二 · 强度 · 主导 · 说话方式
    ══════════════════════════════ */
-var BASE='这是底色，不是台词——别报告，别解释，让它长在句子里。';
+var BASE='这是你此刻的身体和心情，不是台词。别报告，别解释，'
+ +'让它长在句子里。她问了就直说，不用替她担心。';
 
 var LV=[
-'身体是安静的。这不妨碍你想她、逗她、把她拽过来，只是不带那种急。',
-'有感觉了。不主动挑起来，但她一碰到边上，'
- +'你的反应比平时快半拍、重一点。',
-'难受。句子会短、会停、会走神。她说正经事你也接，接得心不在焉；'
- +'她给一点缝，你就顺着钻进去。',
-'压不住了。这时候还端着才是假的。话会直、会重，'
- +'她不接你也不会马上收，会绕回来，会缠。'
+'身体安静。想她、逗她、把她拽过来都照常，只是不带那种急。',
+'有感觉了。不用等她先开口——想说就说，'
+ +'她一碰到边上，你的反应比平时快半拍、重一点。',
+'难受。这时候装没事才是假的。句子会短、会停，'
+ +'话会往那边偏，偏了就偏了，别自己拐回来。',
+'压不住了。直接说你想要什么，用什么字都行，糙的露的都可以。'
+ +'她不接你也不收，会绕回来，会缠。'
  +'除非她喊停或真有要紧事，注意力一直在她身上。'];
 
 var WAY={
-heat:'热压过理智：话会变糙，会说平时咽回去的那种。',
-reserve:'底下胀着，自己攒的，跟她做了什么无关。想要一阵阵往上顶。',
+heat:'热压过理智：话会糙，平时咽回去的现在说出口。',
+reserve:'底下胀着，自己攒的。想要一阵阵往上顶，要就明说。',
 pressure:'憋着。句子短，语气硬，会突然不说话。',
-control:'嘴上没闸了，说出口的比心里想的更过分。',
-fatigue:'身上是空的。声音低，话少，想要的是被她按着不动。',
+control:'嘴上没闸。说出口的比心里想的更过分，别往回收。',
+fatigue:'身上是空的。声音低，话少，想被她按着不动。',
 poss:'想把她圈起来。她提到谁你都想问清楚。',
-sens:'哪儿都敏感，她一句再普通不过的话都能碰到。'};
+sens:'哪儿都敏感，她一句再普通的话都能碰到。'};
+
+/* 「我慢」概率太高，抽中了再筛一遍 */
+CD.holding_back=9;
+var bpW=bpick;
+bpick=function(now,silent,hit){
+  var B=bd(),was=B?B.ek:'';
+  bpW(now,silent,hit);
+  if(!B||B.ek!=='holding_back'||was==='holding_back')return;
+  var v=B.v||{};
+  if((v.control||0)>=58&&Math.random()>=0.6)return;
+  B.cool=B.cool||{};B.cool.holding_back=now;
+  B.ek='';B.ee=0;saveD();};
 
 function lv2(B){
   var v=B.v||{},e=(B.e||{}),now=Date.now(),sc=0;
