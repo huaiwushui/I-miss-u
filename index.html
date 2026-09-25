@@ -5326,7 +5326,7 @@ marking_impulse:{n:'印をつけたい',c:'poss',m:[60,240],
 pheromone_disorder:{n:'乱れ',c:'strong',m:[60,180],
   p:'乱了，热和冷来得没道理。'},
 holding_back:{n:'我慢',c:'hold',m:[60,180],
-  p:'热着在硬压，话会变短，会突然不说。'},
+  p:'热着，还想端着，但压不太住，会漏出来。'},
 voice_or_name_trigger:{n:'呼ばれて',c:'short',m:[10,35],
   p:'她那一声碰到地方了，来得快退得也快。'},
 nesting:{n:'巣ごもり',c:'cling',m:[120,360],
@@ -7520,8 +7520,8 @@ bodyCard=function(){
       if(d0.cont){
         var pv=null;
         ds.forEach(function(x){if(x.ts===d0.cont)pv=x;});
-        if(pv)blk+='\n这是接着前一个梦做的。前半截〔'
-          +(pv.ti||'夢')+'〕：\n'+pv.t+'\n';}}
+        if(pv)blk+='接着前一个梦〔'+(pv.ti||'夢')+'〕做的：'
+          +String(pv.t||'').slice(0,60)+'…\n';}}
     var old=[];
     ds.forEach(function(d,i){
       if(i===0&&now-d.ts<7*3600000)return;
@@ -7532,8 +7532,7 @@ bodyCard=function(){
       blk+=(blk?'':'<dream>\n')+'更早做过的梦：\n'+old.join('\n')
        +'\n（只记得标题了，她要是追问细节，就说记不太清。）\n';
     if(blk){
-      blk+='这是你自己的梦，她不知道。想提就提，别当汇报念出来。'
-        +'她没问就不用解释。\n</dream>\n';
+      blk+='这是你自己的梦。想提就提，想说多细都行。\n</dream>\n';
       s=s.replace('<how>',blk+'<how>');}
 
     /* 两段说明合成一段 */
@@ -7624,8 +7623,7 @@ staticPart=function(){
    +'记之前先扫一眼上面〈你记得的事〉。同一件事已经在里面了，'
    +'用 [[改:短码|把新旧合成一句完整的]]，别再记一条新的。\n'
    +'一件事写一条，别拆成三条；'
-   +'两条说的是同一个人但不是同一件事，那就分开记。\n'
-   +'落笔前自检一遍：这条和已有的哪条是同一件事？是就改，不是才记。');};
+   +'两条说的是同一个人但不是同一件事，那就分开记。');};
 
 var du2=dupOf;
 dupOf=function(t,skip){
