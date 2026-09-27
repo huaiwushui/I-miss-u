@@ -7234,17 +7234,17 @@ function dreamRoll(B){
   var h=hrNow(),night=inWin([22.5,10],h);
   if(!night&&q<110)return 0;
   B.dck=now;
-  var cool=night?4:7;
+  var cool=night?9:14;
   if(B.dmAt&&now-B.dmAt<cool*3600000)return 0;
   var e=eb2(B),v=B.v||{};
-  var p=({stable:.34,recovery:.34,building:.42,ebb:.42,
-    preheat:.52,sensitive:.56})[B.cy]||.38;
-  if(night)p+=.26;else p*=0.8;
-  p+=Math.min(.14,(e.lone||0)*.0020);
-  if((v.reserve||0)>=65)p+=.07;
-  if((v.fatigue||0)>=60)p+=.06;
-  if(q>=300)p+=.12;
-  return Math.random()<Math.min(night?.88:.62,p)?1:0;}
+  var p=({stable:.18,recovery:.18,building:.24,ebb:.24,
+    preheat:.30,sensitive:.34})[B.cy]||.22;
+  if(night)p+=.14;else p*=0.7;
+  p+=Math.min(.10,(e.lone||0)*.0014);
+  if((v.reserve||0)>=65)p+=.05;
+  if((v.fatigue||0)>=60)p+=.04;
+  if(q>=300)p+=.08;
+  return Math.random()<Math.min(night?.48:.30,p)?1:0;}
 
 function mkDream(){
   var B=bd();
@@ -7490,7 +7490,7 @@ var bc2=bodyCard;
 bodyCard=function(){
   var B=bd();
   if(!B||!D.bodyOn){BQ=0;return bc2();}
-  try{turnIn(B);drift(B);mkDream();}catch(x){}
+  try{turnIn(B);drift(B);}catch(x){}
   var s=bc2();
   if(!s){BQ=0;return s;}
   try{
@@ -7950,7 +7950,7 @@ bodyCard=function(){
     if(!d0||Date.now()-d0.ts>7*3600000)return s;
     var w='';
     (d0.tg||[]).forEach(function(k){if(!w&&WARM[k])w=WARM[k];});
-    if(w)s=s.replace('这是你自己的梦，',w+'\n这是你自己的梦，');
+    if(w)s=s.replace('这是你自己的梦。',w+'\n这是你自己的梦。');
   }catch(e){}
   return s;};
 
