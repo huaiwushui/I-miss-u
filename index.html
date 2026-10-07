@@ -7227,24 +7227,30 @@ setTimeout(function(){try{mkDream();}catch(e){}},12000);
 
 function dreamRoll(B){
   if(!B||!D.bodyOn||!D.apiUrl||!D.apiKey||DMB)return 0;
+  if(window.dmKeep)dmKeep(B);
+  /* 想再少：把 36 / 48 调大，或把 .35 调小 */
+  var GAPN=36,GAPD=48,CAPN=.35,CAPD=.12;
   var now=Date.now();
   if(B.dck&&now-B.dck<4*60000)return 0;
-  var q=quiet();
-  if(q<50)return 0;
-  var h=hrNow(),night=inWin([22.5,10],h);
-  if(!night&&q<110)return 0;
-  B.dck=now;
-  var cool=night?9:14;
+  var q=quiet(),h=hrNow(),night=inWin([22.5,10],h);
+  if(q<(night?150:180))return 0;
+  var lt=now-q*60000;
+  if(B.dgap&&Math.abs(lt-B.dgap)<120000)return 0;
+  var d0=(B.dms||[])[0];
+  var hang=!!(d0&&d0.tg&&d0.tg.indexOf('unfinished')>=0
+    &&now-d0.ts<30*3600000);
+  var cool=hang?14:(night?GAPN:GAPD);
   if(B.dmAt&&now-B.dmAt<cool*3600000)return 0;
+  B.dck=now;B.dgap=lt;saveD();
   var e=eb2(B),v=B.v||{};
-  var p=({stable:.18,recovery:.18,building:.24,ebb:.24,
-    preheat:.30,sensitive:.34})[B.cy]||.22;
-  if(night)p+=.14;else p*=0.7;
-  p+=Math.min(.10,(e.lone||0)*.0014);
-  if((v.reserve||0)>=65)p+=.05;
-  if((v.fatigue||0)>=60)p+=.04;
-  if(q>=300)p+=.08;
-  return Math.random()<Math.min(night?.48:.30,p)?1:0;}
+  var p=({stable:.10,recovery:.10,building:.14,ebb:.14,
+    preheat:.18,sensitive:.22})[B.cy]||.12;
+  if((e.lone||0)>=60)p+=.04;
+  if((v.reserve||0)>=65)p+=.03;
+  if(q>=360)p+=.04;
+  if(hang)p+=.15;
+  if(!night)p*=.4;
+  return Math.random()<Math.min(night?CAPN:CAPD,p)?1:0;}
 
 function mkDream(){
   var B=bd();
@@ -8507,6 +8513,251 @@ bodyCard=function(){
         +'</how>');
   }catch(e){}
   return s;};
+
+})();
+
+/* ══════════════════════════════════════════════════
+   十六 · 手感 · 梦 · 收尾
+   ══════════════════════════════════════════════════ */
+(function(){
+
+/* ── 一 · 草稿：被杀后台也能回来 ── */
+try{
+  if(!DRAFT){
+    var dv=localStorage.getItem('us.draft');
+    if(dv)DRAFT=dv;}
+}catch(e){}
+
+/* ── 二 · 梦：只留最新的，连着做的一起留 ── */
+window.dmKeep=function(B){
+  var ds=B&&B.dms;
+  if(!ds||ds.length<2)return 0;
+  var keep=[ds[0]],cur=ds[0],n=0,i,pv;
+  while(cur&&cur.cont&&n<3){
+    pv=null;
+    for(i=1;i<ds.length;i++)if(ds[i].ts===cur.cont){pv=ds[i];break;}
+    if(!pv)break;
+    keep.push(pv);cur=pv;n++;}
+  if(keep.length===ds.length)return 0;
+  B.dms=keep;
+  return 1;};
+NOTE['夢の記録']='只留最近一个，连着做的梦会一起留';
+
+var brX=bRedraw;
+bRedraw=function(){
+  try{
+    var B=bd();
+    if(B&&dmKeep(B)){
+      saveD();
+      var k=document.querySelector('#dmk .k2');
+      if(k)k.textContent=k.textContent
+        .replace(/共 \d+ 个/,'共 '+B.dms.length+' 个');}
+  }catch(e){}
+  return brX.apply(this,arguments);};
+
+/* 身体关着，小窝里也不摆梦 */
+var vhX=vHome;
+vHome=function(){
+  var h=vhX();
+  if(D.bodyOn)return h;
+  var a=h.indexOf('<div class="sct"><i></i><span>夢の記録</span>');
+  var b=h.indexOf('<div class="sct pz" onclick="bodyFold()">');
+  if(a>=0&&b>a)h=h.slice(0,a)+h.slice(b);
+  return h;};
+var btX=window.bodyTg;
+window.bodyTg=function(el){
+  var r=btX(el);
+  try{
+    var k=document.getElementById('dmk');
+    if(k){
+      var on=D.bodyOn?'':'none',s=k.previousElementSibling;
+      k.style.display=on;
+      if(s&&s.className==='sct')s.style.display=on;}
+  }catch(e){}
+  return r;};
+
+/* ── 三 · 开机后补上漏掉的几件事 ── */
+var BOOTED=0,atX=applyTheme;
+applyTheme=function(){
+  var r=atX.apply(this,arguments);
+  if(BOOTED)return r;
+  BOOTED=1;
+  try{if(window.pkSize)pkSize(D.csz||16);}catch(e){}
+  try{
+    if(APIF&&APIF.u&&APIF.u===D.apiUrl){
+      NOCC=APIF.cc?1:0;NOTTL=APIF.ttl?1:0;NOSU=APIF.su?1:0;
+      NOPDF=APIF.pdf?1:0;MTCAP=APIF.mt||0;}
+  }catch(e){}
+  try{
+    var B=bd();
+    if(B){
+      dmKeep(B);
+      if(B.cy==='stable'&&(B.ce-B.cs)>52*3600000)
+        B.ce=B.cs+(20+Math.random()*32)*3600000;
+      saveD();}
+  }catch(e){}
+  return r;};
+
+/* ── 四 · 长对话只画最近一截 ── */
+var pS=paint;
+paint=function(keep){
+  var s=S(),sid=s?s.id:'',full=MSG[sid]||[];
+  if(SEL||RALL[sid]||full.length<=RCAP+12)return pS(keep);
+  var i=full.length,n=0;
+  while(i>0&&n<=RCAP){i--;if(!full[i].sys)n++;}
+  var tot=0;
+  full.forEach(function(m){if(!m.sys)tot++;});
+  if(n<=RCAP||tot<=RCAP+1)return pS(keep);
+  var cut=full.slice(i),rMs=ms,rCI=ctxInfo,r;
+  ms=function(){return cut;};
+  ctxInfo=function(){
+    var t=ms;ms=rMs;
+    try{return rCI();}finally{ms=t;}};
+  try{r=pS(keep);}finally{ms=rMs;ctxInfo=rCI;}
+  var bt=document.querySelector('#ms .mfar');
+  if(bt)bt.textContent='看更早的 '+(tot-RCAP)+' 条';
+  return r;};
+
+/* ── 五 · 排好的字记下来，重画不再重算 ── */
+var mdX=md,MDC=(typeof Map!=='undefined')?new Map():null;
+md=function(t){
+  var s=String(t==null?'':t);
+  if(!MDC||s.length<24)return mdX(s);
+  var h=MDC.get(s);
+  if(h!=null)return h;
+  h=mdX(s);
+  if(!BUSY){
+    MDC.set(s,h);
+    if(MDC.size>400)MDC.delete(MDC.keys().next().value);}
+  return h;};
+
+/* ── 六 · 打字时少折腾 ── */
+var ftX=fitTa,FTL=-1;
+fitTa=function(el){
+  if(!el)return;
+  var n=el.value.length,back=(n<FTL);
+  FTL=n;
+  if(!back&&el.style.height&&el.scrollHeight<=el.clientHeight+1)return;
+  return ftX(el);};
+var bnX=btn;
+btn=function(){
+  var sb=document.getElementById('sb');
+  if(!sb)return;
+  var ta=document.getElementById('ta');
+  var k=BUSY?'b':(((ta&&ta.value.trim())||ATT.length)?'s':'w');
+  if(sb.dataset.k===k)return;
+  sb.dataset.k=k;
+  return bnX();};
+
+/* ── 七 · 键盘上面那条空缝 ── */
+if(vv)kRead=function(){
+  if(window.scrollY)window.scrollTo(0,0);
+  var gap=kbGap(),off=Math.max(0,Math.round(vv.offsetTop||0));
+  if(FULLH&&gap>FULLH*0.72)return;
+  if(gap<=60){
+    KZERO++;
+    if(KZERO>=2||!KGUESS){KGUESS=0;kbApply(0);}
+    return;}
+  KZERO=0;
+  if(off<=1&&gap!==kbH){
+    kbH=gap;
+    try{localStorage.setItem('us.kbH',gap);}catch(e){}}
+  KGUESS=0;
+  var eff=Math.max(0,gap-off);
+  if(Math.abs(eff-KBCUR)>2)kbApply(eff);};
+
+/* ── 八 · 轻点聊天空白处收起键盘 ── */
+var TP=null;
+document.addEventListener('touchstart',function(e){
+  var t=e.target;
+  TP=(t&&t.closest&&t.closest('#ms')&&e.touches.length===1)
+    ?{x:e.touches[0].clientX,y:e.touches[0].clientY,
+      t:Date.now(),el:t}:null;},{passive:true});
+document.addEventListener('touchend',function(e){
+  var p=TP;TP=null;
+  if(!p||SEL)return;
+  var a=document.activeElement;
+  if(!a||a.id!=='ta')return;
+  var c=e.changedTouches&&e.changedTouches[0];
+  if(!c||Math.abs(c.clientX-p.x)>8||Math.abs(c.clientY-p.y)>8
+    ||Date.now()-p.t>350)return;
+  if(p.el.closest('button,a,img,.ccd,.qt,.fcd,.ucd,.thk,.wbx,'
+    +'.more,.mfar,.nav'))return;
+  try{a.blur();}catch(x){}},{passive:true});
+
+/* ── 九 · 震感（iOS 18 起才有，旧系统没反应也不报错） ── */
+function hap(){
+  try{
+    var lb=document.createElement('label'),
+      ip=document.createElement('input');
+    lb.setAttribute('aria-hidden','true');lb.style.display='none';
+    ip.type='checkbox';ip.setAttribute('switch','');
+    lb.appendChild(ip);document.head.appendChild(lb);
+    lb.click();document.head.removeChild(lb);
+  }catch(e){}}
+vib=function(n){
+  try{if(navigator.vibrate){navigator.vibrate(n||12);return;}}catch(e){}
+  hap();};
+var hsX=hitSend;
+hitSend=function(){vib(8);return hsX.apply(this,arguments);};
+
+/* ── 十 · 面板抽屉退场有动画，原地刷新不闪 ── */
+var st=document.createElement('style');
+st.textContent=
+ 'button,a,.pz,.rw,.it,.res,.mcd{touch-action:manipulation}'
++'.hd,.ibr,.selbar,.chips,.ops,.eo,#dw .nv,#dw .bt,#dw .lb,#sh .st,'
++'.cch,.sw,.seg,.segw,.rw,.bof,.mfar{-webkit-user-select:none;'
++'user-select:none}'
++'@keyframes oSh{from{transform:none}to{transform:translateY(100%)}}'
++'@keyframes oDw{from{transform:none}to{transform:translateX(-100%)}}'
++'@keyframes oFd{from{opacity:1}to{opacity:0}}'
++'#sh.out,#dw.out{pointer-events:none}'
++'#sh.out .pn{animation:oSh .24s cubic-bezier(.32,.72,0,1) both}'
++'#dw.out .pn{animation:oDw .2s cubic-bezier(.32,.72,0,1) both}'
++'#sh.out .ov,#dw.out .ov{animation:oFd .2s ease both}';
+document.head.appendChild(st);
+
+var csX=closeSheet;
+closeSheet=function(now){
+  var s=document.getElementById('sh');
+  if(!s)return;
+  if(now||s.classList.contains('out'))return csX(1);
+  var a=document.activeElement;
+  if(a&&/^(INPUT|TEXTAREA)$/.test(a.tagName))a.blur();
+  SHOK=null;
+  s.classList.add('out');
+  setTimeout(function(){if(s.parentNode)s.remove();},240);};
+
+var drX=drawer;
+drawer=function(on){
+  var e=document.getElementById('dw');
+  if(on){
+    if(e&&e.classList.contains('out'))e.remove();
+    return drX(1);}
+  if(!e)return drX(0);
+  if(e.classList.contains('out'))return;
+  EDIT=0;DG=null;
+  e.classList.add('out');
+  setTimeout(function(){if(e.parentNode)e.remove();},210);};
+
+var vwX=view;
+view=function(v){
+  var same=(v===CV),s0=S(),sid0=s0?s0.id:'',keep=null;
+  if(same&&v==='chat'){
+    var b=msBox();
+    if(b&&!scEnd(b))keep=b.scrollTop;}
+  var r=vwX(v);
+  var s1=S();
+  if(same&&(s1?s1.id:'')===sid0){
+    var w=document.querySelector('#pg>.vw');
+    if(w)w.style.animation='none';
+    if(keep!=null){
+      var b2=msBox();
+      if(b2){
+        SC.pin=0;SC.el=null;
+        b2.scrollTop=Math.min(keep,scMax(b2));
+        scAnchor();}}}
+  return r;};
 
 })();
 boot();
